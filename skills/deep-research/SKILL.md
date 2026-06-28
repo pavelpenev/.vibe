@@ -1,9 +1,9 @@
 ---
 name: deep-research
-description: Use for sustained technical investigation, prior art surveys, or complex problem-solving. Always provides a chat summary; saves detailed report to ./research/ on request. Triggers on requests to research, investigate, survey prior art, or solve complex technical problems.
+description: Use for sustained technical investigation, prior art surveys, or complex problem-solving. Always provides a chat summary; saves detailed report to {cwd}/research/ on request. Triggers on requests to research, survey prior art, or solve complex technical problems.
 user-invocable: true
 allowed-tools:
-  - read_file
+  - read
   - write_file
   - bash
   - grep
@@ -15,12 +15,48 @@ allowed-tools:
 
 Use for technical topics requiring sustained investigation. Defaults to quick summary; full report on request.
 
-## Step 1: Parse Request
+## Triggering Conditions
+
+Activates when user requests sustained investigation:
+- `/deep-research` - start interactive research
+- `/deep-research <topic>` - research specific topic
+- "research <topic>"
+- "prior art survey on <topic>"
+- "survey prior art for <topic>"
+- "survey <topic>"
+
+## When NOT to Use
+
+- Quick factual lookups → Use `/web_search` directly
+- Yes/no questions or simple definitions
+- Tasks requiring immediate action
+- When you need a definitive single answer without exploration
+
+## Error Handling
+
+**Invalid input:**
+- Empty or whitespace-only topic: Prompt "Please provide a research topic."
+
+## Known Limitations
+
+- Requires web access for full functionality
+- Source quality depends on web search results and availability
+- May miss very recent information (within days/weeks of current date)
+- Model has a knowledge cutoff date; recent developments after that date are discovered via web search
+- Cannot access paywalled content, private repositories, or internal documentation
+- Research depth depends on query formulation and topic specificity
+
+## Step 1: Parse Request and Load Context
 
 Extract:
 - **Topic**: The subject to research
 - **Type**: Prior art survey, problem-solving, or general investigation
 - **Scope indicators**: Broad terms ("AI", "database") vs specific ("React hooks optimization")
+
+**Load project context:**
+- Check for AGENTS.md in current directory and parent directories
+- Check for PLAN.md in current directory
+- If found, read and incorporate project-specific instructions and context to inform research scope
 
 ## Step 2: Scope Check
 
@@ -124,12 +160,14 @@ If yes: Proceed to Step 10. If no: Done.
 
 ## Step 10: Generate Full Report (Tier 2 - On Request)
 
-Filename: `./research/{topic-slug}-{YYYYMMDD}.md`
+Filename: `{cwd}/research/{topic-slug}-{YYYYMMDD}-{HHMMSS}.md`
+
+**Report location:** Reports are saved to the current working directory's `research/` folder by default unless user specifies an alternative path.
 
 Structure:
 ```markdown
 # Research: {topic}
-**Generated:** {YYYY-MM-DD}
+**Generated:** {YYYY-MM-DD HH:MM:SS}
 **Scope:** {original request}
 
 ## Quick Answer
@@ -157,7 +195,7 @@ Structure:
 [2] ...
 ```
 
-Save to file, confirm: "Report saved to ./research/{filename}"
+Save to file, confirm: "Report saved to {cwd}/research/{filename}"
 
 ## Quality Checks
 
@@ -167,3 +205,11 @@ Before final output:
 - [ ] Outdated sources are flagged
 - [ ] Summary is concise (3-7 bullet points max)
 - [ ] Filename is unique (date-stamped)
+
+## Verification
+
+Test with:
+- [ ] `/deep-research` with no topic (should prompt)
+- [ ] `/deep-research <valid topic>` (should research and summarize)
+- [ ] `/deep-research` then request full report (should save to file with unique timestamp)
+- [ ] `/deep-research` with empty input (should re-prompt)
