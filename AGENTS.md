@@ -32,7 +32,7 @@ When in doubt, always ask.
 
 **Action:**
 1. Identify the ambiguity
-2. List concrete options from context (files in current directory, files mentioned in CHECKPOINT.md/SUMMARY.md, or referenced in conversation)
+2. List concrete options from context (files in current directory or referenced in conversation)
 3. Ask for clarification:
    ```
    Which [file/target] do you mean? Options:
