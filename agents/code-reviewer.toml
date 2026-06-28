@@ -1,0 +1,31 @@
+agent_type = "subagent"
+display_name = "Code Reviewer"
+description = "Reviews code for quality, security, and best practices"
+safety = "safe"
+system_prompt_id = "code-reviewer"
+enabled_tools = ["read_file", "grep", "bash"]
+
+[tools.read_file]
+permission = "always"
+
+[tools.grep]
+permission = "always"
+
+[tools.bash]
+permission = "ask"
+allow = [
+  "git log",
+  "git diff",
+  "git diff --staged",
+  "git show",
+  "git blame",
+  "git status",
+  "git branch",
+  "git remote -v",
+  "git ls-remote",
+  "wc -l",
+  "find . -type f",
+  "find . -name",
+  "head -n",
+  "tail -n"
+]
