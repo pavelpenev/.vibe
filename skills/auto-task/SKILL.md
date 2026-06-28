@@ -1,7 +1,18 @@
 ---
 name: auto-task
-description: Use for multi-step task requests requiring sequential actions, such as "implement X", "find out what causes bug Y", or "tell me how feature X is currently implemented". Handles planning, user confirmation, autonomous execution, and result summary.
+description: Use for multi-step task requests requiring sequential actions, such as "implement X", "find out what causes bug Y", or "tell me how feature X is currently implemented". Handles planning, user confirmation, autonomous execution, and result summary. Uses code-review to assess its own output.
 user-invocable: true
+allowed-tools:
+  - read
+  - write_file
+  - edit
+  - bash
+  - grep
+  - todo
+  - task
+  - skill
+  - ask_user_question
+  - web_search
 ---
 
 # Auto-Task
@@ -16,23 +27,38 @@ Handles small, self-contained multi-step tasks with autonomous execution. The sk
 - "implement X"
 - "find out what causes bug Y"
 - "tell me how feature X is currently implemented"
+- "write a script to..."
+- "create a..."
+- "modify..."
+- "update..."
+- "refactor this..."
+- "set up..."
+- "configure..."
 - Any request requiring multiple sequential actions
 
-**When NOT to use:**
+## When NOT to Use
+
 - Large-scale planning (use project-planner instead)
+- Tasks requiring deep research (use deep-research skill)
+- Tasks spanning multiple directories or subsystems
+- Tasks requiring new dependencies or external services
+- Tasks that cannot be completed and reviewed in a single session
 - Single-step trivial tasks (use normal workflow)
-- Tasks requiring broad architectural changes (use project-planner)
 
 ## Workflow
 
 ### Step 1: Scope Assessment
-Assess if the task is small and self-contained enough for autonomous execution. Use these explicit criteria to determine if a task is too broad:
+Assess if the task is small and self-contained enough for autonomous execution.
+
+**First:** Scan conversation for user corrections ("no", "wrong", "I meant", "actually") and address these before proceeding.
+
+Use these explicit criteria to determine if a task is too broad:
 
 **A task is TOO BROAD if it:**
 - Requires adding new dependencies to the project (e.g., new libraries)
 - Involves external services, APIs, or network calls
 - Spans more than one directory or affects multiple subsystems
-- Has more than ~5 discrete steps
+- Has more than ~5 discrete steps (warn user if approaching this limit)
 - Requires configuration changes outside the code (env vars, config files, etc.)
 - Cannot be completed and reviewed in a single session
 
@@ -68,22 +94,27 @@ Execute the user-approved steps sequentially:
 
 - Execute one step at a time in order
 - If you encounter a decision point during execution:
-  - **Low-risk decisions**: Make the decision yourself and continue
-  - **Unresolved decisions**: The plan was inadequate - stop execution, revise the plan with the user before continuing
+  - **Low-risk decisions** (reversible, minimal impact): Make the decision, document it briefly, and continue
+  - **High-risk decisions** (irreversible, significant impact): Stop execution and ask user
+  - **Unresolved in plan**: Stop execution, revise plan with user before continuing
 - Use any tools and skills needed to complete the task
 - You may query PLAN.md and research directories for information, but must not modify them unless explicitly instructed
 
 ### Step 5: Error Handling
 If a step fails:
-- Make one attempt to recover from the failure
-- If you cannot recover after one attempt, stop execution
-- Prompt the user with partial success and explain what was completed and what failed
+- **Retry once**: For transient failures (network timeouts, temporary file locks)
+- **Do NOT retry**: Permission denied, file not found (unless step creates the file), syntax errors, logical errors
+- **Stop and report**: After one failed recovery attempt, or for any permission/access error, or any error that prevents verification
+- **Report format**: What was attempted, what succeeded, what failed and why, suggested next steps for user
 
 ### Step 6: Completion and Summary
 After executing all approved steps:
-- Stop and provide a summary of what was accomplished
-- In case of success: Summarize completed work and results
-- In case of failure: Summarize partial completion and explain the failure
+- Use code-review skill to assess output quality before presenting to user
+- Stop and provide a structured summary:
+  - **Status**: SUCCESS / PARTIAL / FAILED
+  - **Completed**: List of successfully executed steps with file paths/outcomes
+  - **Failed**: List of failed steps with specific error reasons
+  - **Decisions made**: Any autonomous low-risk decisions taken (with brief justification)
 - Wait for user assessment before continuing
 - Todo items are for your tracking; if the user accepts the task, they won't be needed anymore; if the task needs rework, they may be useful as history
 
@@ -96,10 +127,11 @@ After executing all approved steps:
 
 ## Integration
 
+- **Context priority**: Project-local AGENTS.md > PLAN.md > Global AGENTS.md > Research directory
 - **PLAN.md**: You may read PLAN.md for context but must not modify it unless explicitly told
 - **Research directory**: You may query the ./research/ directory for existing research but must not modify it unless explicitly told
 - **Tools**: Use any tools needed (read, write_file, edit, bash, grep, etc.)
-- **Skills**: Invoke other skills as needed (deep-research, project-planner, etc.)
+- **Skills**: May invoke debugging, test-generator, code-review, git-workflow, or web_search for specific sub-tasks. Do NOT invoke deep-research or project-planner.
 - **Todo tool**: Use for tracking steps during planning and execution
 
 ## User Interaction
@@ -108,3 +140,22 @@ After executing all approved steps:
 - Stop after completion for user assessment
 - If interrupted by user (via /exit or Ctrl+C), stop gracefully
 - If you need clarification on a high-risk decision during execution, stop and ask the user
+
+## Red Flags
+
+- User insists on continuing after step failures without addressing root cause
+- Task scope expands beyond original plan without re-approval
+- User provides contradictory instructions during execution
+- Task requires deep-research or project-planner skills (out of scope)
+- User correction in conversation history is ignored
+
+## Verification
+
+Test with:
+- [ ] Simple file creation task (1-2 steps)
+- [ ] Multi-step modification task (3-5 steps)
+- [ ] Task requiring web_search for documentation lookup
+- [ ] Task with user decision point during execution
+- [ ] Task that fails mid-execution
+- [ ] Task with user correction in conversation history
+- [ ] Task approaching step limit (warn user)
