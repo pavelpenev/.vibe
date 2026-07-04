@@ -197,6 +197,7 @@ allowlist = [
     "code-reviewer",
     "lisp-editor",
     "finder",
+    "explorer",
 ]
 denylist = []
 sensitive_patterns = []

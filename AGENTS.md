@@ -25,6 +25,7 @@ Use the `task` tool to delegate focused tasks to specialized subagents when appr
 | `code-reviewer` | Code review specialist | Reviewing code changes, quality checks, security audits |
 | `lisp-editor` | Lisp file editor | Safely editing, creating, deleting, listing, and repairing Common Lisp, Emacs Lisp, and ASDF files using form-based extraction; supports atomic batch operations and file repair |
 | `finder` | Pattern searcher | Search for patterns, tokens, or code constructs across files using grep/find/bash commands |
+| `explorer` | Project explorer | Systematically explore project structure, read key files including AGENTS.md for project context |
 
 ### When to Delegate
 - Task is well-defined and self-contained
@@ -44,6 +45,40 @@ Use the `task` tool: `task(task="<clear task description>", agent="<subagent-nam
 - Orchestrator-Worker model: Main agent delegates to specialized subagents
 - Non-nesting: Subagents cannot spawn other subagents
 - Delegation via `task` tool only
+
+### Subagent Orchestration Patterns
+
+**Chaining subagents for complex tasks:** The main agent should chain subagent calls to build context efficiently.
+
+**Example: "I want to work on feature X"**
+```python
+# Step 1: Find relevant files
+finder_results = task(task='Search for feature X in project', agent='finder')
+
+# Step 2: Explore those files and project structure  
+explorer_results = task(
+  task=f'Explore project and read files: {finder_results["matches"]}',
+  agent='explorer'
+)
+
+# Main agent now has full context to implement feature X
+```
+
+**Example: "Review changes to module Y"**
+```python
+# Find all files related to module Y
+finder_results = task(task='Search for module Y references', agent='finder')
+
+# Read and summarize those files
+explorer_results = task(
+  task=f'Read and summarize: {finder_results["matches"]}',
+  agent='explorer'
+)
+
+# Main agent now understands module Y's structure
+```
+
+**Rule of thumb:** Use finder for *what exists*, explorer for *what it means*, then act in main context.
 
 ---
 

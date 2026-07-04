@@ -1,0 +1,27 @@
+agent_type = "subagent"
+display_name = "Explorer"
+description = "Systematically explore project structure, read key files including AGENTS.md for project context"
+safety = "safe"
+active_model = "mistral-small-4"
+system_prompt_id = "explorer"
+enabled_tools = ["read_file", "bash", "grep"]
+
+[tools.read_file]
+permission = "always"
+
+[tools.bash]
+permission = "ask"
+allow = [
+  "ls -la",
+  "ls -R",
+  "find . -name",
+  "find . -type f",
+  "find . -iname",
+  "cat",
+  "head -n",
+  "tail -n",
+  "wc -l"
+]
+
+[tools.grep]
+permission = "always"
