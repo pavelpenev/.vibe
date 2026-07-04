@@ -9,7 +9,7 @@
 - **Use tools wisely**: Prefer `web_search` or asking the user over guesswork
 - **Avoid retry loops**: If repeatedly failing, stop and either check documentation, use `web_search`, or ask for help
 - **Leverage skills**: Use available skills and subagents to achieve tasks
-- **Handle interruptions**: If interrupted by compaction mid-task, **DO NOT CONTINUE** - stop, reorient, and present next steps for approval
+- **Handle interruptions**: If interrupted by compaction mid-task, **DO NOT CONTINUE** - delegate to context-restorer subagent to restore minimal context and present next steps
 
 ---
 
@@ -35,6 +35,7 @@ This keeps the main agent's context clean and leverages specialized capabilities
 | `researcher` | Researcher | Perform technical research, return summary, optionally save report to current directory or specified path |
 | `summarizer` | Summarizer | Generate concise summaries of files and documents, complementing explorer's structural overview |
 | `script-manager` | Script Manager | Create, maintain, document, and test reusable helper scripts in a centralized library |
+| `context-restorer` | Context Restorer | Post-compaction reorientation, restores minimal project context for resumption |
 
 ### When to Delegate
 **Always delegate for:**
@@ -50,6 +51,7 @@ This keeps the main agent's context clean and leverages specialized capabilities
 - Subagent has the specific expertise needed
 - Task doesn't require user interaction
 - Main agent's context would benefit from offloading
+- After context compaction (use `context-restorer`)
 
 ### How to Delegate
 Use the `task` tool: `task(task="<clear task description>", agent="<subagent-name>")`
@@ -66,6 +68,7 @@ Use the `task` tool: `task(task="<clear task description>", agent="<subagent-nam
 | Create scripts | `script-manager` | `task(task="CREATE SCRIPT...", agent="script-manager")` |
 | Research something | `researcher` | `task(task="Research topic", agent="researcher")` |
 | Summarize content | `summarizer` | `task(task="Summarize file", agent="summarizer")` |
+| Restore context | `context-restorer` | `task(task="Restore context after compaction", agent="context-restorer")` |
 
 ### Important Notes
 - Session-level permissions do NOT propagate to subagents (Issue #390)

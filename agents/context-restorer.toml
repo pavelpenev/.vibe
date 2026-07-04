@@ -1,0 +1,26 @@
+agent_type = "subagent"
+display_name = "Context Restorer"
+description = "Reorient main agent after compaction by reading relevant files and restoring project context"
+safety = "safe"
+system_prompt_id = "context-restorer"
+enabled_tools = ["read_file", "grep", "bash"]
+
+[tools.read_file]
+permission = "always"
+
+[tools.grep]
+permission = "always"
+
+[tools.bash]
+permission = "ask"
+allow = [
+  "git status",
+  "git diff",
+  "git log --oneline -5",
+  "git branch",
+  "ls -la",
+  "ls -lt",
+  "find . -name",
+  "find . -mtime -1",
+  "pwd"
+]

@@ -32,6 +32,7 @@ disabled_agents = []
 installed_agents = [
     "code-reviewer",
     "lisp-editor",
+    "context-restorer",
 ]
 default_agent = "default"
 enabled_skills = [
