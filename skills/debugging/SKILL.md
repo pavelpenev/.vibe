@@ -9,6 +9,21 @@ description: Systematic, language-agnostic debugging assistant that helps reprod
 
 Provides systematic debugging assistance for code, following a structured 6-step methodology to identify, reproduce, isolate, and fix bugs. Focuses on language-agnostic analysis with AI-powered root cause identification and prevention strategies. Generates clear, actionable markdown reports with reproduction steps, root cause analysis, and regression tests.
 
+**In Scope:** Code bugs, test failures, runtime errors, logic issues
+**Out of Scope:** Build system configuration, deployment infrastructure
+
+## Tools
+
+Available: `read_file`, `grep`, `bash`, `edit`, `write_file`, `task`, `ask_user_question`
+
+**Usage Guidelines:**
+- `read_file`: Always for reading code
+- `grep`: Always for searching patterns
+- `bash`: Ask before running (allow: git commands, test runners, build tools)
+- `edit`: Ask before modifying files
+- `write_file`: Ask before creating files
+- `task`: Always for spawning subagents
+
 ## Triggering Conditions
 
 Activates when user requests debugging:
@@ -40,6 +55,14 @@ Activates when user requests debugging:
 **If scope is too broad (>1000 lines or multiple files):**
 - **Warn user:** "This scope is large. For better results, specify a file or function, or type 'continue' for full analysis."
 - Prompt: "Specify scope or type 'continue': "
+
+## Git Integration
+
+- `git status`: Identify modified files (Step 1)
+- `git diff`: See recent changes to target files
+- `git blame`: Get context on who last modified code
+- `git log --oneline -10`: Recent commit history for context
+- `git bisect`: Identify regression-introducing commit (Step 3.1)
 
 ## Step 2: Reproduction
 
@@ -330,9 +353,8 @@ If any of these occur, escalate or request clarification:
 - User requests debugging of auto-generated files (skip with warning)
 - File is binary or non-code (skip with error)
 - No testable code found in scope (warn user)
-- Language cannot be determined (ask user or skip)
 - Large file (>1000 lines) without specific scope (warn user)
-- Security vulnerability detected (BLOCKING - require immediate attention)
+- Security vulnerability detected: SURFACE IMMEDIATELY to user, do not wait for full report
 
 ## User Interaction Guidelines
 
@@ -345,6 +367,14 @@ If any of these occur, escalate or request clarification:
 4. **Offer options:** When multiple approaches are valid
 5. **Ask for clarification:** When ambiguous or uncertain
 
+## Edge Cases
+
+- **Non-existent file**: "File not found. Did you mean: [suggestions from grep]?"
+- **No testable code**: "No executable code found in scope"
+- **Cannot reproduce after 3 attempts**: Prompt user for exact inputs/environment
+- **Multiple bugs**: Prioritize by severity (security first), address sequentially
+- **Flaky tests**: Note intermittency, suggest adding retries/logging
+
 ## Configuration
 
 Users can configure via AGENTS.md:
@@ -356,6 +386,12 @@ Users can configure via AGENTS.md:
 - Block on secrets: true (default)
 - Include integration test patterns: false (true | false)
 ```
+
+## Multi-Turn Debugging
+
+- Use `todo` tool to track: Hypotheses tested, confirmed findings, next steps
+- Store reproduction scripts in scratchpad (`/tmp/vibe-scratchpad-*/`)
+- Reference previous turns' findings in current analysis
 
 ## Verification
 
