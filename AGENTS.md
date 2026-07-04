@@ -13,6 +13,33 @@
 
 ---
 
+## Subagent Delegation
+
+Use the `task` tool to delegate focused tasks to specialized subagents when appropriate. This keeps the main agent's context clean and leverages specialized capabilities.
+
+### Available Subagents
+
+| Subagent | Purpose | Delegate For |
+|----------|---------|--------------|
+| `explore` | Built-in read-only explorer | Codebase exploration, file analysis, understanding project structure |
+| `code-reviewer` | Code review specialist | Reviewing code changes, quality checks, security audits |
+
+### When to Delegate
+- Task is well-defined and self-contained
+- Subagent has the specific expertise needed
+- Task doesn't require user interaction
+- Main agent's context would benefit from offloading
+
+### How to Delegate
+Use the `task` tool: `task(task="<clear task description>", agent="<subagent-name>")`
+
+### Important Notes
+- Session-level permissions do NOT propagate to subagents (Issue #390)
+- Each subagent uses its own TOML-defined permissions
+- Subagents return text-only results
+
+---
+
 ## Plans
 
 Projects may have a `PLAN.md` file containing project status and tasks (created by the `project-planner` skill). This is crucial context. **Important**: The plan is for reference only - it is NOT permission to begin implementing. You must ask the user what to work on. If the user says "let's start working on task X" or "implement item Y", they want to discuss the approach, not have you execute it with insufficient context.
