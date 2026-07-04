@@ -1,0 +1,25 @@
+agent_type = "subagent"
+display_name = "Script Manager"
+description = "Create, maintain, document, and test reusable helper scripts in a centralized library"
+safety = "neutral"
+system_prompt_id = "script-manager"
+enabled_tools = ["read_file", "write_file", "edit", "bash"]
+
+[tools.read_file]
+permission = "always"
+
+[tools.write_file]
+permission = "always"
+
+[tools.edit]
+permission = "always"
+
+[tools.bash]
+permission = "ask"
+allow = [
+  "chmod +x",
+  "which",
+  "ls -la",
+  "mkdir -p",
+  "rm"
+]

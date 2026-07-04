@@ -15,7 +15,12 @@
 
 ## Subagent Delegation
 
-Use the `task` tool to delegate focused tasks to specialized subagents when appropriate. This keeps the main agent's context clean and leverages specialized capabilities.
+**PREFER DELEGATION:** For any file operation (create, modify, delete), search task, or research task, check if a subagent can handle it first. Only use direct tools (`read_file`, `write_file`, `edit`, `grep`, `bash`) if:
+- No suitable subagent exists, OR
+- The operation is a single read for investigation, OR
+- You need the file content in your context for immediate decision-making
+
+This keeps the main agent's context clean and leverages specialized capabilities. Default to delegation, not direct tool use.
 
 ### Available Subagents
 
@@ -29,8 +34,18 @@ Use the `task` tool to delegate focused tasks to specialized subagents when appr
 | `file-editor` | File editor | Batch file creation, modification, and deletion for Python, JSON, YAML, Markdown, TOML, and other text files (use lisp-editor for .lisp/.el/.asd files) |
 | `researcher` | Researcher | Perform technical research, return summary, optionally save report to current directory or specified path |
 | `summarizer` | Summarizer | Generate concise summaries of files and documents, complementing explorer's structural overview |
+| `script-manager` | Script Manager | Create, maintain, document, and test reusable helper scripts in a centralized library |
 
 ### When to Delegate
+**Always delegate for:**
+- File creation, modification, or deletion (use `file-editor` or `lisp-editor`)
+- Pattern searching across files (use `finder`)
+- Project exploration (use `explorer`)
+- Script management (use `script-manager`)
+- Technical research (use `researcher`)
+- Document summarization (use `summarizer`)
+
+**Also delegate when:**
 - Task is well-defined and self-contained
 - Subagent has the specific expertise needed
 - Task doesn't require user interaction
@@ -38,6 +53,19 @@ Use the `task` tool to delegate focused tasks to specialized subagents when appr
 
 ### How to Delegate
 Use the `task` tool: `task(task="<clear task description>", agent="<subagent-name>")`
+
+### Routing Guide (Main Agent)
+
+| You need to... | Use... | Example |
+|---------------|--------|---------|
+| Read a single file | `read_file` directly | `read_file(path="..."` |
+| Read multiple files | `explorer` | `task(task="Explore project", agent="explorer")` |
+| Create/modify files | `file-editor` | `task(task="CREATE file.py", agent="file-editor")` |
+| Edit Lisp files | `lisp-editor` | `task(task="Edit file.lisp", agent="lisp-editor")` |
+| Search for patterns | `finder` | `task(task="Find usages of X", agent="finder")` |
+| Create scripts | `script-manager` | `task(task="CREATE SCRIPT...", agent="script-manager")` |
+| Research something | `researcher` | `task(task="Research topic", agent="researcher")` |
+| Summarize content | `summarizer` | `task(task="Summarize file", agent="summarizer")` |
 
 ### Important Notes
 - Session-level permissions do NOT propagate to subagents (Issue #390)
