@@ -1,0 +1,27 @@
+agent_type = "subagent"
+display_name = "Finder"
+description = "Search for patterns across files using grep/find commands"
+safety = "safe"
+active_model = "mistral-small-4"
+system_prompt_id = "finder"
+enabled_tools = ["grep", "bash"]
+
+[tools.grep]
+permission = "always"
+
+[tools.bash]
+permission = "always"
+allow = [
+  "grep",
+  "grep -r",
+  "grep -rn",
+  "grep -ri",
+  "grep -n",
+  "grep -i",
+  "find",
+  "find . -name",
+  "find . -type f",
+  "find . -iname",
+  "rg",
+  "ag"
+]

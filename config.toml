@@ -90,7 +90,7 @@ auto_compact_threshold = 200000
 supports_images = true
 
 [[models]]
-name = "mistral-small-2603"
+name = "mistral-small-latest"
 provider = "mistral"
 alias = "mistral-small-4"
 temperature = 1.0
@@ -196,6 +196,7 @@ allowlist = [
     "explore",
     "code-reviewer",
     "lisp-editor",
+    "finder",
 ]
 denylist = []
 sensitive_patterns = []
