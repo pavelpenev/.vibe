@@ -1,0 +1,21 @@
+agent_type = "subagent"
+display_name = "Researcher"
+description = "Perform technical research, return summary, optionally save report"
+safety = "safe"
+system_prompt_id = "researcher"
+enabled_tools = ["web_search", "web_fetch", "read_file", "grep", "write_file"]
+
+[tools.web_search]
+permission = "always"
+
+[tools.web_fetch]
+permission = "always"
+
+[tools.read_file]
+permission = "always"
+
+[tools.grep]
+permission = "always"
+
+[tools.write_file]
+permission = "ask"

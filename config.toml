@@ -199,6 +199,7 @@ allowlist = [
     "finder",
     "explorer",
     "file-editor",
+    "researcher",
 ]
 denylist = []
 sensitive_patterns = []

@@ -27,6 +27,7 @@ Use the `task` tool to delegate focused tasks to specialized subagents when appr
 | `finder` | Pattern searcher | Search for patterns, tokens, or code constructs across files using grep/find/bash commands |
 | `explorer` | Project explorer | Systematically explore project structure, read key files including AGENTS.md for project context |
 | `file-editor` | File editor | Batch file creation, modification, and deletion for Python, JSON, YAML, Markdown, TOML, and other text files (use lisp-editor for .lisp/.el/.asd files) |
+| `researcher` | Researcher | Perform technical research, return summary, optionally save report to current directory or specified path |
 
 ### When to Delegate
 - Task is well-defined and self-contained
@@ -80,6 +81,41 @@ explorer_results = task(
 ```
 
 **Rule of thumb:** Use finder for *what exists*, explorer for *what it means*, then act in main context.
+
+### Research Workflow (deep-research skill + researcher subagent)
+
+The `deep-research` skill and `researcher` subagent work together for research tasks:
+
+**Case A: Simple Query** (direct delegation)
+```python
+task(task="What is Mistral Vibe?", agent="researcher")
+```
+→ researcher subagent performs search and returns summary
+
+**Case B: Complex Research** (interactive orchestration)
+```python
+# deep-research skill:
+# 1. Gathers requirements from context
+# 2. Asks clarifying questions
+# 3. Constructs research query
+# 4. Delegates to researcher subagent
+skill("deep-research")
+
+# Which internally does:
+task(task="Research {topic} depth:detailed save_to_file:{path}", agent="researcher")
+```
+→ deep-research skill handles interaction, researcher subagent executes
+
+**Architecture:**
+```
+User → deep-research skill (interactive front-end) → researcher subagent (execution) → Results
+```
+
+The `researcher` subagent:
+- Uses parent model (mistral-medium-3.5) for smarter research
+- Can save reports to current directory or specified path
+- Always returns structured JSON summary
+- Handles web searches, source evaluation, conflict detection
 
 ---
 

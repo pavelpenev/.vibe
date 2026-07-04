@@ -1,19 +1,18 @@
 ---
 name: deep-research
-description: Use for sustained technical investigation, prior art surveys, or complex problem-solving. Always provides a chat summary; saves detailed report to {cwd}/research/ on request. Triggers on requests to research, survey prior art, or solve complex technical problems.
+description: Front-end for researcher subagent. Gathers requirements, asks clarifying questions, constructs research query, and delegates to researcher subagent for execution. Always provides a chat summary; saves detailed report to {cwd}/research/ on request.
 user-invocable: true
 allowed-tools:
-  - read
-  - write_file
-  - bash
+  - task
+  - read_file
   - grep
-  - web_search
-  - web_fetch
 ---
 
-# Deep Research
+# Deep Research - Front-end for Researcher Subagent
 
-Use for technical topics requiring sustained investigation. Defaults to quick summary; full report on request.
+**Role:** Interactive orchestrator that prepares research tasks and delegates to the non-interactive `researcher` subagent.
+
+Use for technical topics requiring sustained investigation. This skill handles the interactive parts (requirements gathering, clarification, report requests) and delegates execution to the `researcher` subagent.
 
 ## Triggering Conditions
 
@@ -27,10 +26,18 @@ Activates when user requests sustained investigation:
 
 ## When NOT to Use
 
-- Quick factual lookups → Use `/web_search` directly
+- Quick factual lookups → Use `/web_search` directly or delegate to `researcher` directly
 - Yes/no questions or simple definitions
 - Tasks requiring immediate action
 - When you need a definitive single answer without exploration
+
+## Architecture
+
+```
+User Request → deep-research skill (interactive) → researcher subagent (execution) → Results
+```
+
+This skill is the **interactive front-end**. The `researcher` subagent is the **non-interactive execution engine**.
 
 ## Error Handling
 
@@ -39,10 +46,9 @@ Activates when user requests sustained investigation:
 
 ## Known Limitations
 
-- Requires web access for full functionality
+- Requires web access for full functionality (researcher subagent needs web_search/web_fetch)
 - Source quality depends on web search results and availability
 - May miss very recent information (within days/weeks of current date)
-- Model has a knowledge cutoff date; recent developments after that date are discovered via web search
 - Cannot access paywalled content, private repositories, or internal documentation
 - Research depth depends on query formulation and topic specificity
 
@@ -76,140 +82,88 @@ Write a 1-2 sentence plan:
 
 Example: "Plan: Search for existing Lisp implementations, then compare performance characteristics, focusing on concurrency models."
 
-Show plan to user, then proceed (no approval needed).
+Show plan to user, then ask: "Proceed with this plan? (y/n/Modify)"
+- If "y" or "Proceed": continue to Step 4
+- If "n" or "Modify": revise plan and ask again
 
-## Step 4: Iterative Search
+## Step 4: Construct Research Task
 
-Run 2-4 targeted searches. Start broad, then narrow.
+Build a task string for the researcher subagent. Include parameters as needed:
 
-**Query generation:**
-- Main query: {topic}
-- Comparative: {topic} vs alternatives
-- Technical: {topic} how it works
-- Recent: {topic} 2025 2026
-
-Use `web_search` for each. For strong results, use `web_fetch` to read full content.
-
-## Step 5: Collect and Organize
-
-For each relevant result, record:
 ```
-[{n}] Title | URL | Date: {YYYY-MM} | Type: {official/academic/community}
+Research {topic} depth:{depth} save_to_file:{path} local_context:{files}
 ```
 
-**Type classification:**
-- `official`: Official docs, standards, RFCs
-- `academic`: Papers, peer-reviewed research
-- `secondary`: Industry reports, analyses
-- `community`: Blogs, forums, Q&A
+**Parameters:**
+- `depth`: "quick" (1-2 searches), "detailed" (3-5 searches, default), "exhaustive" (5+ searches, auto-saves report)
+- `save_to_file`: Path to save full report (e.g., "{cwd}/research/{topic}-{YYYYMMDD}.md")
+- `report_directory`: Alternative directory for report (default: cwd)
+- `local_context`: Comma-separated files/directories to incorporate (e.g., "src/main.py,config.json")
 
-## Step 6: Conflict Detection
+## Step 5: Delegate to Researcher Subagent
 
-If sources disagree:
-1. Try to resolve (check dates, authority, context)
-2. If resolvable (e.g., one source outdated): Use the better source, note resolution
-3. If unresolved: Flag in both summary and report
+Use the `task` tool to delegate to the researcher subagent:
 
-**Simple resolution cases:**
-- Source A (2024) vs Source B (2021) → Prefer A, note B is outdated
-- Source A (official docs) vs Source B (forum opinion) → Prefer A
-- Source A (detailed) vs Source B (snippet only) → Use A
-
-## Step 7: Date Context
-
-Flag outdated sources based on topic type:
-
-| Topic Type | Outdated If | Flag Threshold |
-|------------|-------------|----------------|
-| JavaScript/Node/Web | > 1 year old | Flag if >12 months |
-| Python/Rust/Go | > 18 months old | Flag if >18 months |
-| Lisp/Functional | > 2 years old | Flag if >24 months |
-| Math/Algorithms/CS | > 3 years old | Flag if >36 months |
-
-Mark as: `(outdated: {source} from {date})`
-
-## Step 8: Generate Summary (Tier 1 - Always)
-
-Format:
+```python
+task(task="{constructed_task_string}", agent="researcher")
 ```
-## Summary: {topic}
 
-**Key Finding:** {one-sentence core insight}
+Wait for the researcher subagent to return JSON results.
+
+## Step 6: Present Results
+
+The researcher subagent will return JSON with:
+- `summary`: Key findings, recommendations, quick answer, open questions
+- `sources`: Cited sources with metadata (title, url, type, relevance)
+- `conflicts`: Any disagreements between sources with resolutions
+- `outdated_sources`: Flagged outdated information
+- `report_saved`: Path to saved report (if any)
+- `files_read`: Local files incorporated
+- `searches_performed`: Number of searches executed
+
+**Format the results for the user:**
+
+```markdown
+## Research Results: {topic}
+
+**Quick Answer:** {summary.quick_answer}
+
+**Key Findings:**
+{summary.key_findings.map(f => `- ${f}`).join('\n')}
+
+**Recommendations:**
+{summary.recommendations.map(r => `- ${r}`).join('\n')}
 
 **Sources:**
-- [1] {Title} - {main insight}
-- [2] {Title} - {supporting evidence}
-{...}
+{sources.map((s, i) => `- [${i+1}] ${s.title} (${s.type}, ${s.relevance}) - ${s.url}`).join('\n')}
 
-**Notable:**
-- {Conflict note if unresolved}
-- {Outdated source note if relevant}
+{conflicts.length > 0 ? `
+**Conflicts Detected:**
+${conflicts.map(c => `- ${c.disagreement}: ${c.resolution || 'Unresolved'}`).join('\n')}` : ''}
 
-**Quick Answer:** {actionable takeaway or next step if obvious}
+{outdated_sources.length > 0 ? `
+**Outdated Sources:**
+${outdated_sources.map(s => `- ${s.title} from ${s.date}`).join('\n')}` : ''}
+
+{report_saved ? `
+**Report saved to:** ${report_saved}` : ''}
 ```
 
-**Conflicts in summary:** Only if unresolved and significant. Example: "Sources disagree on performance impact [1][2]."
+## Direct Delegation (Simple Queries)
 
-## Step 9: Check for Full Report Request
+For simple queries that don't need interactive orchestration, users or the main agent can call researcher subagent directly:
 
-After displaying summary, check if user wants detailed report:
-- User says: "full report", "detailed", "save to file", "more detail"
-- Or explicitly: "/deep-research save"
-
-If yes: Proceed to Step 10. If no: Done.
-
-## Step 10: Generate Full Report (Tier 2 - On Request)
-
-Filename: `{cwd}/research/{topic-slug}-{YYYYMMDD}-{HHMMSS}.md`
-
-**Report location:** Reports are saved to the current working directory's `research/` folder by default unless user specifies an alternative path.
-
-Structure:
-```markdown
-# Research: {topic}
-**Generated:** {YYYY-MM-DD HH:MM:SS}
-**Scope:** {original request}
-
-## Quick Answer
-{ Repeat Tier 1 summary }
-
-## Research Plan
-{ Plan from Step 3 }
-
-## Findings
-
-### {Theme 1}
-{Analysis with citations [1][2]}
-
-### {Theme 2}
-{Analysis with citations [3][4]}
-
-## Conflicts
-- **Conflict 1:** Source A [1] says X, Source B [2] says Y. {Resolution or note that it's unresolved}.
-
-## Outdated Sources
-- [3] {Title} from {date} - outdated for this topic type
-
-## Sources
-[1] Title | URL | Date: {YYYY-MM} | Type: {type}
-[2] ...
+```python
+task(task="What is Mistral Vibe?", agent="researcher")
 ```
 
-Save to file, confirm: "Report saved to {cwd}/research/{filename}"
-
-## Quality Checks
-
-Before final output:
-- [ ] All claims have source citations
-- [ ] Conflicts are noted and resolved/flagged
-- [ ] Outdated sources are flagged
-- [ ] Summary is concise (3-7 bullet points max)
-- [ ] Filename is unique (date-stamped)
+This skill is optimized for **complex, multi-step research** that benefits from interactive clarification.
 
 ## Verification
 
 Test with:
-- [ ] `/deep-research` with no topic (should prompt)
-- [ ] `/deep-research <valid topic>` (should research and summarize)
-- [ ] `/deep-research` then request full report (should save to file with unique timestamp)
-- [ ] `/deep-research` with empty input (should re-prompt)
+- [ ] `/deep-research` with no topic (should prompt for topic)
+- [ ] `/deep-research <valid topic>` (should gather requirements, get approval, delegate, present results)
+- [ ] Broad topic (should ask for narrowing)
+- [ ] Request full report (should save report)
+
