@@ -42,6 +42,7 @@ enabled_skills = [
     "test-generator",
     "debugging",
     "git-workflow",
+    "web-search",
     "subagent",
     "subagent-creator",
 ]
