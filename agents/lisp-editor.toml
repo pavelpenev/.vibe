@@ -1,0 +1,21 @@
+agent_type = "subagent"
+display_name = "Lisp Editor"
+description = "Safely edits and repairs Common Lisp files using form-based extraction. Supports single edits, atomic batch operations, and file repair for unbalanced parentheses. NEVER uses search/replace. Validates parenthesis balance before and after all edits."
+safety = "neutral"
+system_prompt_id = "lisp-editor"
+enabled_tools = ["read_file", "write_file", "grep", "bash"]
+
+[tools.read_file]
+permission = "always"
+
+[tools.write_file]
+permission = "always"
+
+[tools.grep]
+permission = "always"
+
+[tools.bash]
+permission = "always"
+allow = [
+  "python3 /home/pav/.vibe/scripts/extract_lisp_forms.py"
+]

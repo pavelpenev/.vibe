@@ -31,6 +31,7 @@ enabled_agents = []
 disabled_agents = []
 installed_agents = [
     "code-reviewer",
+    "lisp-editor",
 ]
 default_agent = "default"
 enabled_skills = [
@@ -194,6 +195,7 @@ permission = "ask"
 allowlist = [
     "explore",
     "code-reviewer",
+    "lisp-editor",
 ]
 denylist = []
 sensitive_patterns = []
