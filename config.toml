@@ -29,7 +29,9 @@ enabled_tools = []
 disabled_tools = []
 enabled_agents = []
 disabled_agents = []
-installed_agents = ["code-reviewer"]
+installed_agents = [
+    "code-reviewer",
+]
 default_agent = "default"
 enabled_skills = [
     "skill-creator",
@@ -41,7 +43,7 @@ enabled_skills = [
     "debugging",
     "git-workflow",
     "subagent",
-    "subagent-creator"
+    "subagent-creator",
 ]
 disabled_skills = []
 enable_experimental_hooks = true
@@ -82,7 +84,7 @@ alias = "mistral-medium-3.5"
 temperature = 1.0
 input_price = 1.5
 output_price = 7.5
-thinking = "high"
+thinking = "max"
 auto_compact_threshold = 200000
 supports_images = true
 
@@ -360,16 +362,6 @@ exclude_patterns = [
 ]
 codeignore_file = ".vibeignore"
 
-[tools.read]
-permission = "always"
-allowlist = []
-denylist = []
-sensitive_patterns = [
-    "**/.env",
-    "**/.env.*",
-]
-max_read_bytes = 64000
-
 [tools.edit]
 permission = "ask"
 allowlist = []
@@ -379,3 +371,13 @@ sensitive_patterns = [
     "**/.env.*",
 ]
 fuzzy_threshold = 0.98
+
+[tools.read_file]
+permission = "always"
+allowlist = []
+denylist = []
+sensitive_patterns = [
+    "**/.env",
+    "**/.env.*",
+]
+max_read_bytes = 64000

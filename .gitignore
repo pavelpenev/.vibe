@@ -1,5 +1,6 @@
 .env
 logs/
+plans/
 cache.toml
 connector_bootstrap_cache.json
 vibehistory
