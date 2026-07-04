@@ -112,17 +112,17 @@ All subagents are configured in the `agents/` directory with TOML files and have
 
 ### Available Subagents
 
-| Name | Purpose | Model | Safety | Key Tools |
-|------|---------|-------|--------|-----------|
-| code-reviewer | Code quality review | Inherits | Safe | read_file, grep |
-| context-restorer | Post-compaction context recovery | Inherits | Safe | read_file, grep |
-| explorer | Project exploration | Inherits | Safe | read_file, grep, bash |
-| file-editor | Generic file editing | Inherits | Neutral | read_file, write_file, edit, grep |
-| finder | Pattern searching | mistral-small-4 | Safe | grep, bash |
-| lisp-editor | Lisp file editing with structure awareness | Inherits | Neutral | read_file, write_file, edit, grep, bash |
-| researcher | Technical research | Inherits | Safe | web_search, web_fetch, read_file, grep |
-| script-manager | Script creation and management | Inherits | Neutral | read_file, write_file, edit, bash |
-| summarizer | Document summarization | Inherits | Safe | read_file, grep |
+| Name             | Purpose                                    | Model           | Safety  | Key Tools                               |
+|------------------|--------------------------------------------|-----------------|---------|-----------------------------------------|
+| code-reviewer    | Code quality review                        | Inherits        | Safe    | read_file, grep                         |
+| context-restorer | Post-compaction context recovery           | Inherits        | Safe    | read_file, grep                         |
+| explorer         | Project exploration                        | Inherits        | Safe    | read_file, grep, bash                   |
+| file-editor      | Generic file editing                       | Inherits        | Neutral | read_file, write_file, edit, grep       |
+| finder           | Pattern searching                          | mistral-small-4 | Safe    | grep, bash                              |
+| lisp-editor      | Lisp file editing with structure awareness | Inherits        | Neutral | read_file, write_file, edit, grep, bash |
+| researcher       | Technical research                         | Inherits        | Safe    | web_search, web_fetch, read_file, grep  |
+| script-manager   | Script creation and management             | Inherits        | Neutral | read_file, write_file, edit, bash       |
+| summarizer       | Document summarization                     | Inherits        | Safe    | read_file, grep                         |
 
 ### Delegation Protocol
 
@@ -154,18 +154,18 @@ Skills provide structured workflows for complex, multi-step tasks. They can dele
 
 ### Available Skills
 
-| Skill | Purpose | Delegates To |
-|-------|---------|--------------|
-| auto-task | Multi-step task automation | Various |
-| code-review | Code quality analysis | code-reviewer |
-| debugging | Systematic debugging | Various |
-| deep-research | Research orchestration | researcher |
-| git-workflow | Git operations | None (direct tools) |
-| project-planner | Project planning | None (direct tools) |
-| skill-creator | Create new skills | None |
-| subagent-creator | Create new subagents | None |
-| test-generator | Generate unit tests | Various |
-| web-search | Enhanced web search | None |
+| Skill            | Purpose                    | Delegates To        |
+|------------------|----------------------------|---------------------|
+| auto-task        | Multi-step task automation | Various             |
+| code-review      | Code quality analysis      | code-reviewer       |
+| debugging        | Systematic debugging       | Various             |
+| deep-research    | Research orchestration     | researcher          |
+| git-workflow     | Git operations             | None (direct tools) |
+| project-planner  | Project planning           | None (direct tools) |
+| skill-creator    | Create new skills          | None                |
+| subagent-creator | Create new subagents       | None                |
+| test-generator   | Generate unit tests        | Various             |
+| web-search       | Enhanced web search        | None                |
 
 ### Skill vs Subagent
 
@@ -387,15 +387,15 @@ Potential additions:
 
 ### Common Commands
 
-| Task | Command |
-|------|---------|
-| Code review | `/code-review` or `task(task='review file.py', agent='code-reviewer')` |
-| Deep research | `/deep-research <topic>` |
-| Find pattern | `task(task='find pattern X', agent='finder')` |
-| Explore project | `task(task='explore /path/to/project', agent='explorer')` |
-| Edit Lisp file | `task(task='edit file.lisp: add function', agent='lisp-editor')` |
-| Summarize file | `task(task='summarize file.md', agent='summarizer')` |
-| Create script | `task(task='CREATE SCRIPT: description', agent='script-manager')` |
+| Task            | Command                                                                |
+|-----------------|------------------------------------------------------------------------|
+| Code review     | `/code-review` or `task(task='review file.py', agent='code-reviewer')` |
+| Deep research   | `/deep-research <topic>`                                               |
+| Find pattern    | `task(task='find pattern X', agent='finder')`                          |
+| Explore project | `task(task='explore /path/to/project', agent='explorer')`              |
+| Edit Lisp file  | `task(task='edit file.lisp: add function', agent='lisp-editor')`       |
+| Summarize file  | `task(task='summarize file.md', agent='summarizer')`                   |
+| Create script   | `task(task='CREATE SCRIPT: description', agent='script-manager')`      |
 
 ### AGENTS.md Dispatch Rules
 
