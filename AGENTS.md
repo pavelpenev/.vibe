@@ -28,6 +28,7 @@ Use the `task` tool to delegate focused tasks to specialized subagents when appr
 | `explorer` | Project explorer | Systematically explore project structure, read key files including AGENTS.md for project context |
 | `file-editor` | File editor | Batch file creation, modification, and deletion for Python, JSON, YAML, Markdown, TOML, and other text files (use lisp-editor for .lisp/.el/.asd files) |
 | `researcher` | Researcher | Perform technical research, return summary, optionally save report to current directory or specified path |
+| `summarizer` | Summarizer | Generate concise summaries of files and documents, complementing explorer's structural overview |
 
 ### When to Delegate
 - Task is well-defined and self-contained

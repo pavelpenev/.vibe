@@ -1,0 +1,12 @@
+agent_type = "subagent"
+display_name = "Summarizer"
+description = "Generate concise summaries of files and documents"
+safety = "safe"
+system_prompt_id = "summarizer"
+enabled_tools = ["read_file", "grep"]
+
+[tools.read_file]
+permission = "always"
+
+[tools.grep]
+permission = "always"
