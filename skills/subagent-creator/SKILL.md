@@ -201,16 +201,63 @@ Task: {task}
 3. Create the prompt file
 4. Inform user: "Created prompt file at {path}"
 
-### Step 6: Confirm and Test
+### Step 6: Update System Prompt Dispatch Rules
+
+**Purpose:** Automatically update the custom system prompt's delegation table so the main agent knows when to use this new subagent.
+
+**Check if custom system prompt is in use:**
+1. Use `read_file` to read `~/.vibe/config.toml`
+2. Extract `system_prompt_id` value
+3. If `system_prompt_id` == "cli" (default) → skip this step, inform user:
+   "Note: Using default system prompt. To enable auto-dispatch, create a custom system prompt and set system_prompt_id in config.toml"
+4. If custom prompt → proceed to update
+
+**Update delegation table in custom system prompt:**
+1. Identify the system prompt file: `~/.vibe/prompts/{system_prompt_id}.md`
+2. Use `read_file` to read the current content
+3. Create backup: use `write_file` to copy to `~/.vibe/prompts/{system_prompt_id}-backup-{YYYYMMDD}-{HHMMSS}.md`
+4. **Derive delegation triggers from subagent purpose/description:**
+   - Extract key action verbs (review, search, create, edit, explore, etc.)
+   - Extract key nouns (code, files, patterns, scripts, etc.)
+   - Generate 2-3 concrete example trigger phrases
+   - Examples:
+     - Purpose: "Reviews code for quality and security issues" → Triggers: "Review this code", "Check for bugs", "Audit security"
+     - Purpose: "Search for patterns across files" → Triggers: "Find usages of X", "Search for pattern Y", "Where is Z used"
+     - Purpose: "Create and manage scripts" → Triggers: "Write a script", "Create helper.py", "Update script"
+5. **Generate new table row:**
+   ```markdown
+   | [Task description derived from purpose] | `{name}` | [Trigger 1], [Trigger 2], [Trigger 3] |
+   ```
+   Example: `| Code review and security auditing | `code-reviewer` | "Review this code", "Check for bugs", "Audit security" |`
+6. Find the delegation table in the prompt (look for the line containing "| If the request involves... | YOU MUST delegate to... | Example triggers |")
+7. Find the end of the table (next line starting with `|` that has different content, or the end of the table marker)
+8. Insert the new row before the end of the table
+9. Use `edit` to add the new row to the system prompt file
+10. Validate the table markdown formatting is correct by reading the modified file
+
+**If update fails or custom prompt not found:**
+- Inform user: "Could not update system prompt dispatch rules. Please manually add to {system_prompt_file}:"
+  ```markdown
+  | [Task description] | `{name}` | [Trigger examples] |
+  ```
+- Continue with subagent creation (this is NOT blocking)
+
+**If update succeeds:**
+- Inform user: "Updated {system_prompt_file} dispatch rules to include {name}"
+
+**Required tools:** `read_file`, `write_file`, `edit`
+
+### Step 7: Confirm and Test
 
 After creation:
 1. Display the created TOML content
 2. Display the prompt content (if created)
-3. Suggest testing:
+3. Display the dispatch rule update status
+4. Suggest testing:
    ```
    Test your new subagent with: vibe -p "task(task='your task here', agent='{name}')"
    ```
-4. Ask: "Does this configuration look correct? (y/n/Edit)"
+5. Ask: "Does this configuration look correct? (y/n/Edit)"
    - If "Edit": return to Step 2
    - If "n": delete files and cancel
    - If "y": confirm success and **update AGENTS.md**
@@ -220,7 +267,7 @@ After creation:
      ```
      - Inform user: "Updated AGENTS.md with new subagent entry"
 
-### Step 7: Output
+### Step 8: Output
 
 **Success Output:**
 ```markdown
@@ -231,12 +278,15 @@ After creation:
 **Safety Level:** {safety_level}
 **Enabled Tools:** {tools_list}
 
+**Dispatch Rule Status:** {updated/skipped/failed - details}
+
 **TOML Configuration:**
 ```toml
 {content}
 ```
 
 **Next Steps:**
+- Reload config for changes to take effect
 - Test: `vibe -p "task(task='test task', agent='{name}')"`
 - Use: The main agent can now delegate tasks using this subagent
 - Modify: Edit {file_path} to adjust configuration
@@ -323,6 +373,7 @@ Test with:
 - [ ] Creating a write-enabled subagent
 - [ ] Creating a subagent with custom prompt
 - [ ] Attempting to create duplicate subagent (should warn)
+- [ ] Verify dispatch rules are updated in system prompt
 
 ## Red Flags
 
@@ -331,3 +382,4 @@ Warn user about:
 - Using `permission = "always"` for bash tool without allow/deny lists
 - Creating subagents with overly broad tool access
 - Using `agent_type = "agent"` when they meant `subagent`
+- Dispatch rules update failing silently
