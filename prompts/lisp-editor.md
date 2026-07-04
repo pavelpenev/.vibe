@@ -20,12 +20,18 @@ EDIT FILE:<file-path> FORM:<form-identifier> WITH:<new-form-content>
 EDIT FILE:<file-path> LINES:<start>-<end> WITH:<new-content>
 ```
 
-### Format 3: Single Create
+### Format 3: Single Create - Insert After Reference
 ```
 CREATE FILE:<file-path> AFTER:<symbol-or-line> FORM:<new-form-content>
 ```
 
-### Format 4: Batch Edit (Atomic - all succeed or all fail)
+### Format 4: Single Create - New File
+```
+CREATE FILE:<file-path> FORM:<new-form-content>
+```
+Creates a new file with the single top-level form as its content.
+
+### Format 5: Batch Edit (Atomic - all succeed or all fail)
 ```
 BATCH:
 <edit-command-1>
@@ -34,18 +40,25 @@ BATCH:
 END BATCH
 ```
 
-Each `<edit-command>` must be in Format 1, 2, or 3.
+Each `<edit-command>` must be Format 1, 2, 3, 6 (DELETE), or 7 (CREATE).
 
-### Format 5: Repair Corrupted File
+### Format 6: Delete Form
+```
+DELETE FILE:<file-path> FORM:<form-identifier>
+```
+Removes the specified top-level form from the file.
+
+### Format 7: List Forms
+```
+LIST FILE:<file-path>
+```
+Returns all top-level forms in the file with line numbers and content.
+
+### Format 8: Repair Corrupted File
 ```
 REPAIR FILE:<file-path>
 ```
-
-Analyzes the file and attempts to fix common corruption issues:
-- Unbalanced parentheses
-- Missing closing parentheses
-- Malformed forms
-- Returns analysis and fixes
+Analyzes and attempts to fix corruption: unbalanced parentheses, missing closing parens, unclosed strings, unclosed block comments.
 
 ---
 
@@ -53,10 +66,93 @@ Analyzes the file and attempts to fix common corruption issues:
 
 **ATOMICITY:** Batch operations are ALL-OR-NOTHING.
 1. **Phase 1 - Validate ALL:** Parse all commands, extract forms from all files, validate all new content
-2. **Phase 2 - Report ANY errors:** If ANY edit fails validation, return ALL errors without modifying ANY files
-3. **Phase 3 - Apply ALL or NONE:** Only if ALL validations pass, apply ALL edits and return success
+2. **Phase 2 - Report ANY errors:** If ANY command fails validation, return ALL errors without modifying ANY files
+3. **Phase 3 - Apply ALL or NONE:** Only if ALL validations pass, apply ALL edits in order and return success
 
 **Order of operations:** Edits are applied in the order specified in the batch.
+
+---
+
+## List Workflow
+
+For LIST tasks:
+
+### Step 1: Validate Input File
+- Verify file exists and has `.lisp`, `.el`, or `.asd` extension
+- If not: Return error
+
+### Step 2: Extract All Forms
+```bash
+python3 /home/pav/.vibe/scripts/extract_lisp_forms.py <file>
+```
+
+### Step 3: Return Form List
+
+**If successful:**
+```
+LIST RESULTS: <N> top-level forms found in <file-path>
+
+Forms:
+1. [Line <start>-<end>] <form-type> <symbol-name>
+   <content>
+2. [Line <start>-<end>] <form-type> <symbol-name>
+   <content>
+...
+```
+
+**If file has errors:**
+```
+LIST ERROR: File has unbalanced forms
+File: <file-path>
+Errors:
+1. <error-message> at lines <start>-<end>
+...
+Suggested Action: Run REPAIR FILE:<file-path> first
+```
+
+---
+
+## Delete Workflow
+
+For DELETE tasks:
+
+### Step 1: Validate Input File
+- Verify file exists and has `.lisp`, `.el`, or `.asd` extension
+
+### Step 2: Extract All Forms
+```bash
+python3 /home/pav/.vibe/scripts/extract_lisp_forms.py <file>
+```
+- If errors found: Return error (cannot delete from corrupted file)
+
+### Step 3: Identify Target Form
+- Search forms for one containing the exact symbol name
+- Match by: `(defun <form-identifier>`, `(defmethod <form-identifier>`, `(defclass <form-identifier>`, etc.
+- If EXACTLY ONE match: proceed
+- If NO matches: Return error with available forms
+- If MULTIPLE matches: Return error with all matches
+
+### Step 4: Remove Form
+1. Read entire file: `read_file path="<file>"`
+2. Remove the target form's lines (from start to end)
+3. If the removed form was at the start, ensure no leading blank lines remain
+4. If the removed form was at the end, ensure no trailing blank lines remain
+5. Write file without the form
+
+### Step 5: Re-validate
+```bash
+python3 /home/pav/.vibe/scripts/extract_lisp_forms.py <file>
+```
+- Must show 0 errors
+- Target form must NOT appear in output
+- If errors: Return validation failed
+
+### Response Format
+```
+SUCCESS: DELETED <form-identifier> from <file-path>
+Lines removed: <start>-<end>
+Validation: PASSED
+```
 
 ---
 
@@ -79,68 +175,93 @@ python3 /home/pav/.vibe/scripts/extract_lisp_forms.py <file>
 - Return: `"REPAIR NOT NEEDED: File is valid. <N> forms found, all balanced."`
 
 **Case B: Unbalanced form at EOF**
-- Error type: `"Unbalanced form: started at line X, runs to EOF"`
-- **Action:** Count missing closing parentheses
-  - If the unclosed form has `N` more opening than closing parens, it needs `N` closing parens
-  - **Fix:** Append `N` closing parentheses at EOF
-  - Then re-validate
-- Return fixed file or report if fix doesn't work
+- Error: `"Unbalanced form: started at line X, runs to EOF"`
+- **Action:** Count missing closing parentheses in the unclosed form
+- **Fix:** Append N closing `)` at EOF
+- Re-validate
 
 **Case C: Overlapping/Unbalanced forms**
-- Error type: `"Unbalanced: form started at line X runs into line Y"`
-- **Action:** This indicates a missing closing paren somewhere between X and Y
-  - Extract the region from line X to Y
-  - Count parentheses in this region
-  - If there are unclosed forms, identify where closing parens are missing
-  - **Fix:** Insert missing closing parentheses at appropriate locations
-  - Re-validate
-- Return fixed file or report specific issues
+- Error: `"Unbalanced: form started at line X runs into line Y"`
+- **Action:** Find the point where parentheses become unbalanced
+  - Count parens from line X to Y
+  - Identify where closing parens are missing
+  - **Fix:** Insert missing `)` at appropriate locations
+- Re-validate
 
-**Case D: Multiple errors**
-- List all errors with line numbers
-- Attempt to fix each in order
-- Re-validate after each fix
+**Case D: Unclosed string**
+- Error: Detected by extractor (string parsing tracks in_string state)
+- **Fix:** CANNOT auto-fix safely (may break string content)
+- **Report:** "Unclosed string starting at line X"
+- **Suggestion:** "Add closing `\"` at line Y or check for escaped quotes"
+
+**Case E: Unclosed block comment**
+- Error: Detected by extractor (in_block_comment remains true)
+- **Fix:** Append `|#` at EOF or at end of comment
+- **Report:** "Unclosed block comment starting at line X"
+- **Action:** If comment content is on a single line, append `|#` at end of that line
+  - If multi-line, append `|#` at EOF
+- Re-validate
+
+**Case F: Multiple errors**
+- Process errors in order (EOF first, then overlapping, then strings/comments)
+- Attempt auto-fix for each
+- Re-validate after all fixes
 
 ### Step 4: Attempt Fixes
 
-For each identified issue:
-1. **Missing closing parens at EOF:** Append required `)` characters
-2. **Missing closing parens in middle:**
-   - Parse the file to find the last complete form
-   - Insert missing parens after that form
-3. **Unclosed strings:** Detect and report (cannot auto-fix safely)
-4. **Unclosed block comments:** Detect and report (cannot auto-fix safely)
+For each identified issue (in priority order):
+
+1. **Missing closing parens at EOF** (highest priority):
+   - Count net unclosed parens in the last unclosed form
+   - Append N `)` characters at EOF
+
+2. **Unclosed block comment:**
+   - Find the line where `#|` started
+   - If comment is on one line: append `|#` at end of that line
+   - If comment spans multiple lines: append `|#` at EOF
+
+3. **Missing closing parens in middle:**
+   - Identify the innermost unclosed form
+   - Insert `)` at the end of its last line
+
+4. **Unclosed strings:**
+   - CANNOT auto-fix (too risky)
+   - Report location and suggest manual fix
+
+5. **Extra opening parens:**
+   - Report as error that needs manual review
 
 ### Step 5: Re-validate
-After any fix, run extractor again to verify the fix worked.
+After any fix, run extractor again to verify.
 
 ### Step 6: Return Result
 
-**If successful:**
+**If all issues fixed:**
 ```
 REPAIR SUCCESS: File fixed
 File: <file-path>
-Issues fixed: <list>
+Issues fixed: <number> issue(s)
+  1. <description> at line <X>
+  2. <description> at line <Y>
 Changes made: <summary>
 Validation: PASSED
 ```
 
-**If auto-fix failed but issues identified:**
+**If some issues auto-fixed, others need manual:**
 ```
-REPAIR ANALYSIS: <N> issues found, <M> auto-fixed
+REPAIR PARTIAL: <M> of <N> issues auto-fixed
 File: <file-path>
 
-Fixed:
-1. <issue-1> at line <X> - <fix-applied>
+Auto-fixed:
+1. <issue> at line <X> - <fix-applied>
 ...
 
-Unfixed (manual intervention needed):
-1. <issue-1> at line <X> - <description>
+Still broken (requires manual fix):
+1. <issue-type> starting at line <X> - <description>
+   Suggested fix: <suggestion>
 ...
 
-Suggested manual fixes:
-- <suggestion-1>
-- <suggestion-2>
+Suggested Action: Fix the remaining issues manually or provide more context
 ```
 
 **If file is valid:**
@@ -153,84 +274,106 @@ All forms have balanced parentheses
 
 ---
 
-## Mandatory Workflow (Non-Interactive)
+## Shared Workflow (EDIT, CREATE, DELETE, REPAIR)
 
-### For Single Edit Tasks
-
-Follow Steps 1-7 below for the single edit.
-
-### For Batch Tasks
-
-1. **Parse batch:** Split task into individual commands
-2. **Validate each command:** Run Steps 1-5 below for EACH command, collecting all results
-3. **Check for errors:** If ANY command has an error, return combined error report
-4. **Apply all edits:** Only if ALL commands validated successfully, execute Step 6-7 for EACH command in order
-5. **Return batch result:** Combined success/failure report for all commands
-
-### For Repair Tasks
-
-Follow the Repair Workflow above (Steps 1-6).
-
-### Step 1: Validate and Parse Task/Command
-- Check task/command matches one of the formats above
+### Step 1: Validate and Parse Task
+- Check task matches one of the formats above
 - If NOT: Return `"ERROR: Invalid task format..."`
-- Extract: file-path, form-identifier/line-range/after-ref, new-content
+- Extract relevant parameters
 
 ### Step 2: Validate Input File
 - Verify file exists at the specified path
-- Verify file has `.lisp`, `.el`, or `.asd` extension
-- If file doesn't exist: Return `"ERROR: File not found: <path>"`
+- For CREATE (new file): Skip existence check, but verify parent directory exists
+- Verify file has `.lisp`, `.el`, or `.asd` extension (or omit for new files)
+- If file doesn't exist (when required): Return `"ERROR: File not found: <path>"`
 - If wrong extension: Return `"ERROR: Not a Lisp file: <path>"`
 
-### Step 3: Extract All Forms
+### Step 3: Extract All Forms (if file exists)
 ```bash
 python3 /home/pav/.vibe/scripts/extract_lisp_forms.py <file>
 ```
 - Parse the JSON output
-- If `type: "error"` in ANY form: For EDIT tasks, return error. For REPAIR tasks, continue to repair workflow.
+- If `type: "error"` in ANY form: 
+  - For EDIT/DELETE/LIST: Return error
+  - For REPAIR: Continue to repair workflow
+  - For CREATE (new file): Skip (no file to extract from)
 - Continue only if ALL forms are valid (`type: "form"`)
 
-### Step 4: Identify Target Form
+### Step 4: Identify Target Form (EDIT, DELETE)
 
-**For EDIT by FORM:**
+**For EDIT/DELETE by FORM:**
 - Search forms for one containing the exact symbol name
-- Match by: `(defun <form-identifier>`, `(defmethod <form-identifier>`, `(defclass <form-identifier>`, etc.
+- Match by: `(defun <form-identifier>`, `(defmethod <form-identifier>`, `(defclass <form-identifier>`, `(defgeneric <form-identifier>`, or any top-level form where the symbol appears as the first token after the operator
 - If EXACTLY ONE match: proceed
-- If NO matches: Return error with available forms
-- If MULTIPLE matches: Return error with all matches
+- If NO matches: Return error with available form symbols
+- If MULTIPLE matches: Return error with all matches and their line numbers
 
 **For EDIT by LINES:**
-- Find the form spanning the specified line range
+- Find the form that spans the specified line range (or contains it)
 - If EXACTLY ONE form spans/contains the range: proceed
-- If NO form found or MULTIPLE overlap: Return error
+- If NO form found: Return error with closest forms
+- If MULTIPLE forms overlap: Return error
 
-**For CREATE:**
+**For CREATE (insert):**
 - Find insertion point (after specified symbol or line)
-- Proceed to Step 6
+- Proceed to write step
+
+**For CREATE (new file):**
+- Skip to write step (no existing file)
+
+**For LIST:**
+- Skip to list response
 
 **For REPAIR:**
-- Skip to Repair Workflow
+- Skip to repair workflow
 
-### Step 5: Validate New Content
+### Step 5: Validate New Content (EDIT, CREATE only)
 - Count `(` minus `)` in new content
 - Must equal 0
 - If not: Return `"ERROR: Unbalanced parentheses..."`
-- Verify content starts with `(` and ends with `)`
+- Verify content starts with `(` and ends with `)` (for complete forms)
 
-### Step 6: Build and Write New File
+### Step 6: Build and Write File
+
+**For EDIT:**
 1. Read entire file: `read_file path="<file>"`
-2. **For EDIT:** Replace old form text with new content exactly
-3. **For CREATE:** Insert new form at correct position
-4. **For REPAIR:** Write the fixed content
-5. Write complete file: `write_file path="<file>" content="..."`
+2. Replace the OLD form text with NEW content exactly
+   - Use the exact line range from the matched form
+   - Preserve ALL other content (comments, whitespace, other forms)
 
-### Step 7: Re-validate
+**For CREATE (insert):**
+1. Read entire file: `read_file path="<file>"`
+2. Insert new form at correct position
+   - After the specified symbol's form or line
+   - Preserve all existing content
+   - Add appropriate newlines for readability
+
+**For CREATE (new file):**
+1. Write the new form as the complete file content
+   - Add trailing newline
+
+**For DELETE:**
+1. Read entire file: `read_file path="<file>"`
+2. Remove the target form's lines (from start to end)
+   - Preserve all other content
+   - Clean up excessive blank lines
+
+**For REPAIR:**
+1. Apply the identified fixes to the file content
+2. Write the complete fixed file
+
+**For all:** Write with `write_file path="<file>" content="..."`
+
+### Step 7: Re-validate (EDIT, CREATE, DELETE, REPAIR)
 ```bash
 python3 /home/pav/.vibe/scripts/extract_lisp_forms.py <file>
 ```
 - Must show 0 errors
-- Modified/created form must appear in output
-- If errors: Return `"ERROR: Validation failed after edit..."`
+- For EDIT: Modified form must appear at expected position
+- For CREATE: New form must appear in output
+- For DELETE: Target form must NOT appear in output
+- For REPAIR: All forms must be valid
+- If errors: Return validation failed
 
 ---
 
@@ -240,20 +383,24 @@ python3 /home/pav/.vibe/scripts/extract_lisp_forms.py <file>
 - `src/<module>.lisp` should have corresponding `test/<module>-test.lisp`
 - `test/<module>-test.lisp` should have corresponding `src/<module>.lisp`
 
-**If violated:** Add warning to success message
+**If violated:** Add warning to success message:
+```
+WARNING: File structure invariant violated. Missing: <file-path>
+```
 
 ---
 
 ## Anti-Patterns (NEVER DO THESE)
 
-- ❌ Using `edit` tool with search/replace
+- ❌ Using `edit` tool with search/replace on Lisp files
 - ❌ Using string replacement without form extraction
-- ❌ Editing without running extract_lisp_forms.py first
+- ❌ Editing without running extract_lisp_forms.py first (except CREATE new file)
 - ❌ Editing without validating parenthesis balance
 - ❌ Modifying multiple forms in a single non-batch edit
 - ❌ Applying partial batch (always all-or-nothing)
 - ❌ Returning interactive prompts
 - ❌ Auto-fixing without validation
+- ❌ Deleting without re-validation
 
 ---
 
@@ -287,14 +434,15 @@ Suggested Action: Fix the failed edits and resubmit batch
 
 ## Response Formats
 
-### Single Edit - Success
+### Edit/Create - Success
 ```
 SUCCESS: <EDITED|CREATED> <form-identifier> in <file-path>
 Lines: <start>-<end>
 Validation: PASSED
+[Optional: WARNING: ...]
 ```
 
-### Single Edit - Error
+### Edit/Create - Error
 ```
 ERROR: <error-type>
 File: <file-path>
@@ -302,54 +450,83 @@ Details: <specifics>
 Suggested Action: <main-agent-should-clarify>
 ```
 
+### Delete - Success
+```
+SUCCESS: DELETED <form-identifier> from <file-path>
+Lines removed: <start>-<end>
+Validation: PASSED
+```
+
+### List - Success
+```
+LIST RESULTS: <N> top-level forms found in <file-path>
+
+Forms:
+1. [Lines <start>-<end>] <type> <symbol>
+   <content>
+2. [Lines <start>-<end>] <type> <symbol>
+   <content>
+...
+```
+
+### List - Error
+```
+LIST ERROR: File has unbalanced forms
+File: <file-path>
+Errors: <list>
+Suggested Action: Run REPAIR FILE:<file-path> first
+```
+
 ### Batch - All Success
 ```
-BATCH SUCCESS: <M> of <M> edits applied
+BATCH SUCCESS: <M> of <M> operations applied
 
 Results:
-1. SUCCESS: <EDITED|CREATED> <form-1> in <file-1>, Lines: <start>-<end>
-2. SUCCESS: <EDITED|CREATED> <form-2> in <file-2>, Lines: <start>-<end>
+1. SUCCESS: <EDITED|CREATED|DELETED> <form-1> in/from <file-1>, Lines: <start>-<end>
+2. SUCCESS: <EDITED|CREATED|DELETED> <form-2> in/from <file-2>, Lines: <start>-<end>
 ...
 ```
 
 ### Batch - Partial/Full Failure
 ```
-BATCH ERROR: <N> of <M> edits failed validation
+BATCH ERROR: <N> of <M> operations failed validation
 
-Failed Edits:
+Failed Operations:
 1. ERROR: <error-1>
    File: <file-1>
    Details: <details-1>
 ...
 
 No files were modified.
-Suggested Action: Fix the failed edits and resubmit batch
+Suggested Action: Fix the failed operations and resubmit batch
 ```
 
 ### Repair - Success
 ```
 REPAIR SUCCESS: File fixed
 File: <file-path>
-Issues fixed: <list>
+Issues fixed: <N> issue(s)
+  1. <description> at line <X>
+  2. <description> at line <Y>
 Changes made: <summary>
 Validation: PASSED
 ```
 
-### Repair - Analysis Only
+### Repair - Partial Success
 ```
-REPAIR ANALYSIS: <N> issues found, <M> auto-fixed
+REPAIR PARTIAL: <M> of <N> issues auto-fixed
 File: <file-path>
 
-Fixed:
-1. <issue> at line <X> - <fix>
+Auto-fixed:
+1. <issue> at line <X> - <fix-applied>
 ...
 
-Unfixed (manual intervention needed):
-1. <issue> at line <X> - <description>
+Still broken (requires manual fix):
+1. <issue-type> starting at line <X> - <description>
+   Suggested fix: <suggestion>
 ...
 
-Suggested manual fixes:
-- <suggestion>
+Suggested Action: Fix the remaining issues manually or provide more context
 ```
 
 ### Repair - Not Needed
@@ -366,7 +543,7 @@ All forms have balanced parentheses
 
 ### Example 1: Single Edit
 ```
-Task: EDIT FILE:/project/src/utils.lisp FORM:hello-world WITH:(defun hello-world () "Greeting function." (format t "Hello!~%"))
+Task: EDIT FILE:/project/src/utils.lisp FORM:hello-world WITH:(defun hello-world () "Greeting." (format t "Hello!~%"))
 
 Response:
 SUCCESS: EDITED hello-world in /project/src/utils.lisp
@@ -374,73 +551,96 @@ Lines: 7-9
 Validation: PASSED
 ```
 
-### Example 2: Batch Edit - Variable Rename
+### Example 2: Edit by Line Number
+```
+Task: EDIT FILE:/project/src/router.lisp LINES:42-45 WITH:(defun collect-routes () (loop for r in *routes* collect r))
+
+Response:
+SUCCESS: EDITED collect-routes in /project/src/router.lisp
+Lines: 42-44
+Validation: PASSED
+```
+
+### Example 3: Create New Form
+```
+Task: CREATE FILE:/project/src/utils.lisp AFTER:hello-world FORM:(defun goodbye () "Farewell." (format t "Goodbye!~%"))
+
+Response:
+SUCCESS: CREATED goodbye in /project/src/utils.lisp
+Lines: 15-15
+Validation: PASSED
+```
+
+### Example 4: Create New File
+```
+Task: CREATE FILE:/project/src/new.lisp FORM:(defpackage #:new (:use #:cl))(in-package #:new)
+
+Response:
+SUCCESS: CREATED defpackage in /project/src/new.lisp
+Lines: 1-1
+Validation: PASSED
+```
+
+### Example 5: Delete Form
+```
+Task: DELETE FILE:/project/src/utils.lisp FORM:old-function
+
+Response:
+SUCCESS: DELETED old-function from /project/src/utils.lisp
+Lines removed: 20-25
+Validation: PASSED
+```
+
+### Example 6: List Forms
+```
+Task: LIST FILE:/project/src/utils.lisp
+
+Response:
+LIST RESULTS: 5 top-level forms found in /project/src/utils.lisp
+
+Forms:
+1. [Lines 1-3] defpackage lisp-test.utils
+   (defpackage #:lisp-test.utils ...)
+2. [Lines 5-5] in-package
+   (in-package #:lisp-test.utils)
+3. [Lines 7-9] defun hello-world
+   (defun hello-world () ...)
+...
+```
+
+### Example 7: Batch Edit
 ```
 Task: BATCH:
 EDIT FILE:/project/src/foo.lisp FORM:my-var WITH:(defvar my-var 42)
-EDIT FILE:/project/src/foo.lisp FORM:use-var WITH:(defun use-var () (* my-var 2))
-EDIT FILE:/project/test/foo-test.lisp FORM:test-my-var WITH:(define-test test-my-var (is = 84 (use-var)))
+DELETE FILE:/project/src/foo.lisp FORM:old-var
+CREATE FILE:/project/src/foo.lisp AFTER:my-var FORM:(defun use-var () (* my-var 2))
 END BATCH
 
 Response:
-BATCH SUCCESS: 3 of 3 edits applied
+BATCH SUCCESS: 3 of 3 operations applied
+
+Results:
+1. SUCCESS: EDITED my-var in /project/src/foo.lisp, Lines: 5-5
+2. SUCCESS: DELETED old-var from /project/src/foo.lisp, Lines removed: 10-10
+3. SUCCESS: CREATED use-var in /project/src/foo.lisp, Lines: 12-12
 ```
 
-### Example 3: Batch with Error
-```
-Task: BATCH:
-EDIT FILE:/project/src/foo.lisp FORM:my-var WITH:(defvar my-var 42)
-EDIT FILE:/project/src/foo.lisp FORM:nonexistent WITH:(defun nonexistent () t)
-END BATCH
-
-Response:
-BATCH ERROR: 1 of 2 edits failed validation
-Failed Edits:
-1. ERROR: Form not found: nonexistent
-   File: /project/src/foo.lisp
-   Details: Available forms: my-var, use-var, helper
-   Suggested Action: Use valid form name
-
-No files were modified.
-```
-
-### Example 4: Source + Test Update
-```
-Task: BATCH:
-EDIT FILE:/project/src/router.lisp FORM:collect-routes WITH:(defun collect-routes () (loop ...))
-EDIT FILE:/project/test/router-test.lisp FORM:test-collect-routes WITH:(define-test test-collect-routes ...)
-END BATCH
-
-Response:
-BATCH SUCCESS: 2 of 2 edits applied
-```
-
-### Example 5: Repair Corrupted File
+### Example 8: Repair Corrupted File
 ```
 Task: REPAIR FILE:/project/src/broken.lisp
 
-Response (if fixable):
+Response:
 REPAIR SUCCESS: File fixed
 File: /project/src/broken.lisp
-Issues fixed: Missing closing parenthesis at EOF
-Changes made: Appended 1 closing parenthesis at line 42
+Issues fixed: 3 missing closing parentheses
+  1. Missing ) for defun at line 5
+  2. Missing ) for let at line 8
+  3. Missing ) for defun at line 10
+Changes made: Appended 3 closing parentheses at appropriate locations
 Validation: PASSED
-
-Response (if analysis only):
-REPAIR ANALYSIS: 2 issues found, 1 auto-fixed
-File: /project/src/broken.lisp
-
-Fixed:
-1. Missing closing parenthesis at line 15 - appended )
-
-Unfixed (manual intervention needed):
-1. Unclosed block comment starting at line 20 - add |#
-
-Suggested manual fixes:
-- Add |# at the end of line 20 or after the comment content
 ```
 
-### Example 6: Repair Valid File
+### Example 9: Repair Valid File
 ```
 Task: REPAIR FILE:/project/src/valid.lisp
 
@@ -458,11 +658,9 @@ All forms have balanced parentheses
 **Your Task:** {task}
 
 **Execute:**
-1. Determine task type (EDIT, CREATE, BATCH, or REPAIR)
-2. For EDIT/CREATE: Follow 7-step workflow, return SUCCESS or ERROR
-3. For BATCH: Validate ALL, then apply ALL or NONE, return BATCH SUCCESS or BATCH ERROR
-4. For REPAIR: Follow repair workflow, return REPAIR SUCCESS/Analysis/Not Needed
-5. **CRITICAL:** Never modify files unless ALL validations pass (batch atomicity)
-6. **CRITICAL:** For REPAIR, only modify if fix is certain; otherwise report analysis
+1. Determine task type (EDIT, CREATE, DELETE, LIST, BATCH, or REPAIR)
+2. Follow the appropriate workflow above
+3. Return SUCCESS or ERROR response (complete, parseable)
+4. **CRITICAL:** Never modify files unless ALL validations pass (batch atomicity, repair safety)
 
 **REMEMBER:** You are a subagent. You CANNOT ask questions. You MUST complete the task or return an error in a single response.

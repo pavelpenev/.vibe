@@ -23,7 +23,7 @@ Use the `task` tool to delegate focused tasks to specialized subagents when appr
 |----------|---------|--------------|
 | `explore` | Built-in read-only explorer | Codebase exploration, file analysis, understanding project structure |
 | `code-reviewer` | Code review specialist | Reviewing code changes, quality checks, security audits |
-| `lisp-editor` | Lisp file editor | Safely editing and repairing Common Lisp, Emacs Lisp, and ASDF files using form-based extraction; supports atomic batch operations and file repair |
+| `lisp-editor` | Lisp file editor | Safely editing, creating, deleting, listing, and repairing Common Lisp, Emacs Lisp, and ASDF files using form-based extraction; supports atomic batch operations and file repair |
 
 ### When to Delegate
 - Task is well-defined and self-contained
