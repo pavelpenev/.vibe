@@ -14,42 +14,42 @@ This setup implements a **delegation-based architecture** where the main agent d
 ## Architecture
 
 ```
-┌─────────────────────────────────────────────────────────────┐
-│                    Main Agent (mistral-medium-3.5)              │
-│  - Orchestrates tasks                                              │
-│  - Delegates to subagents when appropriate                       │
-│  - Uses skills for complex multi-step workflows                  │
-│  - Uses custom system prompt (system-prompt-local.md)          │
-└─────────────────────────────────────────────────────────────┘
-                              │
-                              ▼
-┌─────────────────────────────────────────────────────────────┐
-│                    Skills Layer                                  │
-│  - auto-task: Multi-step task automation                        │
-│  - code-review: Code quality analysis                            │
-│  - debugging: Systematic bug diagnosis                           │
-│  - deep-research: Front-end for researcher subagent             │
-│  - git-workflow: Git operations assistance                      │
-│  - project-planner: Project planning and tracking                │
-│  - skill-creator: Create new skills                              │
-│  - subagent-creator: Create new subagents                       │
-│  - test-generator: Generate unit tests                            │
-│  - web-search: Enhanced web search                                │
-└─────────────────────────────────────────────────────────────┘
-                              │
-                              ▼
-┌─────────────────────────────────────────────────────────────┐
-│                    Subagents Layer                                │
-│  - code-reviewer: Code review specialist (read-only)             │
-│  - context-restorer: Post-compaction context recovery         │
-│  - explorer: Project exploration and file analysis               │
-│  - file-editor: Generic file editing (non-Lisp)                  │
-│  - finder: Pattern searching across files                       │
-│  - lisp-editor: Lisp file specialist with structure awareness   │
-│  - researcher: Technical research execution                       │
-│  - script-manager: Script creation and management               │
-│  - summarizer: Document and code summarization                  │
-└─────────────────────────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────────────────┐
+│                    Main Agent (mistral-medium-3.5)                 │
+│  - Orchestrates tasks                                             │
+│  - Delegates to subagents when appropriate                        │
+│  - Uses skills for complex multi-step workflows                   │
+│  - Uses custom system prompt (system-prompt-local.md)             │
+└─────────────────────────────────────────────────────────────────┘
+                                      │
+                                      ▼
+┌─────────────────────────────────────────────────────────────────┐
+│                          Skills Layer                               │
+│  - auto-task: Multi-step task automation                         │
+│  - code-review: Code quality analysis                             │
+│  - debugging: Systematic bug diagnosis                            │
+│  - deep-research: Front-end for researcher subagent              │
+│  - git-workflow: Git operations assistance                       │
+│  - project-planner: Project planning and tracking                 │
+│  - skill-creator: Create new skills                               │
+│  - subagent-creator: Create new subagents                        │
+│  - test-generator: Generate unit tests                             │
+│  - web-search: Enhanced web search                                 │
+└─────────────────────────────────────────────────────────────────┘
+                                      │
+                                      ▼
+┌─────────────────────────────────────────────────────────────────┐
+│                         Subagents Layer                             │
+│  - code-reviewer: Code review specialist (read-only)              │
+│  - context-restorer: Post-compaction context recovery          │
+│  - explorer: Project exploration and file analysis                │
+│  - file-editor: Generic file editing (non-Lisp)                   │
+│  - finder: Pattern searching across files                        │
+│  - lisp-editor: Lisp file specialist with structure awareness    │
+│  - researcher: Technical research execution                        │
+│  - script-manager: Script creation and management                │
+│  - summarizer: Document and code summarization                   │
+└─────────────────────────────────────────────────────────────────┘
 ```
 
 ## Directory Structure
