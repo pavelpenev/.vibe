@@ -38,6 +38,11 @@ Use the `task` tool: `task(task="<clear task description>", agent="<subagent-nam
 - Each subagent uses its own TOML-defined permissions
 - Subagents return text-only results
 
+**Vibe's Subagent Pattern:**
+- Orchestrator-Worker model: Main agent delegates to specialized subagents
+- Non-nesting: Subagents cannot spawn other subagents
+- Delegation via `task` tool only
+
 ---
 
 ## Plans
