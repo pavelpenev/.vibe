@@ -198,6 +198,7 @@ allowlist = [
     "lisp-editor",
     "finder",
     "explorer",
+    "file-editor",
 ]
 denylist = []
 sensitive_patterns = []

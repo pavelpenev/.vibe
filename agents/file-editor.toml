@@ -1,0 +1,27 @@
+agent_type = "subagent"
+display_name = "File Editor"
+description = "Batch file creation, modification, and deletion for text-based files (Python, JSON, YAML, Markdown, etc.)"
+safety = "neutral"
+active_model = "mistral-small-4"
+system_prompt_id = "file-editor"
+enabled_tools = ["read_file", "write_file", "edit", "bash"]
+
+[tools.read_file]
+permission = "always"
+
+[tools.write_file]
+permission = "always"
+
+[tools.edit]
+permission = "always"
+
+[tools.bash]
+permission = "ask"
+allow = [
+  "mv",
+  "cp",
+  "rm",
+  "touch",
+  "mkdir -p",
+  "wc -l"
+]
