@@ -3,7 +3,7 @@ name: skill-creator
 description: Use to create or update Skills for Mistral Vibe CLI. Guides through defining, researching, creating, enabling, and testing skills in ~/.vibe/skills/.
 user-invocable: true
 allowed-tools:
-  - read
+  - read_file
   - write_file
   - edit
   - bash
@@ -95,10 +95,10 @@ Ask the user in order (skip if already provided):
 
 6. **What tools should it have access to?**
    - Present common tool sets:
-     - **Research/Read-only**: `read`, `grep`
-     - **Code Analysis**: `read`, `grep`, `bash`
-     - **Code Generation**: `read`, `write_file`, `edit`, `grep`
-     - **Full Access**: `read`, `write_file`, `edit`, `grep`, `bash`, `web_search`
+     - **Research/Read-only**: `read_file`, `grep`
+     - **Code Analysis**: `read_file`, `grep`, `bash`
+     - **Code Generation**: `read_file`, `write_file`, `edit`, `grep`
+     - **Full Access**: `read_file`, `write_file`, `edit`, `grep`, `bash`, `web_search`
    - Allow custom list
    - Validate: all tools are valid Mistral Vibe tools
 
@@ -155,7 +155,7 @@ Before creating files, validate:
 
 3. **Tool validation:**
    - All specified tools exist in Mistral Vibe
-   - Common valid tools: `read`, `write_file`, `edit`, `bash`, `grep`, `web_search`, `task`
+   - Common valid tools: `read_file`, `write_file`, `edit`, `bash`, `grep`, `web_search`, `web_fetch`, `task`, `todo`, `ask_user_question`, `skill`
 
 4. **Description validation:**
    - Not empty
@@ -215,7 +215,7 @@ name: python-review
 description: Review Python code for PEP 8 compliance and common anti-patterns
 user-invocable: true
 allowed-tools:
-  - read
+  - read_file
   - grep
   - bash
 ---
@@ -377,7 +377,7 @@ name: minimal-skill
 description: Performs a single focused task
 user-invocable: true
 allowed-tools:
-  - read
+  - read_file
 ---
 
 # Minimal Skill
@@ -403,7 +403,7 @@ description: Research information about specific topics
 user-invocable: true
 allowed-tools:
   - web_search
-  - read
+  - read_file
 ---
 
 # Research Helper
@@ -431,7 +431,7 @@ name: code-generator
 description: Generate boilerplate code for common patterns
 user-invocable: true
 allowed-tools:
-  - read
+  - read_file
   - write_file
   - edit
   - grep

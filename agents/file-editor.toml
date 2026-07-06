@@ -17,10 +17,9 @@ permission = "always"
 
 [tools.bash]
 permission = "ask"
-allow = [
+allowlist = [
   "mv",
   "cp",
-  "rm",
   "touch",
   "mkdir -p",
   "wc -l"

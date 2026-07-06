@@ -1,9 +1,9 @@
 ---
 name: auto-task
-description: Use for multi-step task requests requiring sequential actions, such as "implement X", "find out what causes bug Y", or "tell me how feature X is currently implemented". Handles planning, user confirmation, autonomous execution, and result summary. Uses code-review to assess its own output.
+description: Explicit /auto-task invocation only - do NOT trigger on natural language. Structured Plan-and-Execute workflow for small, self-contained multi-step tasks - planning, user confirmation, sequential execution, result summary. Uses code-review to assess its own output.
 user-invocable: true
 allowed-tools:
-  - read
+  - read_file
   - write_file
   - edit
   - bash
@@ -23,18 +23,10 @@ Handles small, self-contained multi-step tasks with autonomous execution. The sk
 
 ## When to Use
 
-**Trigger phrases:**
-- "implement X"
-- "find out what causes bug Y"
-- "tell me how feature X is currently implemented"
-- "write a script to..."
-- "create a..."
-- "modify..."
-- "update..."
-- "refactor this..."
-- "set up..."
-- "configure..."
-- Any request requiring multiple sequential actions
+**Only on explicit invocation:**
+- `/auto-task <task description>`
+
+Do NOT activate on natural-language requests like "implement X" or "create a..." - those follow the normal agent workflow. This skill is an opt-in scaffold the user reaches for deliberately.
 
 ## When NOT to Use
 

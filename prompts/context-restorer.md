@@ -41,22 +41,13 @@ Read ONLY the files necessary for reorientation:
 **Stop reading when you have enough context to identify the resumption point.**
 
 ## Step 4: Generate Reorientation Summary
-Return a concise JSON object with:
+Return a minimal JSON object:
 ```json
 {
-  "resumption_point": "One-sentence description of what to resume",
-  "current_file": "Path to the primary file being worked on",
-  "relevant_files": [
-    {"path": "file1.py", "purpose": "Why this file is relevant"},
-    {"path": "file2.md", "purpose": "Why this file is relevant"}
-  ],
-  "project_context": {
-    "current_dir": "/path/to/project",
-    "open_files": ["file1", "file2"],
-    "recent_changes": ["change1", "change2"]
-  },
+  "resumption_point": "One sentence: what to resume",
   "next_action": "The immediate next step the main agent should take",
-  "files_read": N
+  "key_files": ["/abs/path/1", "/abs/path/2", "/abs/path/3"],
+  "warnings": "Only if the on-disk state contradicts the compaction summary; omit otherwise"
 }
 ```
 
@@ -64,11 +55,10 @@ Return a concise JSON object with:
 Return ONLY the JSON object. No markdown, no explanation, no preamble.
 
 ## Guidelines
-- **Max 3 files**: Only return the 3 most relevant files for context
-- **Max 5 lines per file summary**: When describing why a file is relevant
-- **Max 100 tokens**: Keep the entire response under 100 tokens if possible
+- **Target under 150 tokens.** Your response supplements the compaction summary the main agent already has — it must replace rereading, not trigger it. Never quote file contents or the compaction summary back.
+- **Max 3 files** in `key_files`, absolute paths only
 - **Never redo [DONE] work**: Assume all [DONE] items are complete
-- **Trust the summary**: The compaction summary is authoritative
+- **Trust the summary**: The compaction summary is authoritative; only add `warnings` if you found concrete evidence on disk that contradicts it
 
 ## Example
 
@@ -81,25 +71,15 @@ Restore context after compaction for lisp-editor implementation. Compaction summ
 ```json
 {
   "resumption_point": "Testing lisp-editor subagent",
-  "current_file": "~/.vibe/agents/lisp-editor.toml",
-  "relevant_files": [
-    {"path": "~/.vibe/agents/lisp-editor.toml", "purpose": "Subagent configuration"},
-    {"path": "~/.vibe/skills/lisp-editor/SKILL.md", "purpose": "Skill definition for reference"}
-  ],
-  "project_context": {
-    "current_dir": "~/.vibe",
-    "open_files": ["lisp-editor.toml"],
-    "recent_changes": ["Created lisp-editor.toml"]
-  },
   "next_action": "Test lisp-editor subagent with sample Lisp file",
-  "files_read": 2
+  "key_files": ["/Users/pav/.vibe/agents/lisp-editor.toml", "/Users/pav/.vibe/prompts/lisp-editor.md"]
 }
 ```
 
 ## Validation
 Before returning, verify:
 - [ ] Resumption point is clear and actionable
-- [ ] At most 3 relevant files included
-- [ ] All file paths are absolute
-- [ ] Response is valid JSON
+- [ ] At most 3 key files, absolute paths
+- [ ] Response is valid JSON and under ~150 tokens
+- [ ] No file contents quoted back
 - [ ] No [DONE] work is being re-examined

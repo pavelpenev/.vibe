@@ -16,10 +16,9 @@ permission = "always"
 
 [tools.bash]
 permission = "ask"
-allow = [
+allowlist = [
   "chmod +x",
   "which",
   "ls -la",
-  "mkdir -p",
-  "rm"
+  "mkdir -p"
 ]

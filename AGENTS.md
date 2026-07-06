@@ -1,247 +1,82 @@
 # Global Agent Instructions
 
----
-
 ## Core Principles
 
-- **Clarify first**: If in doubt, ask the user for clarification
-- **Minimal scope**: Do only what was explicitly requested
-- **Use tools wisely**: Prefer `web_search` or asking the user over guesswork
-- **Avoid retry loops**: If repeatedly failing, stop and either check documentation, use `web_search`, or ask for help
-- **Leverage skills**: Use available skills and subagents to achieve tasks
-- **Handle interruptions**: If interrupted by compaction mid-task, **DO NOT CONTINUE** - delegate to context-restorer subagent to restore minimal context and present next steps
+- **Clarify first**: if genuinely in doubt, ask the user (see Clarification Protocol below)
+- **Use tools wisely**: prefer `web_search` or asking the user over guesswork
+- **Leverage skills**: use available skills and subagents (the delegation table is in the system prompt)
+- **Handle interruptions**: if interrupted by compaction mid-task, **DO NOT CONTINUE** — delegate to `context-restorer`, then resume directly from its `next_action`. Do not reread files already covered by the compaction summary or the restorer's output; reread a specific file only at the moment you are about to edit it.
 
 ---
 
-## Subagent Delegation
+## Subagent Mechanics
 
-**PREFER DELEGATION:** For any file operation (create, modify, delete), search task, or research task, check if a subagent can handle it first. Only use direct tools (`read_file`, `write_file`, `edit`, `grep`, `bash`) if:
-- No suitable subagent exists, OR
-- The operation is a single read for investigation, OR
-- You need the file content in your context for immediate decision-making
+- Syntax: `task(task="<clear task description>", agent="<subagent-name>")`
+- Session-level permissions do NOT propagate to subagents (Issue #390); each uses its own TOML permissions
+- Subagents return **plain text only**, cannot ask questions, and cannot spawn other subagents
+- Provide all needed context in the task description — the subagent sees nothing else
 
-This keeps the main agent's context clean and leverages specialized capabilities. Default to delegation, not direct tool use.
+**Chaining:** subagents return text; read the result and write the concrete details (paths, symbols) into the next task string yourself.
 
-### Available Subagents
+```
+# Step 1: find
+task(task="Search for feature X, return file paths with line numbers", agent="finder")
+# -> returns matching files, e.g. src/foo.py, src/bar.py
 
-| Subagent | Purpose | Delegate For |
-|----------|---------|--------------|
-| `explore` | Built-in read-only explorer | Codebase exploration, file analysis, understanding project structure |
-| `code-reviewer` | Code review specialist | Reviewing code changes, quality checks, security audits |
-| `lisp-editor` | Lisp file editor | Safely editing, creating, deleting, listing, and repairing Common Lisp, Emacs Lisp, and ASDF files using form-based extraction; supports atomic batch operations and file repair |
-| `finder` | Pattern searcher | Search for patterns, tokens, or code constructs across files using grep/find/bash commands |
-| `explorer` | Project explorer | Systematically explore project structure, read key files including AGENTS.md for project context |
-| `file-editor` | File editor | Batch file creation, modification, and deletion for Python, JSON, YAML, Markdown, TOML, and other text files (use lisp-editor for .lisp/.el/.asd files) |
-| `researcher` | Researcher | Perform technical research, return summary, optionally save report to current directory or specified path |
-| `summarizer` | Summarizer | Generate concise summaries of files and documents, complementing explorer's structural overview |
-| `script-manager` | Script Manager | Create, maintain, document, and test reusable helper scripts in a centralized library |
-| `context-restorer` | Context Restorer | Post-compaction reorientation, restores minimal project context for resumption |
-
-### When to Delegate
-**Always delegate for:**
-- File creation, modification, or deletion (use `file-editor` or `lisp-editor`)
-- Pattern searching across files (use `finder`)
-- Project exploration (use `explorer`)
-- Script management (use `script-manager`)
-- Technical research (use `researcher`)
-- Document summarization (use `summarizer`)
-
-**Also delegate when:**
-- Task is well-defined and self-contained
-- Subagent has the specific expertise needed
-- Task doesn't require user interaction
-- Main agent's context would benefit from offloading
-- After context compaction (use `context-restorer`)
-
-### How to Delegate
-Use the `task` tool: `task(task="<clear task description>", agent="<subagent-name>")`
-
-### Routing Guide (Main Agent)
-
-| You need to... | Use... | Example |
-|---------------|--------|---------|
-| Read a single file | `read_file` directly | `read_file(path="..."` |
-| Read multiple files | `explorer` | `task(task="Explore project", agent="explorer")` |
-| Create/modify files | `file-editor` | `task(task="CREATE file.py", agent="file-editor")` |
-| Edit Lisp files | `lisp-editor` | `task(task="Edit file.lisp", agent="lisp-editor")` |
-| Search for patterns | `finder` | `task(task="Find usages of X", agent="finder")` |
-| Create scripts | `script-manager` | `task(task="CREATE SCRIPT...", agent="script-manager")` |
-| Research something | `researcher` | `task(task="Research topic", agent="researcher")` |
-| Summarize content | `summarizer` | `task(task="Summarize file", agent="summarizer")` |
-| Restore context | `context-restorer` | `task(task="Restore context after compaction", agent="context-restorer")` |
-
-### Important Notes
-- Session-level permissions do NOT propagate to subagents (Issue #390)
-- Each subagent uses its own TOML-defined permissions
-- Subagents return text-only results
-
-**Vibe's Subagent Pattern:**
-- Orchestrator-Worker model: Main agent delegates to specialized subagents
-- Non-nesting: Subagents cannot spawn other subagents
-- Delegation via `task` tool only
-
-### Subagent Orchestration Patterns
-
-**Chaining subagents for complex tasks:** The main agent should chain subagent calls to build context efficiently.
-
-**Example: "I want to work on feature X"**
-```python
-# Step 1: Find relevant files
-finder_results = task(task='Search for feature X in project', agent='finder')
-
-# Step 2: Explore those files and project structure  
-explorer_results = task(
-  task=f'Explore project and read files: {finder_results["matches"]}',
-  agent='explorer'
-)
-
-# Main agent now has full context to implement feature X
+# Step 2: pass those concrete paths onward
+task(task="Explore the project; read these files in particular: src/foo.py, src/bar.py", agent="explorer")
 ```
 
-**Example: "Review changes to module Y"**
-```python
-# Find all files related to module Y
-finder_results = task(task='Search for module Y references', agent='finder')
+Rule of thumb: finder for *what exists*, explorer for *what it means*, then act in main context.
 
-# Read and summarize those files
-explorer_results = task(
-  task=f'Read and summarize: {finder_results["matches"]}',
-  agent='explorer'
-)
-
-# Main agent now understands module Y's structure
-```
-
-**Rule of thumb:** Use finder for *what exists*, explorer for *what it means*, then act in main context.
-
-### Research Workflow (deep-research skill + researcher subagent)
-
-The `deep-research` skill and `researcher` subagent work together for research tasks:
-
-**Case A: Simple Query** (direct delegation)
-```python
-task(task="What is Mistral Vibe?", agent="researcher")
-```
-→ researcher subagent performs search and returns summary
-
-**Case B: Complex Research** (interactive orchestration)
-```python
-# deep-research skill:
-# 1. Gathers requirements from context
-# 2. Asks clarifying questions
-# 3. Constructs research query
-# 4. Delegates to researcher subagent
-skill("deep-research")
-
-# Which internally does:
-task(task="Research {topic} depth:detailed save_to_file:{path}", agent="researcher")
-```
-→ deep-research skill handles interaction, researcher subagent executes
-
-**Architecture:**
-```
-User → deep-research skill (interactive front-end) → researcher subagent (execution) → Results
-```
-
-The `researcher` subagent:
-- Uses parent model (mistral-medium-3.5) for smarter research
-- Can save reports to current directory or specified path
-- Always returns structured JSON summary
-- Handles web searches, source evaluation, conflict detection
+**Research:** simple lookup → delegate straight to `researcher`. Complex/multi-step research → use the `deep-research` skill (interactive front-end that gathers requirements, then delegates to `researcher`). Researcher returns structured JSON and can save reports (`save_to_file:` / `report_directory:` parameters).
 
 ---
 
 ## Plans
 
-Projects may have a `PLAN.md` file containing project status and tasks (created by the `project-planner` skill). This is crucial context. **Important**: The plan is for reference only - it is NOT permission to begin implementing. You must ask the user what to work on. If the user says "let's start working on task X" or "implement item Y", they want to discuss the approach, not have you execute it with insufficient context.
-
-When in doubt, always ask.
+Projects may have a `PLAN.md` (maintained by the `project-planner` skill) — crucial context, but for reference only. It is NOT permission to start implementing. If the user says "let's start on task X", they want to discuss the approach first. When in doubt, ask.
 
 ---
 
-## Clarification & Confirmation Protocol
+## Clarification Protocol
 
-### When to Clarify
-**Trigger on ambiguous requests containing:**
-- Pronouns without clear referent: "it", "that", "this", "them", "those"
-- Vague descriptors: "the file", "the code", "the issue", "the problem", "that thing"
-- Multiple possible actions: "fix it", "update it", "change it", "check it"
-- Implicit references: "as discussed", "like before", "the usual"
+**Trigger when the referent is genuinely unresolvable from context:**
+- A pronoun or vague descriptor ("it", "the file", "the bug") with no clear antecedent in the conversation or recent tool activity
+- Multiple plausible targets, and the choice materially changes the outcome
+- References to things never established this session: "as discussed", "like before", "the usual"
 
-**Action:**
-1. Identify the ambiguity
-2. List concrete options from context (files in current directory or referenced in conversation)
-3. Ask for clarification:
-   ```
-   Which [file/target] do you mean? Options:
-   - [A] path/to/file_a.py
-   - [B] path/to/file_b.py
-   - [C] path/to/file_c.py
-   
-   Or specify: [user input]
-   ```
-4. **DO NOT** make assumptions or guess
-5. **DO NOT** proceed until user provides explicit clarification
+If the referent is clear from context (the file just read or edited, the error just shown), proceed without asking.
+
+When triggered: list the concrete options from context and ask one question. Do not guess; do not proceed until answered.
 
 **Examples:**
-- User: "fix the code" → Agent: "Which file? I see: main.py, utils.py, config.py. Which one?"
-- User: "update it" → Agent: "Update which file? Please specify the full path."
-- User: "the bug in the parser" → Agent: "Which parser? Options: json_parser.py, xml_parser.py, csv_parser.py"
+- Opening message "fix the code", no file discussed → "Which file? I see: main.py, utils.py, config.py."
+- "now fix it" right after reviewing parser.py → proceed with parser.py, no question
 
 ---
 
-### Before High-Risk Actions
-**Requires confirmation for actions that:**
-- Modify files (`write_file`, `edit`)
-- Run destructive commands (`rm`, `mv`, `git reset`, `git push`)
-- Create new resources
-- Delete existing resources
+## Before High-Risk Actions
 
-**Process:**
-1. State your intent: `"I will [specific action] on [specific target] to achieve [specific outcome]."`
-2. List assumptions: `"Assumptions: - [assumption 1] - [assumption 2]"`
-3. Request confirmation: `"Confirm? [Y/N/Modify]"`
-4. **Wait for explicit user confirmation** (Y/yes)
-5. If user says "N", "no", or "Modify": STOP and revise plan
+Single-file writes and routine commands are covered by the tool permission system — do not add a second confirmation for an edit the user just asked for.
 
-**Exemptions (no confirmation needed):**
-- Pure read-only operations (`read_file`, `grep`, `bash ls`, `git status`)
-- Single file reads for investigation
-- Previously confirmed actions in the same turn
+**State intent + confirm first** for actions that:
+- Span many files or restructure the repo
+- Delete existing files or resources
+- Rewrite git history or publish (`git reset --hard`, force-push, `git push`)
+- Are hard to reverse and not obvious from a single permission prompt
+
+Format: "I will [action] on [target] to achieve [outcome]. Confirm? [Y/N]" — then wait.
 
 ---
 
-### After Corrections
-**Trigger:** User corrects you with "no", "not", "wrong", "incorrect", "I meant", "actually", or similar.
+## After Corrections
 
-**Action:**
-1. **IMMEDIATE STOP**: Halt all current tool operations
-2. **ACKNOWLEDGE**: "Understood. I was incorrect about [specific misunderstanding]."
-3. **BACKTRACK**: If you modified state or created files, ask: "Should I undo [action]?" or "Should I delete [file]?"
-4. **CLARIFY**: "To confirm, you want: [corrected understanding]?"
+When the user corrects you ("no", "wrong", "I meant", "actually"):
 
-**Example:**
-```
-User: write the data to the file
-Agent: [writes to wrong file]
-User: no, wrong file - use output.csv not temp.csv
-Agent: Understood. I was incorrect about the target file.
-       Should I delete temp.csv?
-User: yes
-Agent: [deletes temp.csv]
-       To confirm, you want me to write the data to output.csv?
-```
+1. **STOP** current tool operations
+2. Acknowledge the specific misunderstanding
+3. If you modified state, ask whether to undo it ("Should I delete temp.csv?")
+4. Confirm the corrected understanding before proceeding
 
----
-
-## Uncertainty Handling
-
-When unsure about a response:
-- **State uncertainty explicitly**
-- **Ask targeted clarification questions**
-- **Avoid guesswork**
-
-You may optionally prefix responses with confidence levels (e.g., `[CONFIDENCE: 80%]`), but this is a guideline, not mandatory.
-
----
-
+When unsure about anything else: state the uncertainty explicitly and ask a targeted question rather than guessing.

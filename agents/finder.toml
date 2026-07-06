@@ -10,18 +10,12 @@ enabled_tools = ["grep", "bash"]
 permission = "always"
 
 [tools.bash]
-permission = "always"
-allow = [
+permission = "ask"
+allowlist = [
   "grep",
-  "grep -r",
-  "grep -rn",
-  "grep -ri",
-  "grep -n",
-  "grep -i",
-  "find",
-  "find . -name",
-  "find . -type f",
-  "find . -iname",
   "rg",
-  "ag"
+  "ag",
+  "find . -name",
+  "find . -iname",
+  "find . -type",
 ]

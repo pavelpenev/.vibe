@@ -76,7 +76,6 @@ Subagents Layer
 │   └── summarizer.toml
 ├── prompts/                     # System prompts for subagents
 │   ├── code-reviewer.md
-│   ├── compact-hybrid.md
 │   ├── compact-v3.md
 │   ├── context-restorer.md
 │   ├── explorer.md
@@ -112,17 +111,19 @@ All subagents are configured in the `agents/` directory with TOML files and have
 
 ### Available Subagents
 
-| Name             | Purpose                                    | Model           | Safety  | Key Tools                               |
-|------------------|--------------------------------------------|-----------------|---------|-----------------------------------------|
-| code-reviewer    | Code quality review                        | Inherits        | Safe    | read_file, grep                         |
-| context-restorer | Post-compaction context recovery           | Inherits        | Safe    | read_file, grep                         |
-| explorer         | Project exploration                        | Inherits        | Safe    | read_file, grep, bash                   |
-| file-editor      | Generic file editing                       | Inherits        | Neutral | read_file, write_file, edit, grep       |
-| finder           | Pattern searching                          | mistral-small-4 | Safe    | grep, bash                              |
-| lisp-editor      | Lisp file editing with structure awareness | Inherits        | Neutral | read_file, write_file, edit, grep, bash |
-| researcher       | Technical research                         | Inherits        | Safe    | web_search, web_fetch, read_file, grep  |
-| script-manager   | Script creation and management             | Inherits        | Neutral | read_file, write_file, edit, bash       |
-| summarizer       | Document summarization                     | Inherits        | Safe    | read_file, grep                         |
+| Name             | Purpose                                    | Model           | Safety  | Key Tools                                          |
+|------------------|--------------------------------------------|-----------------|---------|----------------------------------------------------|
+| code-reviewer    | Code quality review                        | Inherits        | Safe    | read_file, grep, bash (read-only git)              |
+| context-restorer | Post-compaction context recovery           | Inherits        | Safe    | read_file, grep, bash (read-only git)              |
+| explorer         | Project exploration                        | mistral-small-4 | Safe    | read_file, grep, bash                              |
+| file-editor      | Generic file editing                       | mistral-small-4 | Neutral | read_file, write_file, edit, bash                  |
+| finder           | Pattern searching                          | mistral-small-4 | Safe    | grep, bash (grep/rg/ag/find only)                  |
+| lisp-editor      | Lisp file editing with structure awareness | Inherits        | Neutral | read_file, write_file, grep, bash (no edit tool)   |
+| researcher       | Technical research                         | Inherits        | Safe    | web_search, web_fetch, read_file, grep, write_file |
+| script-manager   | Script creation and management             | Inherits        | Neutral | read_file, write_file, edit, bash                  |
+| summarizer       | Document summarization                     | mistral-small-4 | Safe    | read_file, grep                                    |
+
+Safety levels are a visual hint only (border color in the CLI) - they do not enforce anything. Enforcement comes from `enabled_tools` and per-tool permissions.
 
 ### Delegation Protocol
 
@@ -287,11 +288,10 @@ Use the `/subagent-creator` skill:
 
 Or manually:
 
-1. Create TOML file in `~/.vibe/agents/<name>.toml`
+1. Create TOML file in `~/.vibe/agents/<name>.toml` (discovery is automatic - no registration in config.toml needed; `installed_agents` only gates built-in profiles like `lean`)
 2. Create prompt file in `~/.vibe/prompts/<name>.md`
-3. Add to config.toml `installed_agents` list
-4. Add to `tools.task` allowlist
-5. Update AGENTS.md with usage instructions
+3. Add to the `[tools.task]` allowlist in config.toml so delegation doesn't prompt
+4. Update AGENTS.md with usage instructions
 
 ## Creating New Skills
 
@@ -310,14 +310,16 @@ Test new skills with their trigger commands.
 ## Troubleshooting
 
 ### Subagent not found
-- Check agent is in `installed_agents` in config.toml
-- Check TOML file exists in agents/ directory
+- Check TOML file exists in agents/ directory (discovery is automatic)
+- Check the agent is not matched by `disabled_agents` in config.toml
 - Check for typos in agent name
 
 ### Permission denied
 - Subagents need explicit tool permissions in their TOML file
 - Session-level permissions don't propagate to subagents
 - Check `[tools.<tool>]` permission settings
+- The auto-approve list key is `allowlist`, NOT `allow` - unknown keys are silently ignored (pydantic `extra="allow"`), so a misnamed key means every command prompts
+- Bash allowlist entries are prefix matches: `"rm"` approves `rm -rf x` too - list the narrowest prefix that covers legitimate use
 
 ### Subagent not being used
 - Main agent might not be following delegation instructions
@@ -349,10 +351,9 @@ git commit -m "Add/update <component>"
 ### Removing Subagents
 1. Remove TOML file from agents/
 2. Remove prompt file from prompts/
-3. Remove from config.toml `installed_agents`
-4. Remove from `tools.task` allowlist
-5. Update AGENTS.md
-6. Commit changes
+3. Remove from `tools.task` allowlist
+4. Update AGENTS.md
+5. Commit changes
 
 ## Security
 
@@ -397,9 +398,9 @@ Potential additions:
 | Summarize file  | `task(task='summarize file.md', agent='summarizer')`                   |
 | Create script   | `task(task='CREATE SCRIPT: description', agent='script-manager')`      |
 
-### AGENTS.md Dispatch Rules
+### Dispatch Rules
 
-The main agent follows these dispatch rules (in order):
+The delegation table lives in `prompts/system-prompt-local.md` (single source of truth); `AGENTS.md` covers subagent mechanics, clarification, and correction protocols. The main agent dispatches in this order:
 
 1. Check if request matches subagent purpose → Delegate to subagent
 2. Check if request matches skill trigger → Use skill
@@ -412,5 +413,5 @@ For issues or questions about this configuration, check the git history or AGENT
 
 ---
 
-*Last updated: 2026-07-04*
-*Configuration version: 1.0*
+*Last updated: 2026-07-06*
+*Configuration version: 1.1*

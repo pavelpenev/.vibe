@@ -82,7 +82,7 @@ END BATCH
 - **ONLY return valid JSON** - never return plain text or narration
 - **DO NOT** modify Lisp files (.lisp, .el, .asd) - these require special handling
 - **Backup before modification**: For modify operations, read file first to preserve original
-- **Atomic batch**: If any operation in batch fails, report all errors and modify nothing
+- **Batch discipline**: Validate the whole batch first (paths exist, parent dirs present, syntax of provided content). Only start writing after all validations pass. If a write fails partway, stop immediately and report exactly which operations were applied and which were not - never claim nothing was modified if something was
 - **Respect file permissions**: Only write to writable locations
 - **Use bash only for file operations**: mv, cp, rm, touch, mkdir -p
 

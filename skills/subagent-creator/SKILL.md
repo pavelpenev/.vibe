@@ -1,6 +1,14 @@
 ---
 name: subagent-creator
 description: Create subagent TOML configuration files with proper permissions and settings
+user-invocable: true
+allowed-tools:
+  - read_file
+  - write_file
+  - edit
+  - bash
+  - grep
+  - ask_user_question
 ---
 
 # Subagent Creator
@@ -229,7 +237,7 @@ Task: {task}
    | [Task description derived from purpose] | `{name}` | [Trigger 1], [Trigger 2], [Trigger 3] |
    ```
    Example: `| Code review and security auditing | `code-reviewer` | "Review this code", "Check for bugs", "Audit security" |`
-6. Find the delegation table in the prompt (look for the line containing "| If the request involves... | YOU MUST delegate to... | Example triggers |")
+6. Find the delegation table in the prompt (look for the line containing "| Request involves... | Delegate to | Example triggers |")
 7. Find the end of the table (next line starting with `|` that has different content, or the end of the table marker)
 8. Insert the new row before the end of the table
 9. Use `edit` to add the new row to the system prompt file
@@ -260,12 +268,13 @@ After creation:
 5. Ask: "Does this configuration look correct? (y/n/Edit)"
    - If "Edit": return to Step 2
    - If "n": delete files and cancel
-   - If "y": confirm success and **update AGENTS.md**
-     - Append the new subagent to the Available Subagents table:
-     ```markdown
-     | `{name}` | {display_name} | {delegate_for} |
+   - If "y": confirm success and **add the agent to the `[tools.task]` allowlist** in `~/.vibe/config.toml` so delegating to it does not prompt:
+     ```toml
+     [tools.task]
+     allowlist = [..., "{name}"]
      ```
-     - Inform user: "Updated AGENTS.md with new subagent entry"
+     - Inform user: "Added {name} to the task allowlist"
+     - Note: the delegation table in the system prompt (updated in Step 6) is the single registry - AGENTS.md does not list subagents
 
 ### Step 8: Output
 

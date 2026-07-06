@@ -1,6 +1,12 @@
 ---
 name: git-workflow
 description: Git workflow assistance - commit messages, branch management, safe rebase/squash operations
+user-invocable: true
+allowed-tools:
+  - bash
+  - read_file
+  - grep
+  - ask_user_question
 ---
 
 # Git Workflow
@@ -9,14 +15,13 @@ Provides conversation-driven git workflow assistance with safety-first operation
 
 ## Tools
 
-Available: `bash`, `read_file`, `grep`, `edit`, `write_file`, `ask_user_question`
+Available: `bash`, `read_file`, `grep`, `ask_user_question`
 
 **Usage Guidelines:**
-- `bash`: Ask before running (allow: git commands, safe file operations)
+- `bash`: Ask before running (allow: git commands)
 - `read_file`: Always for reading files
 - `grep`: Always for searching
-- `edit`: Ask before modifying files
-- `write_file`: Ask before creating files
+- File edits (e.g., conflict resolution) are done by the main agent's normal editing flow, not by this skill
 
 ## When to Use
 
@@ -267,7 +272,7 @@ git merge-base HEAD origin/<target-branch>
 
 **Example Output:**
 ```
-⚠️  WARNING: Branch 'feature/user-auth' exists on remote.
+WARNING: Branch 'feature/user-auth' exists on remote.
 
 Rebasing will rewrite history visible to others.
 This can cause issues for collaborators who have based work on this branch.
@@ -309,14 +314,18 @@ Need help resolving this conflict? (y/n)
    - Ask: "Squash all commits since branch from main? (y/n)"
    - Or: "Squash last N commits?" with interactive selection
 
-4. Guide through interactive rebase for squashing:
+4. Squash non-interactively (`git rebase -i` requires an editor, which is not available in this environment):
    ```bash
-   git rebase -i HEAD~N  # Where N is number of commits to squash
+   git reset --soft HEAD~N   # N = number of commits to squash; work stays staged
+   git commit -m "<combined message>"
    ```
-   - Provide the rebase todo list with squash instructions
-   - Explain how to edit the todo list
+   - Generate the combined commit message from the squashed commits (Conventional Commits format)
+   - Present the message for approval before committing
+   - `git reset --soft` is non-destructive: all changes remain staged; recover via `git reflog` if needed
 
-5. After squashing, prompt to update commit message
+5. For selective squash or reordering (keeping some commits, squashing others): this genuinely requires an interactive editor, which the agent cannot drive. Hand it off to the user:
+   "Selective squashing needs an interactive rebase. Run this yourself in a terminal: `git rebase -i HEAD~N`, mark commits to combine as `squash`, save and close. Tell me when done and I'll verify the result."
+
 6. After successful squash, prompt to force push (with warning)
 
 **Example Output:**
@@ -332,19 +341,18 @@ Squash all 5 commits into one? (y/n/Specific range)
 
 [User selects: y]
 
-Interactive rebase todo list (edit this in your editor):
+Combined commit message:
 
-pick p4q5r6s docs: update API documentation
-squash m1n2o3p refactor: extract auth constants
-squash h7i8j9k fix: typo in email template
-squash d4e5f6g feat: add password reset email service
-squash a1b2c3d feat: add password reset endpoint
+feat: add password reset flow
 
-1. Save and close the editor
-2. A new editor will open for the combined commit message
-3. Save and close to complete squashing
+Adds reset endpoint, email service, and supporting refactors.
 
-Need me to explain any step in detail? (y/n)
+Squash with this message? (y/n/Edit)
+
+[User selects: y]
+
+Running: git reset --soft HEAD~5 && git commit -m "..."
+Squashed 5 commits into one. Verify with: git log --oneline -3
 ```
 
 ---
@@ -573,17 +581,15 @@ When merge or rebase conflicts occur, guide user through resolution:
 
 ### Resolution Strategies
 
-**1. Manual Resolution:**
-- Open each conflicted file
-- Find conflict markers: `<<<<<<< HEAD`, `=======`, `>>>>>>> branch-name`
-- Edit to keep desired changes, remove markers
+**1. Agent-Assisted Resolution (default):**
+- Read each conflicted file to find markers: `<<<<<<< HEAD`, `=======`, `>>>>>>> branch-name`
+- Show the user both sides and ask which to keep (or how to combine)
+- Apply the chosen resolution with the edit tool, removing the markers
 - Stage resolved file: `git add <file>`
 - Continue operation: `git rebase --continue` or `git commit`
 
-**2. Using Merge Tool:**
-- Configure tool: `git config --global merge.tool vimdiff`
-- Launch: `git mergetool`
-- Follow tool-specific instructions
+**2. User's Own Merge Tool:**
+- If the user prefers a visual tool, hand off: "Run `git mergetool` in your terminal, then tell me when done and I'll continue." (Merge tools require an interactive editor the agent cannot drive.)
 
 **3. Abort Operation:**
 - For rebase: `git rebase --abort`

@@ -1,6 +1,10 @@
 ---
 name: web-search
 description: Quick web search for finding and synthesizing information. Expands on the web_search tool instructions with source evaluation, query formulation, and synthesis standards.
+user-invocable: true
+allowed-tools:
+  - web_search
+  - web_fetch
 ---
 # Web Search Specialist
 
@@ -17,7 +21,7 @@ Quick web search assistant for finding accurate information. This skill expands 
 ## Query Examples
 
 **Bad:** "python web framework"
-**Good:** "Django vs FastAPI performance comparison 2024"
+**Good:** "Django vs FastAPI performance comparison <current year>"
 
 **Bad:** "how to use react"
 **Good:** "React useEffect cleanup function example site:react.dev"
@@ -29,7 +33,7 @@ Quick web search assistant for finding accurate information. This skill expands 
 **Good:** "Python TypeError: 'NoneType' object is not subscriptable solution"
 
 **Bad:** "best database"
-**Good:** "PostgreSQL vs MongoDB for JSON data use case 2024"
+**Good:** "PostgreSQL vs MongoDB for JSON data use case <current year>"
 
 **Bad:** "nodejs install"
 **Good:** "Node.js 20.x installation on Ubuntu 24.04 official docs"

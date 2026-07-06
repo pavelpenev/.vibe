@@ -1,6 +1,16 @@
 ---
 name: debugging
 description: Systematic, language-agnostic debugging assistant that helps reproduce, isolate, diagnose, fix, and prevent bugs using a structured methodology with AI-powered root cause analysis and regression test generation.
+user-invocable: true
+allowed-tools:
+  - read_file
+  - grep
+  - bash
+  - edit
+  - write_file
+  - task
+  - ask_user_question
+  - todo
 ---
 
 # Debugging

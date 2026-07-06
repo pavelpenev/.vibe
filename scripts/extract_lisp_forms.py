@@ -1,7 +1,26 @@
 #!/usr/bin/env python3
+# SCRIPT-METADATA:
+# name: extract_lisp_forms
+# description: Extract top-level forms from Common Lisp / Emacs Lisp / ASDF files as JSON
+# tags: lisp,parsing
+# language: python
 """
 Extract top-level forms from Common Lisp files.
-Returns JSON array of form objects with start/end lines and content.
+Returns a JSON array of objects:
+  {"type": "form",  "start": N, "end": N, "content": "..."}
+  {"type": "error", "start": N, "end": N, "message": "..."}
+
+Error messages emitted:
+  - "Unbalanced form: started at line X, runs to EOF"
+  - "Unbalanced: form started at line X runs into line Y"  (new top-level '(' at column 0 while a form is open)
+  - "Unclosed string starting at line X"
+  - "Unclosed block comment starting at line X"
+  - "Extra closing parenthesis at line X"
+
+Handles: nested #| |# block comments, #\( #\) #\" character literals,
+; line comments, strings with escapes.
+
+Run with no arguments (or --test) to execute the built-in self-tests.
 """
 
 import sys
@@ -9,151 +28,205 @@ import json
 
 
 def extract_top_level_forms(filepath):
-    """Extract all top-level forms from a Lisp file."""
     with open(filepath, 'r') as f:
-        lines = f.readlines()
+        lines = f.read().splitlines()
+    return scan(lines)
 
-    state = {
-        'in_block_comment': False,
-        'in_string': False,
-        'escape_next': False,
-        'paren_count': 0,
-        'current_form': None,
-        'forms': [],
-    }
 
-    for line_num, line in enumerate(lines, 1):
-        process_line(line, line_num, state)
+def scan(lines):
+    forms = []
+    in_string = False
+    string_start = 0
+    comment_depth = 0
+    comment_start = 0
+    paren_depth = 0
+    form_start = 0
+    line_num = 0
 
-    # Check for unclosed form at EOF
-    if state['current_form'] is not None:
-        start_line = state['current_form']['start']
-        state['forms'].append({
-            'type': 'error',
-            'start': start_line,
-            'end': line_num,
-            'message': f'Unbalanced form: started at line {start_line}, runs to EOF'
+    def close_form(end_line):
+        forms.append({
+            'type': 'form',
+            'start': form_start,
+            'end': end_line,
+            'content': '\n'.join(lines[form_start - 1:end_line]),
         })
 
-    return state['forms']
+    for line_num, line in enumerate(lines, 1):
+        i = 0
+        n = len(line)
+        while i < n:
+            ch = line[i]
 
+            if in_string:
+                if ch == '\\':
+                    i += 2
+                    continue
+                if ch == '"':
+                    in_string = False
+                i += 1
+                continue
 
-def process_line(line, line_num, state):
-    i = 0
-    # Track if we've seen non-whitespace on this line
-    seen_non_whitespace = False
+            if comment_depth > 0:
+                if ch == '|' and i + 1 < n and line[i + 1] == '#':
+                    comment_depth -= 1
+                    i += 2
+                    continue
+                if ch == '#' and i + 1 < n and line[i + 1] == '|':
+                    comment_depth += 1
+                    i += 2
+                    continue
+                i += 1
+                continue
 
-    # If we're in a block comment, check for end first
-    if state['in_block_comment']:
-        idx = line.find('|#')
-        if idx != -1:
-            state['in_block_comment'] = False
-            # Process rest of line after |#
-            rest = line[idx+2:]
-            if rest:
-                # Recursively process the rest
-                process_line(rest, line_num, state)
-        return  # Entire line is block comment
-
-    # Add line to current form (once per line, not per character)
-    if state['current_form'] is not None and state['paren_count'] > 0:
-        if line_num > state['current_form']['start']:
-            state['current_form']['end'] = line_num
-            state['current_form']['lines'].append(line.rstrip('\n'))
-
-    while i < len(line):
-        char = line[i]
-
-        # Track non-whitespace for detecting start of line
-        if char not in (' ', '\t'):
-            seen_non_whitespace = True
-
-        # Handle escape sequences in strings
-        if state['escape_next']:
-            state['escape_next'] = False
-            i += 1
-            continue
-
-        # String literals
-        if char == '"' and not state['in_block_comment']:
-            state['in_string'] = not state['in_string']
-            i += 1
-            continue
-
-        # Escape in strings
-        if char == '\\' and state['in_string'] and not state['in_block_comment']:
-            state['escape_next'] = True
-            i += 1
-            continue
-
-        # Block comments: #|
-        if (not state['in_string'] and
-            char == '#' and i + 1 < len(line) and line[i+1] == '|'):
-            state['in_block_comment'] = True
-            i += 2
-            continue
-
-        # Line comments
-        if (not state['in_block_comment'] and
-            not state['in_string'] and
-            char == ';'):
-            break  # Rest of line is comment
-
-        # Parentheses - only count when not in comment or string
-        if not state['in_block_comment'] and not state['in_string']:
-            if char == '(':
-                # Check for unbalanced: new top-level form while previous is open
-                # Only check at start of line (before any non-whitespace)
-                if (state['current_form'] is not None and
-                    state['paren_count'] > 0 and
-                    not seen_non_whitespace):
-                    # New top-level form started while previous is open
-                    state['forms'].append({
+            # normal state
+            if ch == ';':
+                break  # rest of line is a comment
+            if ch == '#' and i + 1 < n and line[i + 1] == '|':
+                comment_depth = 1
+                comment_start = line_num
+                i += 2
+                continue
+            if ch == '#' and i + 1 < n and line[i + 1] == '\\':
+                i += 3  # skip '#', '\', and the literal character itself
+                continue
+            if ch == '"':
+                in_string = True
+                string_start = line_num
+                i += 1
+                continue
+            if ch == '(':
+                # A '(' at column 0 while a form is still open marks the
+                # previous top-level form as unbalanced (Emacs convention).
+                if i == 0 and paren_depth > 0:
+                    forms.append({
                         'type': 'error',
-                        'start': state['current_form']['start'],
+                        'start': form_start,
                         'end': line_num,
-                        'message': f'Unbalanced: form started at line {state["current_form"]["start"]} runs into line {line_num}'
+                        'message': (
+                            f'Unbalanced: form started at line {form_start} '
+                            f'runs into line {line_num}'
+                        ),
                     })
-                    # Start new form (discard old)
-                    state['current_form'] = {
-                        'start': line_num,
-                        'end': line_num,
-                        'lines': [line.rstrip('\n')]
-                    }
-                    state['paren_count'] = 1  # Count this '('
+                    form_start = line_num
+                    paren_depth = 1
                     i += 1
                     continue
-                
-                state['paren_count'] += 1
-                # Top-level form starts when count goes from 0->1
-                # Can be at any column (indented forms are valid)
-                if (state['paren_count'] == 1 and
-                    state['current_form'] is None):
-                    state['current_form'] = {
+                if paren_depth == 0:
+                    form_start = line_num
+                paren_depth += 1
+                i += 1
+                continue
+            if ch == ')':
+                if paren_depth == 0:
+                    forms.append({
+                        'type': 'error',
                         'start': line_num,
                         'end': line_num,
-                        'lines': [line.rstrip('\n')]
-                    }
-            elif char == ')':
-                state['paren_count'] -= 1
+                        'message': f'Extra closing parenthesis at line {line_num}',
+                    })
+                    i += 1
+                    continue
+                paren_depth -= 1
+                if paren_depth == 0:
+                    close_form(line_num)
+                i += 1
+                continue
+            i += 1
 
-        # Form completed when paren_count hits 0
-        if (state['current_form'] is not None and
-            state['paren_count'] == 0):
-            state['forms'].append({
-                'type': 'form',
-                'start': state['current_form']['start'],
-                'end': state['current_form']['end'],
-                'content': '\n'.join(state['current_form']['lines'])
-            })
-            state['current_form'] = None
+    if in_string:
+        forms.append({
+            'type': 'error',
+            'start': string_start,
+            'end': line_num,
+            'message': f'Unclosed string starting at line {string_start}',
+        })
+    if comment_depth > 0:
+        forms.append({
+            'type': 'error',
+            'start': comment_start,
+            'end': line_num,
+            'message': f'Unclosed block comment starting at line {comment_start}',
+        })
+    if paren_depth > 0 and not in_string:
+        forms.append({
+            'type': 'error',
+            'start': form_start,
+            'end': line_num,
+            'message': (
+                f'Unbalanced form: started at line {form_start}, runs to EOF'
+            ),
+        })
 
-        i += 1
+    return forms
+
+
+def run_self_tests():
+    def check(name, source, expect):
+        got = [
+            (f['type'],) + ((f['message'],) if f['type'] == 'error' else (f['start'], f['end']))
+            for f in scan(source.splitlines())
+        ]
+        assert got == expect, f'{name}:\n  expected {expect}\n  got      {got}'
+        print(f'ok: {name}')
+
+    check('two balanced forms',
+          '(defun a ()\n  1)\n\n(defun b () 2)',
+          [('form', 1, 2), ('form', 4, 4)])
+
+    check('single-line block comment inside form',
+          '(foo #| note |# bar)\n(baz)',
+          [('form', 1, 1), ('form', 2, 2)])
+
+    check('character literals are not delimiters',
+          '(defun p (c)\n  (char= c #\\())\n(defun q (c)\n  (char= c #\\)))\n(defun r (c)\n  (char= c #\\"))',
+          [('form', 1, 2), ('form', 3, 4), ('form', 5, 6)])
+
+    check('nested block comments',
+          '#| outer #| inner |# still comment |#\n(defun a () 1)',
+          [('form', 2, 2)])
+
+    check('unclosed string reported',
+          '(defun a ()\n  "no closing quote\n  )',
+          [('error', 'Unclosed string starting at line 2')])
+
+    check('unclosed block comment reported',
+          '(defun a () 1)\n#| never closed',
+          [('form', 1, 1),
+           ('error', 'Unclosed block comment starting at line 2')])
+
+    check('stray closing paren reported, later forms survive',
+          '(defun a () 1)\n)\n(defun b () 2)',
+          [('form', 1, 1),
+           ('error', 'Extra closing parenthesis at line 2'),
+           ('form', 3, 3)])
+
+    check('form running to EOF',
+          '(defun a ()\n  (never closed',
+          [('error', 'Unbalanced form: started at line 1, runs to EOF')])
+
+    check('new top-level form while previous open',
+          '(defun a ()\n  (oops\n(defun b () 2)',
+          [('error', 'Unbalanced: form started at line 1 runs into line 3'),
+           ('form', 3, 3)])
+
+    check('parens in line comments and strings ignored',
+          '; comment with (parens\n(defun a ()\n  "string with ) paren")',
+          [('form', 2, 3)])
+
+    check('escaped quote inside string',
+          '(defun a () "she said \\"hi\\" (ok)")',
+          [('form', 1, 1)])
+
+    check('multiple forms on one line',
+          '(in-package :foo) (defvar x 1)',
+          [('form', 1, 1), ('form', 1, 1)])
+
+    print('All tests passed!')
 
 
 def main():
-    if len(sys.argv) < 2:
-        print(json.dumps([]))
+    if len(sys.argv) < 2 or sys.argv[1] == '--test':
+        run_self_tests()
         sys.exit(0)
 
     filepath = sys.argv[1]

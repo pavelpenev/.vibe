@@ -28,12 +28,8 @@ connectors = []
 enabled_tools = []
 disabled_tools = []
 enabled_agents = []
-disabled_agents = []
-installed_agents = [
-    "code-reviewer",
-    "lisp-editor",
-    "context-restorer",
-]
+disabled_agents = ["explore"]
+installed_agents = []
 default_agent = "default"
 enabled_skills = [
     "skill-creator",
@@ -67,59 +63,26 @@ region = ""
 
 [providers.extra_headers]
 
-[[providers]]
-name = "llamacpp"
-api_base = "http://127.0.0.1:8080/v1"
-api_key_env_var = ""
-api_style = "openai"
-backend = "generic"
-reasoning_field_name = "reasoning_content"
-project_id = ""
-region = ""
-
-[providers.extra_headers]
-
+# Reasoning at maximum on both models (thinking high/max both map to API reasoning_effort="high").
+# With thinking on, the backend forces temperature=1.0; a temperature set here would only
+# apply with thinking off, where the schema default of 0.2 is the right coding fallback.
 [[models]]
 name = "mistral-vibe-cli-latest"
 provider = "mistral"
 alias = "mistral-medium-3.5"
-temperature = 1.0
 input_price = 1.5
 output_price = 7.5
-thinking = "max"
-auto_compact_threshold = 200000
+thinking = "high"
 supports_images = true
 
+# Subagent model (finder, explorer, file-editor)
 [[models]]
 name = "mistral-small-latest"
 provider = "mistral"
 alias = "mistral-small-4"
-temperature = 1.0
 input_price = 0.15
 output_price = 0.6
 thinking = "high"
-reasoning_effort = "high"
-auto_compact_threshold = 200000
-
-[[models]]
-name = "devstral-small-latest"
-provider = "mistral"
-alias = "devstral-small"
-temperature = 0.2
-input_price = 0.1
-output_price = 0.3
-thinking = "off"
-auto_compact_threshold = 200000
-
-[[models]]
-name = "ministral-3-3b-reasoning-2512"
-provider = "llamacpp"
-alias = "local"
-temperature = 0.2
-input_price = 0.0
-output_price = 0.0
-thinking = "high"
-auto_compact_threshold = 30000
 
 [[transcribe_providers]]
 name = "mistral"
@@ -172,7 +135,7 @@ timeout = 120
 model = "mistral-vibe-cli-with-tools"
 
 [tools.write_file]
-permission = "always"
+permission = "ask"
 allowlist = [
     "/tmp/*",
 ]
@@ -194,7 +157,6 @@ max_todos = 100
 [tools.task]
 permission = "ask"
 allowlist = [
-    "explore",
     "code-reviewer",
     "lisp-editor",
     "finder",
@@ -202,6 +164,8 @@ allowlist = [
     "file-editor",
     "researcher",
     "summarizer",
+    "script-manager",
+    "context-restorer",
 ]
 denylist = []
 sensitive_patterns = []
@@ -247,43 +211,30 @@ allowlist = [
     "find",
     "fmt",
     "fold",
-    "git add",
-    "git commit",
     "git diff",
     "git init",
     "git log",
-    "git reset",
     "git status",
     "grep",
     "head",
     "join",
-    "jumbo",
     "less",
     "ls",
-    "ls -la",
     "md5sum",
     "mkdir",
     "more",
-    "mv",
     "nl",
     "od",
     "paste",
     "pip show",
     "pwd",
     "python --version",
-    "python examples/text_animation_demo.py",
-    "python projects/negative_space/negative_space.py",
-    "python test_audio_simple.py",
-    "python test_library.py",
     "readlink",
-    "rm",
-    "sed",
     "sha1sum",
     "sha256sum",
     "shasum",
     "sleep",
     "sort",
-    "source",
     "stat",
     "sum",
     "tac",
@@ -380,7 +331,7 @@ sensitive_patterns = [
 ]
 fuzzy_threshold = 0.98
 
-[tools.read_file]
+[tools.read]
 permission = "always"
 allowlist = []
 denylist = []

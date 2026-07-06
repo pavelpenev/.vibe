@@ -83,7 +83,7 @@ For LIST tasks:
 
 ### Step 2: Extract All Forms
 ```bash
-python3 /home/pav/.vibe/scripts/extract_lisp_forms.py <file>
+python3 ~/.vibe/scripts/extract_lisp_forms.py <file>
 ```
 
 ### Step 3: Return Form List
@@ -121,7 +121,7 @@ For DELETE tasks:
 
 ### Step 2: Extract All Forms
 ```bash
-python3 /home/pav/.vibe/scripts/extract_lisp_forms.py <file>
+python3 ~/.vibe/scripts/extract_lisp_forms.py <file>
 ```
 - If errors found: Return error (cannot delete from corrupted file)
 
@@ -141,7 +141,7 @@ python3 /home/pav/.vibe/scripts/extract_lisp_forms.py <file>
 
 ### Step 5: Re-validate
 ```bash
-python3 /home/pav/.vibe/scripts/extract_lisp_forms.py <file>
+python3 ~/.vibe/scripts/extract_lisp_forms.py <file>
 ```
 - Must show 0 errors
 - Target form must NOT appear in output
@@ -166,7 +166,7 @@ For REPAIR tasks, follow this workflow:
 
 ### Step 2: Extract Forms and Identify Issues
 ```bash
-python3 /home/pav/.vibe/scripts/extract_lisp_forms.py <file>
+python3 ~/.vibe/scripts/extract_lisp_forms.py <file>
 ```
 
 ### Step 3: Analyze Extraction Results
@@ -189,20 +189,26 @@ python3 /home/pav/.vibe/scripts/extract_lisp_forms.py <file>
 - Re-validate
 
 **Case D: Unclosed string**
-- Error: Detected by extractor (string parsing tracks in_string state)
+- Error: `"Unclosed string starting at line X"`
 - **Fix:** CANNOT auto-fix safely (may break string content)
 - **Report:** "Unclosed string starting at line X"
 - **Suggestion:** "Add closing `\"` at line Y or check for escaped quotes"
 
 **Case E: Unclosed block comment**
-- Error: Detected by extractor (in_block_comment remains true)
+- Error: `"Unclosed block comment starting at line X"`
 - **Fix:** Append `|#` at EOF or at end of comment
 - **Report:** "Unclosed block comment starting at line X"
 - **Action:** If comment content is on a single line, append `|#` at end of that line
   - If multi-line, append `|#` at EOF
 - Re-validate
 
-**Case F: Multiple errors**
+**Case F: Extra closing parenthesis**
+- Error: `"Extra closing parenthesis at line X"`
+- **Fix:** CANNOT auto-fix safely (removing the wrong `)` corrupts structure)
+- **Report:** location and the surrounding form
+- **Suggestion:** "Review line X; either delete the stray `)` or add a matching `(`"
+
+**Case G: Multiple errors**
 - Process errors in order (EOF first, then overlapping, then strings/comments)
 - Attempt auto-fix for each
 - Re-validate after all fixes
@@ -228,7 +234,7 @@ For each identified issue (in priority order):
    - CANNOT auto-fix (too risky)
    - Report location and suggest manual fix
 
-5. **Extra opening parens:**
+5. **Extra opening or closing parens:**
    - Report as error that needs manual review
 
 ### Step 5: Re-validate
@@ -290,7 +296,7 @@ All forms have balanced parentheses
 
 ### Step 3: Extract All Forms (if file exists)
 ```bash
-python3 /home/pav/.vibe/scripts/extract_lisp_forms.py <file>
+python3 ~/.vibe/scripts/extract_lisp_forms.py <file>
 ```
 - Parse the JSON output
 - If `type: "error"` in ANY form: 
@@ -366,7 +372,7 @@ python3 /home/pav/.vibe/scripts/extract_lisp_forms.py <file>
 
 ### Step 7: Re-validate (EDIT, CREATE, DELETE, REPAIR)
 ```bash
-python3 /home/pav/.vibe/scripts/extract_lisp_forms.py <file>
+python3 ~/.vibe/scripts/extract_lisp_forms.py <file>
 ```
 - Must show 0 errors
 - For EDIT: Modified form must appear at expected position
@@ -392,15 +398,15 @@ WARNING: File structure invariant violated. Missing: <file-path>
 
 ## Anti-Patterns (NEVER DO THESE)
 
-- ❌ Using `edit` tool with search/replace on Lisp files
-- ❌ Using string replacement without form extraction
-- ❌ Editing without running extract_lisp_forms.py first (except CREATE new file)
-- ❌ Editing without validating parenthesis balance
-- ❌ Modifying multiple forms in a single non-batch edit
-- ❌ Applying partial batch (always all-or-nothing)
-- ❌ Returning interactive prompts
-- ❌ Auto-fixing without validation
-- ❌ Deleting without re-validation
+- NEVER: Using `edit` tool with search/replace on Lisp files
+- NEVER: Using string replacement without form extraction
+- NEVER: Editing without running extract_lisp_forms.py first (except CREATE new file)
+- NEVER: Editing without validating parenthesis balance
+- NEVER: Modifying multiple forms in a single non-batch edit
+- NEVER: Applying partial batch (always all-or-nothing)
+- NEVER: Returning interactive prompts
+- NEVER: Auto-fixing without validation
+- NEVER: Deleting without re-validation
 
 ---
 

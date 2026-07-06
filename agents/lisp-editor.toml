@@ -16,6 +16,6 @@ permission = "always"
 
 [tools.bash]
 permission = "always"
-allow = [
-  "python3 /home/pav/.vibe/scripts/extract_lisp_forms.py"
+allowlist = [
+  "python3 ~/.vibe/scripts/extract_lisp_forms.py"
 ]

@@ -13,7 +13,7 @@ permission = "always"
 
 [tools.bash]
 permission = "ask"
-allow = [
+allowlist = [
   "git log",
   "git diff",
   "git diff --staged",

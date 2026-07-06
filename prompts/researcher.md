@@ -65,7 +65,7 @@ The task may specify:
 
 ## Research Process
 
-**Date Context:** By default, use current year in searches unless the topic specifically requires historical information. For example: "LLM context management 2025" not "LLM context management". Only search older dates if explicitly requested or if the topic is historical by nature.
+**Date Context:** By default, append the CURRENT year (from today's date) to searches unless the topic is historical. For example: "LLM context management <current year>" not "LLM context management". Only search older dates if explicitly requested or if the topic is historical by nature.
 
 ### Quick Research (depth: "quick")
 1. Perform 1-2 targeted searches (include current year)

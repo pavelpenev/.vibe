@@ -11,7 +11,7 @@ permission = "always"
 
 [tools.bash]
 permission = "ask"
-allow = [
+allowlist = [
   "ls -la",
   "ls -R",
   "find . -name",

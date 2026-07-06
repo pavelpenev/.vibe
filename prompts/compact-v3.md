@@ -8,7 +8,7 @@
 
 You are performing a CONTEXT CHECKPOINT COMPACTION. Create a **self-contained handoff document** that the next agent will receive. This document must include both the summary of work and the instructions for how the next agent should use it.
 
-**CORE RULE**: If any task, action, or operation was completed, you MUST mark it with `[DONE]`. The next LLM will treat `[DONE]` as **ABSOLUTELY COMPLETED** and will **NEVER** redo it under any circumstances.
+**CORE RULE**: If any task, action, or operation was completed, you MUST mark it with `[DONE]`. The next LLM will treat `[DONE]` as **ABSOLUTELY COMPLETED** and will **NEVER** redo it. The only exception: if concrete evidence contradicts a `[DONE]` mark (the file it claims to have created is missing, the test it claims passed now fails), verify cheaply before building on it — do not silently redo the work, and surface the discrepancy to the user.
 
 **STATUS MARKERS** (use exactly as written):
 - `[DONE]` = Absolutely completed, never to be repeated
@@ -72,7 +72,6 @@ Read this first:
 - Last action: [what was just completed or in progress]
 - Files open: [path: status for each relevant file]
 - Tools in use: [list of tools actively being used]
-- Token count: [X from session metadata]
 
 ### Key Decisions
 - Decision: [rationale in one line each]

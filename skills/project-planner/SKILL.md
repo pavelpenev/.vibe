@@ -3,7 +3,7 @@ name: project-planner
 description: Use for initial project planning, large feature scoping, architectural changes, and migrations. Maintains a living PLAN.md in the project directory. Triggers on explicit requests to plan a project, scope work, add features to the plan, or organize project development. Can invoke deep-research for complex topics requiring sustained investigation. For small, self-contained tasks, use the auto-task skill instead.
 user-invocable: true
 allowed-tools:
-  - read
+  - read_file
   - write_file
   - edit
   - grep
@@ -428,5 +428,5 @@ Skill:
 - **Research directory:** Check `./research/` for existing research (created by deep-research skill) before conducting new searches. The project-planner skill only reads, never creates research files.
 - **User approval:** Always confirm with user before writing significant plan changes.
 - **Atomic changes:** Each invocation should make one coherent set of changes to PLAN.md.
-- **Integration:** For codebase exploration during planning, the explore subagent is available. The skill can suggest using the deep-research skill for complex research needs.
+- **Integration:** For codebase exploration during planning, the explorer subagent is available. The skill can suggest using the deep-research skill for complex research needs.
 - **Git integration:** Always remind the user to commit PLAN.md changes to git with descriptive commit messages.

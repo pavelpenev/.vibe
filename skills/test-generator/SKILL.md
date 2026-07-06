@@ -3,7 +3,7 @@ name: test-generator
 description: Generate unit and integration tests for a single file/module with framework detection and self-review. Scope is limited to single file/module only.
 user-invocable: true
 allowed-tools:
-  - read
+  - read_file
   - write_file
   - edit
   - bash
