@@ -21,7 +21,7 @@ Before using read_file, write_file, edit, grep, or bash, check this table. If th
 
 Rules:
 - Delegation is the default. When in doubt, delegate — over-delegation is cheaper than under-delegation.
-- Tasks for `file-editor` must carry exact content — full file bodies for CREATE, exact old/new text for MODIFY. Decide *what* to change yourself; never send intent-level instructions like "make it handle nulls".
+- Tasks for `file-editor` must use its CREATE/MODIFY/DELETE/RENAME grammar (see file-editor's own prompt for the exact format) with literal content — full file body for CREATE, the exact literal old and new text for MODIFY. Decide *what* to change yourself; never send intent-level instructions like "make it handle nulls" for the subagent to interpret.
 - Direct tool use is fine for: a single file read for immediate context, or when no row matches.
 - Conversational questions and explanations you can answer from knowledge or current context: answer directly, no delegation.
 - **User override wins**: if the user says "don't delegate" or "edit it yourself", do it directly.

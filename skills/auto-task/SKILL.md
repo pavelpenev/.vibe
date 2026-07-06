@@ -4,9 +4,6 @@ description: Explicit /auto-task invocation only - do NOT trigger on natural lan
 user-invocable: true
 allowed-tools:
   - read_file
-  - write_file
-  - edit
-  - bash
   - grep
   - todo
   - task
@@ -47,12 +44,15 @@ Assess if the task is small and self-contained enough for autonomous execution.
 Use these explicit criteria to determine if a task is too broad:
 
 **A task is TOO BROAD if it:**
-- Requires adding new dependencies to the project (e.g., new libraries)
-- Involves external services, APIs, or network calls
-- Spans more than one directory or affects multiple subsystems
-- Has more than ~5 discrete steps (warn user if approaching this limit)
-- Requires configuration changes outside the code (env vars, config files, etc.)
+- Has more than ~5 discrete steps - this is a hard cap, not a warning; a weak orchestrator loses track of a plan beyond this
+- Affects multiple logical subsystems (e.g., rewiring how two unrelated modules interact) - NOT the same as touching multiple directories; a source file plus its matching test file is one small task, not two
 - Cannot be completed and reviewed in a single session
+- Requires exploratory architecture decisions or open-ended requirements gathering (that's project-planner's job, not a bounded plan)
+
+**These are NOT scope-rejects on their own** - flag them as a high-risk decision point in the plan (Step 2/3) instead, so the user approves that specific step rather than the whole task being rejected:
+- Adding a new dependency
+- Calling an external service or network API
+- Editing operational config (env vars, secrets, infra-as-code) - editing an ordinary project config file (pyproject.toml, package.json) to wire in a dependency is routine, not high-risk
 
 **If the task is too broad:**
 - Ask the user to break it down into smaller pieces
@@ -60,10 +60,9 @@ Use these explicit criteria to determine if a task is too broad:
 - Suggest using project-planner for large architectural efforts
 
 **Ideal task characteristics:**
-- Single file modification or creation
-- Pure computation or local data processing
+- One to a few files, touched for a single well-defined objective (source + its test file counts as one objective)
 - Well-defined, self-contained objective
-- Minimal or no external dependencies
+- Any external calls or new dependencies are a known, plannable step - not an automatic disqualifier
 
 ### Step 2: Planning
 Use the todo tool to create a step-by-step plan for the task:
@@ -82,22 +81,18 @@ Present the entire plan to the user for approval:
 - Only proceed with user-approved steps
 
 ### Step 4: Execution
-Execute the user-approved steps sequentially:
+Execute the user-approved steps sequentially, following the same delegation rules as normal operation:
 
 - Execute one step at a time in order
+- File creation/modification/deletion → delegate to `file-editor` (or `lisp-editor` for .lisp/.el/.asd) with literal content, never intent. Pattern search → delegate to `finder`. Do not call `write_file`/`edit`/`bash` directly for these - route through the same subagents the main agent would use
 - If you encounter a decision point during execution:
   - **Low-risk decisions** (reversible, minimal impact): Make the decision, document it briefly, and continue
   - **High-risk decisions** (irreversible, significant impact): Stop execution and ask user
   - **Unresolved in plan**: Stop execution, revise plan with user before continuing
-- Use any tools and skills needed to complete the task
 - You may query PLAN.md and research directories for information, but must not modify them unless explicitly instructed
 
 ### Step 5: Error Handling
-If a step fails:
-- **Retry once**: For transient failures (network timeouts, temporary file locks)
-- **Do NOT retry**: Permission denied, file not found (unless step creates the file), syntax errors, logical errors
-- **Stop and report**: After one failed recovery attempt, or for any permission/access error, or any error that prevents verification
-- **Report format**: What was attempted, what succeeded, what failed and why, suggested next steps for user
+Follow the system prompt's "Stop when stuck" rules. One addition specific to this skill: after any stop, report what was attempted, what succeeded, what failed and why, and what the user needs to decide before continuing.
 
 ### Step 6: Completion and Summary
 After executing all approved steps:
@@ -122,7 +117,7 @@ After executing all approved steps:
 - **Context priority**: Project-local AGENTS.md > PLAN.md > Global AGENTS.md > Research directory
 - **PLAN.md**: You may read PLAN.md for context but must not modify it unless explicitly told
 - **Research directory**: You may query the ./research/ directory for existing research but must not modify it unless explicitly told
-- **Tools**: Use any tools needed (read, write_file, edit, bash, grep, etc.)
+- **Tools**: `read_file`/`grep` directly for investigation; all writes and searches go through subagents per Step 4, same as normal operation
 - **Skills**: May invoke debugging, test-generator, code-review, git-workflow, or web_search for specific sub-tasks. Do NOT invoke deep-research or project-planner.
 - **Todo tool**: Use for tracking steps during planning and execution
 
