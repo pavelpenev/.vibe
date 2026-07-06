@@ -371,13 +371,33 @@ git commit -m "Add/update <component>"
 
 ## Future Enhancements
 
-Potential additions:
+Prioritized, not a wishlist - each entry has a concrete reason to exist, derived from reviewing this config rather than generic "agent setups usually have X."
 
-- Python editor (though file-editor may suffice)
-- Test runner
-- Documentation generator
-- Dependency analyzer
-- Refactoring assistant
+### 1. Verifier subagent (top priority)
+
+Closes the "prove it worked" gap: the system prompt demands verification but nothing runs it cheaply today - test/build output currently has nowhere to go but the main agent's own context.
+
+- Already designed for: `code-reviewer` has a consumption hook (`Verification results: ...` in the task string) ready for this agent's output.
+- Shared contract: a project's `AGENTS.md` `## Verification` section (`- label: command`) with a free-form-mention fallback ("use pytest for testing") - reviewer and verifier both read the same convention.
+- Design principle to build in from day one ("gates, not tasks" - see [Building Effective AI Coding Agents for the Terminal](https://arxiv.org/pdf/2603.05344)): a delegated edit isn't "done" because the model says so, it's done when the project's declared checks pass. Wire this into file-editor/lisp-editor's own completion step, not just a skill you remember to invoke afterward.
+- Cheap add-on once built: a self-critique pass (same model, same call, no extra spawn) where file-editor/lisp-editor re-reads its own diff against the task before reporting success.
+
+### 2. Debugger subagent + interactive front-end
+
+The `debugging` skill runs its entire reproduce/isolate/hypothesize/diagnose loop inline today - the most token-hungry, least-structured activity in the whole setup, and the one thing that never got the deep-research-style split (interactive front-end gathers requirements -> non-interactive subagent does the work -> returns only the finding).
+
+- Front-end's job: hard-gate on symptom, reproduction steps, and expected-vs-actual before constructing the subagent task string - a vague "there's a bug in X" wastes a weak subagent's budget re-deriving what the front-end should have nailed down.
+- Harder than research to design well: research has a natural stopping point, debugging doesn't. Needs an explicit iteration cap and a "return best-guess + what was ruled out" fallback so a bad hypothesis can't loop silently until the response comes back.
+- Worth applying N-sample convergence (generate 2-3 independent root-cause hypotheses, converge, don't commit to the first plausible story) to the one purely-judgment step in the loop - see [Soft Self-Consistency Improves Language Model Agents](https://arxiv.org/pdf/2402.13212).
+
+### Revisit later, not designed yet
+
+- **lisp-editor -> small-4**: kept on the inherited (larger) model because REPAIR requires real reasoning and nothing mechanically catches a bad repair yet. Revisit once the verifier closes the loop end-to-end.
+- **Large 4 arrival**: swap `active_model`, then revisit only whether file-editor remains the mandatory write path for everything, or becomes optional for batch work once the orchestrator itself edits reliably.
+
+### Considered and dropped
+
+Documentation generator and dependency analyzer (from an earlier, more generic pass) had no concrete tie to this setup's actual workflow (personal Lisp/Python/creative-coding projects, not something shipping docs or tracking a large dependency graph) - cut rather than kept as vague placeholders. "Python editor" and "refactoring assistant" are resolved by the existing file-editor/finder pairing and the exact-content delegation rule - no new agent needed.
 
 ## References
 
