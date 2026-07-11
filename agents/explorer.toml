@@ -2,7 +2,7 @@ agent_type = "subagent"
 display_name = "Explorer"
 description = "Systematically explore project structure, read key files including AGENTS.md for project context"
 safety = "safe"
-active_model = "mistral-small-4"
+active_model = "small-model"
 system_prompt_id = "explorer"
 enabled_tools = ["read_file", "bash", "grep"]
 

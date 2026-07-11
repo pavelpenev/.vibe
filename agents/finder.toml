@@ -2,7 +2,7 @@ agent_type = "subagent"
 display_name = "Finder"
 description = "Search for patterns across files using grep/find commands"
 safety = "safe"
-active_model = "mistral-small-4"
+active_model = "small-model"
 system_prompt_id = "finder"
 enabled_tools = ["grep", "bash"]
 

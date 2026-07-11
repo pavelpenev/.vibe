@@ -1,4 +1,4 @@
-active_model = "mistral-medium-3.5"
+active_model = "small-model"
 vim_keybindings = false
 disable_welcome_banner_animation = false
 autocopy_to_clipboard = true
@@ -11,7 +11,7 @@ active_transcribe_model = "voxtral-realtime"
 active_tts_model = "voxtral-tts"
 bypass_tool_permissions = false
 enable_telemetry = true
-system_prompt_id = "system-prompt-local"
+system_prompt_id = "system-prompt-large"
 include_commit_signature = false
 include_model_info = true
 include_project_context = true
@@ -20,7 +20,7 @@ enable_update_checks = true
 enable_auto_update = true
 enable_notifications = true
 api_timeout = 720.0
-auto_compact_threshold = 200000
+auto_compact_threshold = 800000
 compaction_prompt_id = "compact-v3"
 tool_paths = []
 mcp_servers = []
@@ -28,7 +28,9 @@ connectors = []
 enabled_tools = []
 disabled_tools = []
 enabled_agents = []
-disabled_agents = ["explore"]
+disabled_agents = [
+    "explore",
+]
 installed_agents = []
 default_agent = "default"
 enabled_skills = [
@@ -63,9 +65,13 @@ region = ""
 
 [providers.extra_headers]
 
-# Reasoning at maximum on both models (thinking high/max both map to API reasoning_effort="high").
-# With thinking on, the backend forces temperature=1.0; a temperature set here would only
-# apply with thinking off, where the schema default of 0.2 is the right coding fallback.
+[[providers]]
+name = "opencode"
+api_base = "https://opencode.ai/zen/go/v1"
+api_key_env_var = "OPENCODE_API_KEY"
+api_style = "openai"
+backend = "generic"
+
 [[models]]
 name = "mistral-vibe-cli-latest"
 provider = "mistral"
@@ -75,13 +81,39 @@ output_price = 7.5
 thinking = "high"
 supports_images = true
 
-# Subagent model (finder, explorer, file-editor)
 [[models]]
 name = "mistral-small-latest"
 provider = "mistral"
 alias = "mistral-small-4"
 input_price = 0.15
 output_price = 0.6
+thinking = "high"
+
+[[models]]
+name = "glm-5.2"
+provider = "opencode"
+alias = "glm-5.2"
+input_price = 1.4
+output_price = 4.4
+auto_compact_threshold = 800000
+thinking = "high"
+
+[[models]]
+name = "deepseek-v4-pro"
+provider = "opencode"
+alias = "deepseek-v4-pro"
+input_price = 1.74
+output_price = 3.48
+auto_compact_threshold = 800000
+thinking = "high"
+
+[[models]]
+name = "deepseek-v4-flash"
+provider = "opencode"
+alias = "small-model"
+input_price = 0.14
+output_price = 0.28
+auto_compact_threshold = 800000
 thinking = "high"
 
 [[transcribe_providers]]
@@ -331,7 +363,7 @@ sensitive_patterns = [
 ]
 fuzzy_threshold = 0.98
 
-[tools.read]
+[tools.read_file]
 permission = "always"
 allowlist = []
 denylist = []

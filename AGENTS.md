@@ -13,7 +13,7 @@
 
 - Syntax: `task(task="<clear task description>", agent="<subagent-name>")`
 - Session-level permissions do NOT propagate to subagents (Issue #390); each uses its own TOML permissions
-- Subagents return **plain text only**, cannot ask questions, and cannot spawn other subagents
+- Subagents return **plain text only**, cannot use `ask_user_question` for conversational clarification, and cannot spawn other subagents. Note: tool permission prompts (e.g., bash commands not in the allowlist) DO surface to the user via the parent's approval callback — subagents are not silently blocked.
 - Provide all needed context in the task description — the subagent sees nothing else
 
 **Chaining:** subagents return text; read the result and write the concrete details (paths, symbols) into the next task string yourself.
@@ -27,7 +27,7 @@ task(task="Search for feature X, return file paths with line numbers", agent="fi
 task(task="Explore the project; read these files in particular: src/foo.py, src/bar.py", agent="explorer")
 ```
 
-Rule of thumb: finder for *what exists*, explorer for *what it means*, then act in main context.
+Rule of thumb: finder for *what exists*, explorer for *what it means*, then act in main context. For verifying specific behavioral claims about code (e.g., "does X propagate to Y?"), read the raw source directly — subagent summaries compress away the exact lines that are the evidence.
 
 **Research:** simple lookup → delegate straight to `researcher`. Complex/multi-step research → use the `deep-research` skill (interactive front-end that gathers requirements, then delegates to `researcher`). Researcher returns structured JSON and can save reports (`save_to_file:` / `report_directory:` parameters).
 

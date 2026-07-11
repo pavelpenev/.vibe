@@ -14,11 +14,11 @@ This setup implements a **delegation-based architecture** where the main agent d
 ## Architecture
 
 ```
-Main Agent (mistral-medium-3.5)
+Main Agent (glm-5.2)
   - Orchestrates tasks
   - Delegates to subagents when appropriate
   - Uses skills for complex multi-step workflows
-  - Uses custom system prompt (system-prompt-local.md)
+  - Uses custom system prompt (system-prompt-medium.md or system-prompt-large.md, selected by model)
     │
     ▼
 
@@ -85,7 +85,8 @@ Subagents Layer
 │   ├── researcher.md
 │   ├── script-manager.md
 │   ├── summarizer.md
-│   └── system-prompt-local.md
+│   ├── system-prompt-medium.md
+│   └── system-prompt-large.md
 ├── scripts/                     # Helper scripts
 ├── skills/                      # Skill definitions
 │   ├── auto-task/
@@ -114,14 +115,14 @@ All subagents are configured in the `agents/` directory with TOML files and have
 | Name             | Purpose                                    | Model           | Safety  | Key Tools                                          |
 |------------------|--------------------------------------------|-----------------|---------|----------------------------------------------------|
 | code-reviewer    | Code quality review                        | Inherits        | Safe    | read_file, grep, bash (read-only git)              |
-| context-restorer | Post-compaction context recovery           | Inherits        | Safe    | read_file, grep, bash (read-only git)              |
-| explorer         | Project exploration                        | mistral-small-4 | Safe    | read_file, grep, bash                              |
-| file-editor      | Generic file editing                       | mistral-small-4 | Neutral | read_file, write_file, edit, bash                  |
-| finder           | Pattern searching                          | mistral-small-4 | Safe    | grep, bash (grep/rg/ag/find only)                  |
+| context-restorer | Post-compaction context recovery           | small-model | Safe    | read_file, grep, bash (read-only git)              |
+| explorer         | Project exploration                        | small-model | Safe    | read_file, grep, bash                              |
+| file-editor      | Generic file editing                       | small-model | Neutral | read_file, write_file, edit, bash                  |
+| finder           | Pattern searching                          | small-model | Safe    | grep, bash (grep/rg/ag/find only)                  |
 | lisp-editor      | Lisp file editing with structure awareness | Inherits        | Neutral | read_file, write_file, grep, bash (no edit tool)   |
 | researcher       | Technical research                         | Inherits        | Safe    | web_search, web_fetch, read_file, grep, write_file |
 | script-manager   | Script creation and management             | Inherits        | Neutral | read_file, write_file, edit, bash                  |
-| summarizer       | Document summarization                     | mistral-small-4 | Safe    | read_file, grep                                    |
+| summarizer       | Document summarization                     | small-model | Safe    | read_file, grep                                    |
 
 Safety levels are a visual hint only (border color in the CLI) - they do not enforce anything. Enforcement comes from `enabled_tools` and per-tool permissions.
 
@@ -177,13 +178,13 @@ Skills provide structured workflows for complex, multi-step tasks. They can dele
 ## Configuration Highlights
 
 ### System Prompt
-- Custom system prompt: `system-prompt-local.md`
+- Custom system prompts: `system-prompt-medium.md` (for mistral-medium-3.5) and `system-prompt-large.md` (for larger models like glm-5.2)
 - Extends the default CLI prompt with delegation instructions
 - Emphasizes delegation-first approach
 
 ### Model Configuration
-- **Primary model**: mistral-medium-3.5 (default)
-- **Research model**: mistral-small-4 (for finder subagent)
+- **Primary model**: glm-5.2 (current); mistral-medium-3.5 supported via `system-prompt-medium.md`
+- **Small/cheap model**: `small-model` alias (defined in config.toml `[[models]]`) — used by explorer, file-editor, finder, summarizer, context-restorer. To swap the small model, move the `alias = "small-model"` line to whichever `[[models]]` block you want delegated to the cheap tier — no subagent TOML changes needed. (Note: TUI model changes strip comments from config.toml, so keep swap instructions here, not in config.toml comments.)
 - All subagents inherit parent model unless specified
 
 ### Tool Permissions
@@ -192,9 +193,10 @@ Skills provide structured workflows for complex, multi-step tasks. They can dele
 - Session-level "always allow" does NOT propagate to subagents (Mistral Vibe Issue #390)
 
 ### Token Management
-- Auto-compaction threshold: 200,000 tokens
+- Auto-compaction threshold: 800,000 tokens (per-model override on glm-5.2)
+- Compaction model: inherits active model (CLI requires compaction model to share the active model's provider; since active model switches between providers, no static compaction model is set)
 - Compaction prompt: `compact-v3.md`
-- Context restorer helps recover after compaction
+- Context restorer helps recover after compaction (runs on `small-model`)
 
 ## Usage Patterns
 
@@ -367,7 +369,7 @@ git commit -m "Add/update <component>"
 1. **Use finder for searches**: Faster than main agent doing grep directly
 2. **Batch edits**: Send multiple edits to file-editor in one task
 3. **Parallel delegation**: Delegate multiple independent tasks simultaneously
-4. **Appropriate models**: Use smaller models (mistral-small-4) for simple tasks like searching
+4. **Appropriate models**: Use the `small-model` alias for simple tasks like searching
 
 ## Future Enhancements
 
@@ -393,7 +395,7 @@ The `debugging` skill runs its entire reproduce/isolate/hypothesize/diagnose loo
 ### Revisit later, not designed yet
 
 - **lisp-editor -> small-4**: kept on the inherited (larger) model because REPAIR requires real reasoning and nothing mechanically catches a bad repair yet. Revisit once the verifier closes the loop end-to-end.
-- **Large 4 arrival**: swap `active_model`, then revisit only whether file-editor remains the mandatory write path for everything, or becomes optional for batch work once the orchestrator itself edits reliably.
+- **Large model arrival (done)**: `active_model` swapped to glm-5.2; file-editor is now optional for batch work, not mandatory — the large system prompt allows direct edits for small well-defined changes. The `system-prompt-large.md` variant handles the different delegation calibration.
 
 ### Considered and dropped
 
@@ -420,7 +422,7 @@ Documentation generator and dependency analyzer (from an earlier, more generic p
 
 ### Dispatch Rules
 
-The delegation table lives in `prompts/system-prompt-local.md` (single source of truth); `AGENTS.md` covers subagent mechanics, clarification, and correction protocols. The main agent dispatches in this order:
+The delegation table lives in `prompts/system-prompt-medium.md` / `prompts/system-prompt-large.md` (single source of truth, selected by model); `AGENTS.md` covers subagent mechanics, clarification, and correction protocols. The main agent dispatches in this order:
 
 1. Check if request matches subagent purpose → Delegate to subagent
 2. Check if request matches skill trigger → Use skill

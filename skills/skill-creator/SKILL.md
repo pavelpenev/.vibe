@@ -253,22 +253,12 @@ Skill created at: ~/.vibe/skills/{name}/SKILL.md
 To enable this skill, manually add it to ~/.vibe/config.toml:
 
 1. Open ~/.vibe/config.toml in your editor
-2. Find or create the [skills] section
-3. Add "{name}" to the enabled_skills array
+2. Add "{name}" to the top-level `enabled_skills` array (this is a root-level key, not under any `[skills]` table)
+3. Save the file
 
-Example (newer format):
+Example:
 ```toml
-[skills]
 enabled_skills = [
-    "...",
-    "{name}",
-]
-```
-
-Example (older format):
-```toml
-[skills]
-enabled = [
     "...",
     "{name}",
 ]

@@ -2,6 +2,7 @@ agent_type = "subagent"
 display_name = "Context Restorer"
 description = "Reorient main agent after compaction by reading relevant files and restoring project context"
 safety = "safe"
+active_model = "small-model"
 system_prompt_id = "context-restorer"
 enabled_tools = ["read_file", "grep", "bash"]
 

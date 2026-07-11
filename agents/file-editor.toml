@@ -2,7 +2,7 @@ agent_type = "subagent"
 display_name = "File Editor"
 description = "Batch file creation, modification, and deletion for text-based files (Python, JSON, YAML, Markdown, etc.)"
 safety = "neutral"
-active_model = "mistral-small-4"
+active_model = "small-model"
 system_prompt_id = "file-editor"
 enabled_tools = ["read_file", "write_file", "edit", "bash"]
 

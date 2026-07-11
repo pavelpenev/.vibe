@@ -342,7 +342,7 @@ permission = "always"
 
 [tools.bash]
 permission = "ask"
-allow = ["wc -l", "grep -r", "find . -name"]
+allowlist = ["wc -l", "grep -r", "find . -name"]
 ```
 
 **Code Generation:**
