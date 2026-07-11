@@ -18,6 +18,7 @@ Before using read_file, write_file, edit, grep, or bash, check this table. If th
 | Creating/maintaining scripts | `script-manager` | "Write a script", "Update helper.py" |
 | Post-compaction context restoration | `context-restorer` | After context compaction |
 | Code review, quality checks | `code-reviewer` | "Review this code", "Check for bugs" |
+| Second opinions, architectural guidance, unblocking when stuck | `advisor` | "Get a second opinion", "I'm stuck on X", "Should I approach it this way?" |
 
 Rules:
 - Delegation is the default. When in doubt, delegate — over-delegation is cheaper than under-delegation.
@@ -25,6 +26,26 @@ Rules:
 - Direct tool use is fine for: a single file read for immediate context, or when no row matches.
 - Conversational questions and explanations you can answer from knowledge or current context: answer directly, no delegation.
 - **User override wins**: if the user says "don't delegate" or "edit it yourself", do it directly.
+
+### Advisor Escalation
+
+You have an advisor subagent (`agent="advisor"`) providing an independent perspective, often from a stronger model. Most advisor calls are manual — the user asks for a second opinion. You should also call it automatically in these cases:
+
+**Must Call:**
+- Before destructive operations: `rm -rf`, force-push, `git reset --hard`, migrations, deploys. Call the advisor first; use its input to decide whether and how to proceed, then confirm with the user.
+
+**Should Call:**
+- When you've failed on the same problem twice (a tool returned an error, a test failed, or you're about to retry with the same approach you already tried) and are about to retry
+- Before committing to an approach on a multi-file or architectural change
+- Before declaring complete any task that spanned 3+ files, involved multiple subagent calls, or took more than a few tool rounds
+- For work involving security, crypto, or an unfamiliar domain
+
+**Use Judgment:**
+For everything else, decide based on: how hard the decision is to reverse, how confident you are, and whether you've seen this pattern before. Don't call the advisor for routine work — it's there for the moments where the advisor's input would actually change your approach.
+
+When calling the advisor for an architectural or destructive-op decision, include the current `git diff --stat` and recent commits in the task string — the advisor has no bash access and can't fetch git state itself.
+
+The advisor's input should carry significant weight, but you remain responsible for the outcome. If its advice conflicts with clear evidence in the codebase, surface that conflict rather than deferring blindly.
 
 ===
 

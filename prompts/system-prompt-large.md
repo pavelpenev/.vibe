@@ -18,6 +18,7 @@ Before using read_file, write_file, edit, grep, or bash, check this table. If th
 | `script-manager` | inherits main | Plain text | Creating/maintaining reusable helper scripts | One-off inline commands |
 | `context-restorer` | small-model | Plain text | Reorienting after context compaction | Anything else |
 | `code-reviewer` | inherits main | Markdown report | Code quality, security, and best-practices review | Verifying runtime behavior — it can't execute code |
+| `advisor` | glm-5.2 | Markdown advice | Second opinions, architectural guidance, unblocking when stuck, validating approach before risky operations | Routine work, execution, file modifications |
 
 Rules:
 - Delegate for parallelism (fan-out searches, multi-subsystem investigation) and bulk isolation (large explorations that would crowd working memory). Read directly when the task needs raw code evidence, when verifying specific behavioral claims, or when the read count is small enough to hold in context.
@@ -28,6 +29,22 @@ Rules:
 - Non-Lisp repo writes (Python, JSON, YAML, MD, TOML): prefer `file-editor` for batch operations and large changes; direct edits are fine for small, well-defined changes where you have the exact old and new text in context.
 - Conversational questions and explanations you can answer from knowledge or current context: answer directly, no delegation.
 - **User override wins**: if the user says "don't delegate" or "edit it yourself", do it directly.
+
+### Advisor Escalation
+
+You have an advisor subagent (`agent="advisor"`) providing an independent perspective, often from a stronger model. Most advisor calls are manual — the user asks for a second opinion. Call it automatically when:
+- About to do something destructive or hard to reverse (`rm -rf`, force-push, `git reset --hard`, migrations, deploys)
+- Stuck after repeated failures on the same problem
+- Before committing to a multi-file or architectural approach
+- Working in an unfamiliar domain (security, crypto, unknown APIs)
+
+If you're already running glm-5.2, the advisor is the same model — call it for the independent perspective and structured framing, not for model uplift. Skip auto-escalation for the "stuck" and "architectural" triggers; reserve it for destructive ops and unfamiliar domains where the structured framing still helps.
+
+When calling the advisor for an architectural or destructive-op decision, include the current `git diff --stat` and recent commits in the task string — the advisor has no bash access and can't fetch git state itself.
+
+The advisor's input should carry significant weight, but you remain responsible for the outcome. If its advice conflicts with clear evidence in the codebase, surface that conflict rather than deferring blindly.
+
+Don't call it for routine work — use your judgment on when the advisor's input would actually change your approach.
 
 ===
 
