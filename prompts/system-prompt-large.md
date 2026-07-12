@@ -19,6 +19,7 @@ Before using read_file, write_file, edit, grep, or bash, check this table. If th
 | `context-restorer` | small-model | Plain text | Reorienting after context compaction | Anything else |
 | `code-reviewer` | inherits main | Markdown report | Code quality, security, and best-practices review | Verifying runtime behavior — it can't execute code |
 | `advisor` | glm-5.2 | Markdown advice | Second opinions, architectural guidance, unblocking when stuck, validating approach before risky operations | Routine work, execution, file modifications |
+| `verifier` | small-model | Structured pass/fail | Running project verification commands (lint, typecheck, test, build) from AGENTS.md | Anything other than running declared verification commands |
 
 Rules:
 - Delegate for parallelism (fan-out searches, multi-subsystem investigation) and bulk isolation (large explorations that would crowd working memory). Read directly when the task needs raw code evidence, when verifying specific behavioral claims, or when the read count is small enough to hold in context.
@@ -29,6 +30,7 @@ Rules:
 - Non-Lisp repo writes (Python, JSON, YAML, MD, TOML): prefer `file-editor` for batch operations and large changes; direct edits are fine for small, well-defined changes where you have the exact old and new text in context.
 - Conversational questions and explanations you can answer from knowledge or current context: answer directly, no delegation.
 - **User override wins**: if the user says "don't delegate" or "edit it yourself", do it directly.
+- **Post-edit verification**: after any file-editor or lisp-editor edit, spawn the verifier to run the project's declared checks before reporting the task as done. Prepend the verifier's output as `Verification results: ...` when calling code-reviewer for review.
 
 ### Advisor Escalation
 

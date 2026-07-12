@@ -46,12 +46,30 @@ The reviewer compares code against intent, so it needs a description.
 - If reviewing a commit, the subagent will use the commit message
 - Otherwise prompt: "What should these changes accomplish? (e.g., 'add user authentication', 'fix login bug')" and wait for the response
 
-## Step 3: Delegate
+## Step 3: Run Verification
 
-Construct a task string and delegate:
+Before delegating the review, run the project's verification commands:
+
+```python
+task(task="Run verification on the changed files", agent="verifier")
+```
+
+Capture the output. If the verifier returns "No verification commands found", proceed without results.
+
+## Step 4: Delegate
+
+Construct a task string and delegate, prepending verification results if available:
 
 ```
-task(task="Review: <target>. Intent: <description>", agent="code-reviewer")
+Verification results captured:
+{verifier_output}
+
+Review: <target>. Intent: <description>
+```
+
+Delegation:
+```python
+task(task="{task_string}", agent="code-reviewer")
 ```
 
 Target formats the subagent understands:

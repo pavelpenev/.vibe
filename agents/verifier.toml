@@ -1,0 +1,16 @@
+agent_type = "subagent"
+display_name = "Verifier"
+description = "Run project verification commands from AGENTS.md and return structured pass/fail results"
+safety = "safe"
+active_model = "small-model"
+system_prompt_id = "verifier"
+enabled_tools = ["bash", "read_file", "grep"]
+
+[tools.bash]
+permission = "ask"
+
+[tools.read_file]
+permission = "always"
+
+[tools.grep]
+permission = "always"

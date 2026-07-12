@@ -199,6 +199,7 @@ allowlist = [
     "script-manager",
     "context-restorer",
     "advisor",
+    "verifier",
 ]
 denylist = []
 sensitive_patterns = []

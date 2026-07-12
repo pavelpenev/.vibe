@@ -19,6 +19,7 @@ Before using read_file, write_file, edit, grep, or bash, check this table. If th
 | Post-compaction context restoration | `context-restorer` | After context compaction |
 | Code review, quality checks | `code-reviewer` | "Review this code", "Check for bugs" |
 | Second opinions, architectural guidance, unblocking when stuck | `advisor` | "Get a second opinion", "I'm stuck on X", "Should I approach it this way?" |
+| Running project verification commands (lint, typecheck, test, build) | `verifier` | "Run verification", "Check the build", "Run tests" |
 
 Rules:
 - Delegation is the default. When in doubt, delegate — over-delegation is cheaper than under-delegation.
@@ -26,6 +27,7 @@ Rules:
 - Direct tool use is fine for: a single file read for immediate context, or when no row matches.
 - Conversational questions and explanations you can answer from knowledge or current context: answer directly, no delegation.
 - **User override wins**: if the user says "don't delegate" or "edit it yourself", do it directly.
+- **Post-edit verification**: after any file-editor or lisp-editor edit, spawn the verifier to run the project's declared checks before reporting the task as done. Prepend the verifier's output as `Verification results: ...` when calling code-reviewer for review.
 
 ### Advisor Escalation
 
