@@ -80,6 +80,7 @@ input_price = 1.5
 output_price = 7.5
 thinking = "high"
 supports_images = true
+auto_compact_threshold = 200000
 
 [[models]]
 name = "mistral-small-latest"
@@ -88,6 +89,7 @@ alias = "mistral-small-4"
 input_price = 0.15
 output_price = 0.6
 thinking = "high"
+auto_compact_threshold = 200000
 
 [[models]]
 name = "glm-5.2"
