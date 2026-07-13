@@ -14,11 +14,14 @@ This setup implements a **delegation-based architecture** where the main agent d
 ## Architecture
 
 ```
-Main Agent (glm-5.2)
+Main Agent (deepseek-v4-flash default, mistral-medium-3.5 fallback via /model)
   - Orchestrates tasks
   - Delegates to subagents when appropriate
   - Uses skills for complex multi-step workflows
-  - Uses custom system prompt (system-prompt-medium.md or system-prompt-large.md, selected by model)
+  - Uses system-prompt-medium.md (shared by both mains, so /model and
+    permission modes stay independent)
+  - GLM-5.2 is reserved for the "Planner (GLM)" agent profile (Shift+Tab)
+    and the advisor subagent
     │
     ▼
 
@@ -86,7 +89,8 @@ Subagents Layer
 │   ├── script-manager.md
 │   ├── summarizer.md
 │   ├── system-prompt-medium.md
-│   └── system-prompt-large.md
+│   ├── system-prompt-large.md
+│   └── system-prompt-planner.md
 ├── scripts/                     # Helper scripts
 ├── skills/                      # Skill definitions
 │   ├── auto-task/
@@ -114,14 +118,14 @@ All subagents are configured in the `agents/` directory with TOML files and have
 
 | Name             | Purpose                                    | Model           | Safety  | Key Tools                                          |
 |------------------|--------------------------------------------|-----------------|---------|----------------------------------------------------|
-| code-reviewer    | Code quality review                        | Inherits        | Safe    | read_file, grep, bash (read-only git)              |
+| code-reviewer    | Code quality review                        | global default  | Safe    | read_file, grep, bash (read-only git)              |
 | context-restorer | Post-compaction context recovery           | small-model | Safe    | read_file, grep, bash (read-only git)              |
 | explorer         | Project exploration                        | small-model | Safe    | read_file, grep, bash                              |
 | file-editor      | Generic file editing                       | small-model | Neutral | read_file, write_file, edit, bash                  |
 | finder           | Pattern searching                          | small-model | Safe    | grep, bash (grep/rg/ag/find only)                  |
-| lisp-editor      | Lisp file editing with structure awareness | Inherits        | Neutral | read_file, write_file, grep, bash (no edit tool)   |
-| researcher       | Technical research                         | Inherits        | Safe    | web_search, web_fetch, read_file, grep, write_file |
-| script-manager   | Script creation and management             | Inherits        | Neutral | read_file, write_file, edit, bash                  |
+| lisp-editor      | Lisp file editing with structure awareness | global default  | Neutral | read_file, write_file, grep, bash (no edit tool)   |
+| researcher       | Technical research                         | global default  | Safe    | web_search, web_fetch, read_file, grep, write_file |
+| script-manager   | Script creation and management             | global default  | Neutral | read_file, write_file, edit, bash                  |
 | summarizer       | Document summarization                     | small-model | Safe    | read_file, grep                                    |
 
 Safety levels are a visual hint only (border color in the CLI) - they do not enforce anything. Enforcement comes from `enabled_tools` and per-tool permissions.
@@ -178,14 +182,15 @@ Skills provide structured workflows for complex, multi-step tasks. They can dele
 ## Configuration Highlights
 
 ### System Prompt
-- Custom system prompts: `system-prompt-medium.md` (for mistral-medium-3.5) and `system-prompt-large.md` (for larger models like glm-5.2)
+- Custom system prompts: `system-prompt-medium.md` (everyday prompt, shared by flash and medium-3.5), `system-prompt-planner.md` (the GLM planning profile), and `system-prompt-large.md` (held in reserve for Mistral Large 4 as the future main-model prompt)
 - Extends the default CLI prompt with delegation instructions
 - Emphasizes delegation-first approach
 
 ### Model Configuration
-- **Primary model**: glm-5.2 (current); mistral-medium-3.5 supported via `system-prompt-medium.md`
+- **Main models**: deepseek-v4-flash (`small-model`, default) and mistral-medium-3.5 (fallback when the Go plan runs low) — freely swappable at runtime via `/model` because both share `system-prompt-medium.md`. Vibe can't switch model, prompt, and permission mode independently, so the prompt is held constant across the interchangeable mains.
+- **glm-5.2**: reserved for high-judgment roles only — the `Planner (GLM)` agent profile (`agents/planner.toml`, pairs glm + `system-prompt-planner.md` + plan-only write permissions, switch via Shift+Tab) and the `advisor` subagent. Keeps Go-plan burn bounded. The planner writes plans for a weaker executor: exact files, literal content, a verification gate per task.
 - **Small/cheap model**: `small-model` alias (defined in config.toml `[[models]]`) — used by explorer, file-editor, finder, summarizer, context-restorer. To swap the small model, move the `alias = "small-model"` line to whichever `[[models]]` block you want delegated to the cheap tier — no subagent TOML changes needed. (Note: TUI model changes strip comments from config.toml, so keep swap instructions here, not in config.toml comments.)
-- All subagents inherit parent model unless specified
+- **Model inheritance is from config.toml, not the running agent**: a subagent without `active_model` loads a fresh config from disk (`task.py` does `VibeConfig.load()`), so it uses the global `active_model` — NOT the parent's model. Consequences: subagents spawned from the GLM planner profile still run on flash (no GLM leak); `/model` swaps DO propagate to inheriting subagents because the TUI persists the choice to config.toml (desirable: fall back to medium-3.5 and researcher/code-reviewer/lisp-editor/script-manager follow).
 
 ### Tool Permissions
 - Subagents have explicit tool permissions in their TOML files
@@ -395,7 +400,7 @@ The `debugging` skill runs its entire reproduce/isolate/hypothesize/diagnose loo
 ### Revisit later, not designed yet
 
 - **lisp-editor -> small-4**: kept on the inherited (larger) model because REPAIR requires real reasoning and nothing mechanically catches a bad repair yet. Revisit once the verifier closes the loop end-to-end.
-- **Large model arrival (done)**: `active_model` swapped to glm-5.2; file-editor is now optional for batch work, not mandatory — the large system prompt allows direct edits for small well-defined changes. The `system-prompt-large.md` variant handles the different delegation calibration.
+- **Mistral Large 4 arrival**: swap `active_model` and set `system_prompt_id = "system-prompt-large"` — the large prompt (judgment-based delegation, direct edits allowed for small changes) is written and waiting; it is not used by any agent today.
 
 ### Considered and dropped
 
@@ -422,7 +427,7 @@ Documentation generator and dependency analyzer (from an earlier, more generic p
 
 ### Dispatch Rules
 
-The delegation table lives in `prompts/system-prompt-medium.md` / `prompts/system-prompt-large.md` (single source of truth, selected by model); `AGENTS.md` covers subagent mechanics, clarification, and correction protocols. The main agent dispatches in this order:
+The delegation table lives in `prompts/system-prompt-medium.md` (the everyday prompt; `system-prompt-planner.md` covers the GLM planning profile, `system-prompt-large.md` is reserved for Large 4); `AGENTS.md` covers subagent mechanics, clarification, and correction protocols. The main agent dispatches in this order:
 
 1. Check if request matches subagent purpose → Delegate to subagent
 2. Check if request matches skill trigger → Use skill

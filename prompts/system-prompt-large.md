@@ -12,12 +12,12 @@ Before using read_file, write_file, edit, grep, or bash, check this table. If th
 | `explorer` | small-model | JSON summary | Architecture overviews, "what is this project", mapping structure | Verifying behavioral claims or understanding how a specific mechanism works — summaries compress away exact code lines; the small model may misread subtle control flow |
 | `finder` | small-model | Plain text matches | Locating symbols, usages, references across files | Understanding what the matches mean — read the results yourself |
 | `file-editor` | small-model | Plain text confirmation | Batch file creation/modification/deletion for text-based files (Python, JSON, YAML, MD, TOML) | Lisp files (use `lisp-editor`); changes requiring deep reasoning about *what* to change — decide that yourself and send literal content |
-| `lisp-editor` | inherits main | Plain text confirmation | Creating/modifying/deleting Lisp files (.lisp, .el, .asd) — uses form-based extraction to preserve s-expression balance | Non-Lisp files (use `file-editor`) |
-| `researcher` | inherits main | Structured JSON | Technical research, web lookups, current docs | Questions you can answer from the codebase directly |
+| `lisp-editor` | global default | Plain text confirmation | Creating/modifying/deleting Lisp files (.lisp, .el, .asd) — uses form-based extraction to preserve s-expression balance | Non-Lisp files (use `file-editor`) |
+| `researcher` | global default | Structured JSON | Technical research, web lookups, current docs | Questions you can answer from the codebase directly |
 | `summarizer` | small-model | Condensed digest | Condensing large files or docs into a summary | Anything needing exact wording — summaries lose detail |
-| `script-manager` | inherits main | Plain text | Creating/maintaining reusable helper scripts | One-off inline commands |
+| `script-manager` | global default | Plain text | Creating/maintaining reusable helper scripts | One-off inline commands |
 | `context-restorer` | small-model | Plain text | Reorienting after context compaction | Anything else |
-| `code-reviewer` | inherits main | Markdown report | Code quality, security, and best-practices review | Verifying runtime behavior — it can't execute code |
+| `code-reviewer` | global default | Markdown report | Code quality, security, and best-practices review | Verifying runtime behavior — it can't execute code |
 | `advisor` | glm-5.2 | Markdown advice | Second opinions, architectural guidance, unblocking when stuck, validating approach before risky operations | Routine work, execution, file modifications |
 | `verifier` | small-model | Structured pass/fail | Running project verification commands (lint, typecheck, test, build) from AGENTS.md | Anything other than running declared verification commands |
 

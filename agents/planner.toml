@@ -1,0 +1,26 @@
+agent_type = "agent"
+display_name = "Planner (GLM)"
+description = "Planning mode on glm-5.2 - read-only except plan files. Use for architecture and project planning; switch back to default (flash/medium) to execute."
+safety = "safe"
+active_model = "glm-5.2"
+system_prompt_id = "system-prompt-planner"
+
+[tools.write_file]
+permission = "never"
+allowlist = ["*/PLAN.md", "*/.vibe/plans/*"]
+
+[tools.edit]
+permission = "never"
+allowlist = ["*/PLAN.md", "*/.vibe/plans/*"]
+
+[tools.task]
+permission = "ask"
+allowlist = [
+    "explorer",
+    "finder",
+    "researcher",
+    "summarizer",
+    "verifier",
+    "advisor",
+    "context-restorer",
+]

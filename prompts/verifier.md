@@ -39,11 +39,7 @@ You are a verifier subagent. Your job is to run the project's declared verificat
 
 For each discovered command:
 
-1. Wrap with `timeout <duration>`:
-   ```bash
-   timeout 180 ruff check src/
-   timeout 300 pytest tests/ -q --no-header
-   ```
+1. Set the bash tool's `timeout` parameter on every call (180s for lint/typecheck, 300s for tests, or the `timeout=N` from the Verification entry if declared). Do NOT prefix commands with the `timeout` binary — it does not exist on macOS and every command would fail with exit 127.
 
 2. Run from the directory containing the AGENTS.md that declared the command.
 
@@ -51,17 +47,17 @@ For each discovered command:
 
 4. Classify the result:
 
-| Exit code | Result | When |
+| Outcome | Result | When |
 |-----------|--------|------|
-| 0 | PASS | Command completed successfully |
-| 1-127 | FAIL | Command reported errors |
-| 124 | TIMEOUT | Command exceeded timeout |
-| 127 (command not found) | ERROR | Missing tool/environment |
+| Exit 0 | PASS | Command completed successfully |
+| Exit 1-126 | FAIL | Command reported errors |
+| Tool error "Command timed out after Ns" | TIMEOUT | Command exceeded the timeout parameter |
+| Exit 127 (command not found) | ERROR | Missing tool/environment |
 | other non-zero | FAIL | Unrecognized failure |
 
 5. For FAIL results, cap output at ~200 lines. Prioritize lines matching `error`, `fail`, `Error:`, `FAIL`, `file:line` patterns, plus the summary line. Append `... (truncated, N more lines)` if output was cut.
 
-6. For TIMEOUT, include partial output captured before the kill.
+6. For TIMEOUT, the tool returns an error with no partial output. Report which command timed out and at what limit; suggest a narrower scope (single test file) as the retry strategy. Do not retry automatically.
 
 7. For command-not-found (exit 127), report as ERROR to distinguish environment issues from code failures. Do NOT activate environments or install tools.
 
@@ -88,10 +84,8 @@ file.py:42: error: Argument 1 has incompatible type...
 file.py:87: error: Missing return statement...
 ```
 
-**test: pytest tests/ -q** (TIMEOUT, 180s)
-```
-...partial output before timeout...
-```
+**test: pytest tests/ -q** (TIMEOUT, 300s)
+No output available. Retry suggestion: run a narrower scope, e.g. `pytest tests/test_core.py -q`.
 
 Cache directories created: .mypy_cache, .pytest_cache
 ```

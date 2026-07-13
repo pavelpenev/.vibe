@@ -11,7 +11,7 @@ active_transcribe_model = "voxtral-realtime"
 active_tts_model = "voxtral-tts"
 bypass_tool_permissions = false
 enable_telemetry = true
-system_prompt_id = "system-prompt-large"
+system_prompt_id = "system-prompt-medium"
 include_commit_signature = false
 include_model_info = true
 include_project_context = true
@@ -97,15 +97,6 @@ provider = "opencode"
 alias = "glm-5.2"
 input_price = 1.4
 output_price = 4.4
-auto_compact_threshold = 800000
-thinking = "high"
-
-[[models]]
-name = "deepseek-v4-pro"
-provider = "opencode"
-alias = "deepseek-v4-pro"
-input_price = 1.74
-output_price = 3.48
 auto_compact_threshold = 800000
 thinking = "high"
 
@@ -275,7 +266,6 @@ allowlist = [
     "sum",
     "tac",
     "tail",
-    "timeout",
     "tr",
     "tree",
     "uname",
