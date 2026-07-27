@@ -1,4 +1,4 @@
-active_model = "small-model"
+active_model = "kimi-k3"
 vim_keybindings = false
 disable_welcome_banner_animation = false
 autocopy_to_clipboard = true
@@ -11,7 +11,7 @@ active_transcribe_model = "voxtral-realtime"
 active_tts_model = "voxtral-tts"
 bypass_tool_permissions = false
 enable_telemetry = true
-system_prompt_id = "system-prompt-medium"
+system_prompt_id = "system-prompt-large"
 include_commit_signature = false
 include_model_info = true
 include_project_context = true
@@ -44,6 +44,8 @@ enabled_skills = [
     "git-workflow",
     "web-search",
     "subagent-creator",
+    "research-synthesis",
+    "lisp-spec-writer",
 ]
 disabled_skills = []
 enable_experimental_hooks = true
@@ -101,6 +103,16 @@ auto_compact_threshold = 800000
 thinking = "high"
 
 [[models]]
+name = "kimi-k3"
+provider = "opencode"
+alias = "kimi-k3"
+temperature = 1.0
+input_price = 3.0
+output_price = 15.0
+auto_compact_threshold = 800000
+thinking = "high"
+
+[[models]]
 name = "deepseek-v4-flash"
 provider = "opencode"
 alias = "small-model"
@@ -108,6 +120,17 @@ input_price = 0.14
 output_price = 0.28
 auto_compact_threshold = 800000
 thinking = "high"
+
+[[models]]
+name = "deepseek-v4-pro"
+provider = "opencode"
+alias = "deepseek-v4-pro"
+temperature = 0.2
+input_price = 1.74
+output_price = 3.48
+thinking = "max"
+supports_images = false
+auto_compact_threshold = 800000
 
 [[transcribe_providers]]
 name = "mistral"
