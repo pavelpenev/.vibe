@@ -1,5 +1,6 @@
 .env
 logs/
+shell-tool/
 plans/
 cache.toml
 connector_bootstrap_cache.json

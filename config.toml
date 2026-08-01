@@ -1,4 +1,4 @@
-active_model = "kimi-k3"
+active_model = "open-router-deepseek-v4-flash-0731"
 vim_keybindings = false
 disable_welcome_banner_animation = false
 autocopy_to_clipboard = true
@@ -32,7 +32,7 @@ disabled_agents = [
     "explore",
 ]
 installed_agents = []
-default_agent = "default"
+default_agent = "auto-approve"
 enabled_skills = [
     "skill-creator",
     "deep-research",
@@ -71,6 +71,13 @@ region = ""
 name = "opencode"
 api_base = "https://opencode.ai/zen/go/v1"
 api_key_env_var = "OPENCODE_API_KEY"
+api_style = "openai"
+backend = "generic"
+
+[[providers]]
+name = "openrouter"
+api_base = "https://openrouter.ai/api/v1"
+api_key_env_var = "OPENROUTER_API_KEY"
 api_style = "openai"
 backend = "generic"
 
@@ -130,6 +137,15 @@ input_price = 1.74
 output_price = 3.48
 thinking = "max"
 supports_images = false
+auto_compact_threshold = 800000
+
+[[models]]
+name = "deepseek/deepseek-v4-flash-0731"
+provider = "openrouter"
+alias = "open-router-deepseek-v4-flash-0731"
+input_price = 0.14
+output_price = 0.28
+thinking = "max"
 auto_compact_threshold = 800000
 
 [[transcribe_providers]]
