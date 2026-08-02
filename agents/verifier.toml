@@ -8,6 +8,23 @@ enabled_tools = ["bash", "read_file", "grep"]
 
 [tools.bash]
 permission = "ask"
+allowlist = [
+  "cd",
+  "echo",
+  "ls",
+  "find",
+  "cat",
+  "head -n",
+  "tail -n",
+  "wc -l",
+  "grep",
+  "pwd",
+  "test -f",
+  "git status",
+  "git diff",
+  "git log",
+  "git branch"
+]
 
 [tools.read_file]
 permission = "always"

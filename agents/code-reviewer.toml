@@ -14,6 +14,17 @@ permission = "always"
 [tools.bash]
 permission = "ask"
 allowlist = [
+  "cd",
+  "echo",
+  "ls",
+  "find",
+  "cat",
+  "head -n",
+  "tail -n",
+  "wc -l",
+  "grep",
+  "pwd",
+  "test -f",
   "git log",
   "git diff",
   "git diff --staged",
@@ -22,10 +33,5 @@ allowlist = [
   "git status",
   "git branch",
   "git remote -v",
-  "git ls-remote",
-  "wc -l",
-  "find . -type f",
-  "find . -name",
-  "head -n",
-  "tail -n"
+  "git ls-remote"
 ]

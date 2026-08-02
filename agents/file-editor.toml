@@ -18,9 +18,19 @@ permission = "always"
 [tools.bash]
 permission = "ask"
 allowlist = [
+  "cd",
+  "echo",
+  "ls",
+  "find",
+  "cat",
+  "head -n",
+  "tail -n",
+  "wc -l",
+  "grep",
+  "pwd",
+  "test -f",
   "mv",
   "cp",
   "touch",
-  "mkdir -p",
-  "wc -l"
+  "mkdir -p"
 ]

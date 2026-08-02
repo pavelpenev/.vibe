@@ -12,15 +12,17 @@ permission = "always"
 [tools.bash]
 permission = "ask"
 allowlist = [
-  "ls -la",
-  "ls -R",
-  "find . -name",
-  "find . -type f",
-  "find . -iname",
+  "cd",
+  "echo",
+  "ls",
+  "find",
   "cat",
   "head -n",
   "tail -n",
-  "wc -l"
+  "wc -l",
+  "grep",
+  "pwd",
+  "test -f"
 ]
 
 [tools.grep]

@@ -1,10 +1,10 @@
-active_model = "open-router-deepseek-v4-flash-0731"
+active_model = "small-model"
 vim_keybindings = false
 disable_welcome_banner_animation = false
 autocopy_to_clipboard = true
-file_watcher_for_autocomplete = false
+file_watcher_for_autocomplete = true
 displayed_workdir = ""
-context_warnings = false
+context_warnings = true
 voice_mode_enabled = false
 narrator_enabled = false
 active_transcribe_model = "voxtral-realtime"
@@ -52,6 +52,9 @@ enable_experimental_hooks = true
 applied_migrations = [
     "bash_read_only_defaults_v1",
 ]
+experimental_enable_registry_skills = true
+vibe_code_enabled = true
+show_thinking_nodes = true
 
 [[providers]]
 name = "mistral"
@@ -103,16 +106,16 @@ auto_compact_threshold = 200000
 [[models]]
 name = "glm-5.2"
 provider = "opencode"
-alias = "glm-5.2"
 input_price = 1.4
 output_price = 4.4
 auto_compact_threshold = 800000
 thinking = "high"
+alias = "glm-5.2"
 
 [[models]]
 name = "kimi-k3"
 provider = "opencode"
-alias = "kimi-k3"
+alias = "advisor"
 temperature = 1.0
 input_price = 3.0
 output_price = 15.0
@@ -122,11 +125,11 @@ thinking = "high"
 [[models]]
 name = "deepseek-v4-flash"
 provider = "opencode"
-alias = "small-model"
 input_price = 0.14
 output_price = 0.28
 auto_compact_threshold = 800000
 thinking = "high"
+alias = "deepseek-v4-flash"
 
 [[models]]
 name = "deepseek-v4-pro"
@@ -142,11 +145,20 @@ auto_compact_threshold = 800000
 [[models]]
 name = "deepseek/deepseek-v4-flash-0731"
 provider = "openrouter"
-alias = "open-router-deepseek-v4-flash-0731"
+alias = "small-model"
 input_price = 0.14
 output_price = 0.28
 thinking = "max"
 auto_compact_threshold = 800000
+
+[[models]]
+name = "openai/gpt-5.6-sol"
+provider = "openrouter"
+input_price = 5.0
+output_price = 30.0
+thinking = "high"
+auto_compact_threshold = 800000
+alias = "openai/gpt-5.6-sol"
 
 [[transcribe_providers]]
 name = "mistral"

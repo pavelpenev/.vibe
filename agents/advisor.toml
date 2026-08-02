@@ -2,7 +2,7 @@ agent_type = "subagent"
 display_name = "Advisor"
 description = "Provides guidance and second opinions from a stronger model on difficult decisions, architectural choices, and risky operations"
 safety = "safe"
-active_model = "glm-5.2"
+active_model = "advisor"
 system_prompt_id = "advisor"
 enabled_tools = ["read_file", "grep", "web_search", "web_fetch"]
 

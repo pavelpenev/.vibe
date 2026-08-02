@@ -15,13 +15,19 @@ permission = "always"
 [tools.bash]
 permission = "ask"
 allowlist = [
+  "cd",
+  "echo",
+  "ls",
+  "find",
+  "cat",
+  "head -n",
+  "tail -n",
+  "wc -l",
+  "grep",
+  "pwd",
+  "test -f",
   "git status",
   "git diff",
-  "git log --oneline -5",
-  "git branch",
-  "ls -la",
-  "ls -lt",
-  "find . -name",
-  "find . -mtime -1",
-  "pwd"
+  "git log",
+  "git branch"
 ]
