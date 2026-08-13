@@ -1,4 +1,4 @@
-active_model = "small-model"
+active_model = "advisor"
 vim_keybindings = false
 disable_welcome_banner_animation = false
 autocopy_to_clipboard = true
@@ -22,6 +22,7 @@ enable_notifications = true
 api_timeout = 720.0
 auto_compact_threshold = 800000
 compaction_prompt_id = "compact-v3"
+compaction_model = 'small-model'
 tool_paths = []
 mcp_servers = []
 connectors = []
@@ -90,9 +91,21 @@ provider = "mistral"
 alias = "mistral-medium-3.5"
 input_price = 1.5
 output_price = 7.5
+cached_input_price = 0.15
 thinking = "high"
 supports_images = true
 auto_compact_threshold = 200000
+
+[[models]]
+name = "glm-5-2"
+provider = "mistral"
+input_price = 1.4
+output_price = 4.4
+cached_input_price = 0.14
+thinking = "high"
+supports_images = false
+auto_compact_threshold = 800000
+alias = "advisor"
 
 [[models]]
 name = "mistral-small-latest"
@@ -100,6 +113,7 @@ provider = "mistral"
 alias = "mistral-small-4"
 input_price = 0.15
 output_price = 0.6
+cached_input_price = 0.01
 thinking = "high"
 auto_compact_threshold = 200000
 
@@ -108,10 +122,10 @@ name = "deepseek-v4-flash"
 provider = "opencode"
 input_price = 0.14
 output_price = 0.28
+cached_input_price = 0.01
 auto_compact_threshold = 800000
 thinking = "high"
-alias = "deepseek-v4-flash"
-
+alias = "small-model"
 
 [[transcribe_providers]]
 name = "mistral"
