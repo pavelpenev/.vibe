@@ -21,25 +21,28 @@ Subagents (deepseek-v4-flash "worker")
 |---|---|---|---|---|
 | orchestrator | glm-5-2 | mistral | main | 500k |
 | worker | deepseek-v4-flash | opencode | all subagents | 800k |
+| gpt-5.6-sol | gpt-5.6-sol | codex | advisor | 500k |
+| gpt-5.6-luna | gpt-5.6-luna | codex | backup worker | 200k |
 
 mistral-vibe-cli-latest (vision) and mistral-small-latest remain in config
-without aliases for vision tasks via `/model`. Advisor runs on worker for an
-independent peer perspective — same ability tier, different model.
+without aliases for vision tasks via `/model`. Advisor runs on GPT-5.6-sol for
+genuine model uplift. Luna-worker is a backup when deepseek is unavailable.
 
-## Agents (10)
+## Agents (12)
 
-| Name | Purpose | Safety |
-|---|---|---|
-| advisor | Independent peer perspective on hard decisions | Safe |
-| code-reviewer | Code quality review | Safe |
-| explorer | Project exploration | Safe |
-| finder | Pattern searching | Safe |
-| generic-implementor | Intent-based file editing (Python/JSON/YAML/MD/TOML) | Neutral |
-| lisp-implementor | Intent-based Lisp editing with form extraction | Neutral |
-| researcher | Technical research | Safe |
-| summarizer | Document summarization | Safe |
-| verifier | Run project verification commands | Safe |
-| worker | General-purpose misc tasks | Neutral |
+| Name | Purpose | Model | Safety |
+|---|---|---|---|
+| advisor | Independent perspective from a stronger model | gpt-5.6-sol | Safe |
+| code-reviewer | Code quality review | worker | Safe |
+| explorer | Project exploration | worker | Safe |
+| finder | Pattern searching | worker | Safe |
+| generic-implementor | Intent-based file editing (Python/JSON/YAML/MD/TOML) | worker | Neutral |
+| lisp-implementor | Intent-based Lisp editing with form extraction | worker | Neutral |
+| luna-worker | Backup worker (GPT-5.6-luna) | gpt-5.6-luna | Neutral |
+| researcher | Technical research | worker | Safe |
+| summarizer | Document summarization | worker | Safe |
+| verifier | Run project verification commands | worker | Safe |
+| worker | General-purpose misc tasks | worker | Neutral |
 
 ## Skills (10)
 

@@ -81,6 +81,35 @@ api_key_env_var = "OPENROUTER_API_KEY"
 api_style = "openai"
 backend = "generic"
 
+[[providers]]
+name = "codex"
+api_base = "http://127.0.0.1:18080/v1"
+api_key_env_var = ""
+api_style = "openai-responses"
+backend = "generic"
+
+[[models]]
+name = "gpt-5.6-sol"
+provider = "codex"
+input_price = 5.0
+output_price = 30.0
+cached_input_price = 0.5
+thinking = "high"
+supports_images = true
+auto_compact_threshold = 500000
+alias = "gpt-5.6-sol"
+
+[[models]]
+name = "gpt-5.6-luna"
+provider = "codex"
+input_price = 0.2
+output_price = 1.2
+cached_input_price = 0.02
+thinking = "high"
+supports_images = true
+auto_compact_threshold = 200000
+alias = "gpt-5.6-luna"
+
 [[models]]
 name = "mistral-vibe-cli-latest"
 provider = "mistral"
@@ -206,6 +235,7 @@ allowlist = [
     "advisor",
     "verifier",
     "worker",
+    "luna-worker",
 ]
 denylist = []
 sensitive_patterns = []

@@ -16,9 +16,10 @@ Before using read_file, write_file, edit, grep, or bash, check this table. If th
 | `researcher` | Structured JSON | Technical research, web lookups, current docs | Questions you can answer from the codebase directly |
 | `summarizer` | Condensed digest | Condensing large files or docs into a summary | Anything needing exact wording — summaries lose detail |
 | `code-reviewer` | Markdown report | Code quality, security, and best-practices review | Verifying runtime behavior — it can't execute code |
-| `advisor` | Markdown advice | Independent peer perspective on architectural guidance, destructive operations, unblocking when stuck | Routine work, execution, file modifications |
+| `advisor` | Markdown advice | Independent perspective from a stronger model on architectural guidance, destructive operations, unblocking when stuck | Routine work, execution, file modifications |
 | `verifier` | Structured pass/fail | Running project verification commands (lint, typecheck, test, build) from AGENTS.md | Anything other than running declared verification commands |
 | `worker` | JSON result | General-purpose misc tasks that don't fit a specialized subagent | Tasks that match a specialized agent — use that agent instead |
+| `luna-worker` | JSON result | Backup worker (GPT-5.6-luna) when deepseek is down or usage exhausted | Routine work when deepseek is available |
 
 Rules:
 - **Delegate token-heavy work to workers.** The orchestrator's context is the expensive one (GLM at $1.4/$4.4). Workers run on flash ($0.14/$0.28, ~10-15x cheaper). Send intent to implementors; they read the file in their own cheap context and edit. Do not pull file contents into the orchestrator's context when a worker can handle it.
@@ -33,7 +34,7 @@ Rules:
 
 ### Advisor Escalation
 
-You have an advisor subagent (`agent="advisor"`) providing an independent peer perspective — same ability tier, different model. Most advisor calls are manual — the user asks for a second opinion. Call it automatically when:
+You have an advisor subagent (`agent="advisor"`) providing an independent perspective from a stronger model (GPT-5.6-sol). Most advisor calls are manual — the user asks for a second opinion. Call it automatically when:
 - About to do something destructive or hard to reverse (`rm -rf`, force-push, `git reset --hard`, migrations, deploys)
 - Stuck after repeated failures on the same problem
 - Before committing to a multi-file or architectural approach
