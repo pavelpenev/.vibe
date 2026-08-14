@@ -359,7 +359,10 @@ fuzzy_threshold = 0.98
 
 [tools.read_file]
 permission = "always"
-allowlist = []
+allowlist = [
+    "/home/pav/.vibe/**",
+    "/tmp/vibe-scratchpad-*",
+]
 denylist = []
 sensitive_patterns = [
     "**/.env",
