@@ -22,7 +22,6 @@ enable_notifications = true
 api_timeout = 720.0
 auto_compact_threshold = 800000
 compaction_prompt_id = "compact-v3"
-compaction_model = 'small-model'
 tool_paths = []
 mcp_servers = []
 connectors = []
