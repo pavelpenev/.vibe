@@ -228,7 +228,7 @@ Key review questions to surface:
 
 ### Step 7: Refine
 
-Based on user feedback, refine the draft. For targeted changes, use the lisp-editor subagent if the spec file contains Lisp forms. Otherwise, edit directly.
+Based on user feedback, refine the draft. For targeted changes, use the lisp-implementor subagent if the spec file contains Lisp forms. Otherwise, edit directly.
 
 ### Step 8: Save
 

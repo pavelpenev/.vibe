@@ -8,8 +8,8 @@ Usage:
 
 Subagent capabilities:
 - Subagents cannot use `ask_user_question` for conversational clarification, and cannot spawn other subagents.
-- Tool permission prompts (e.g., bash commands not in the allowlist) DO surface to the user via the parent's approval callback — subagents are not silently blocked.
-- Some subagents can modify files (e.g., `file-editor`, `lisp-editor`, `script-manager`); check the delegation table in your system prompt for each subagent's model, returns, and capabilities.
+- Subagents run on the worker model (deepseek-v4-flash) with their own context. Permission prompts do not occur — safe tools are set to always, dangerous commands are denylisted (silent skip).
+- Some subagents can modify files (e.g., `generic-implementor`, `lisp-implementor`); check the delegation table in your system prompt for each subagent's returns and capabilities.
 
 Delegation guidance:
 - Delegate for parallelism (fan-out searches, multi-subsystem investigation) and bulk isolation (large explorations that would crowd working memory).

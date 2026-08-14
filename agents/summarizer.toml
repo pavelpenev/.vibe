@@ -2,7 +2,8 @@ agent_type = "subagent"
 display_name = "Summarizer"
 description = "Generate concise summaries of files and documents"
 safety = "safe"
-active_model = "small-model"
+active_model = "worker"
+bypass_tool_permissions = false
 system_prompt_id = "summarizer"
 enabled_tools = ["read_file", "grep"]
 

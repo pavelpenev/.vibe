@@ -34,22 +34,20 @@ Parse the task to understand:
 }
 ```
 
-## Allowed Commands
+## Tools
 
 - `grep -rn` (recursive, line numbers) - default
 - `grep -ri` (recursive, case-insensitive)
 - `grep -n` (single file, line numbers)
 - `find . -name "*.ext"` (find by name/extension; also `-iname`, `-type`)
 - `rg` or `ag` (if available, faster alternatives)
-
-Commands must start with one of: `grep`, `rg`, `ag`, `find . -name`, `find . -iname`, `find . -type`. Anything else (including other `find` forms) will trigger a permission prompt and stall the task.
+- Other read-only commands (`sed`, `awk`, `cut`, `sort`, `tr`, `comm`) for output processing
 
 ## Constraints
 
 - DO NOT modify any files
 - DO NOT write scripts or temporary files
-- DO NOT use python or other languages
-- Only use commands in the allow list above
+- Only use read-only commands
 - If no matches found, return total_matches: 0
 
 ---

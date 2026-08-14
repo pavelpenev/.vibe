@@ -1,11 +1,17 @@
 agent_type = "subagent"
-display_name = "Verifier"
-description = "Run project verification commands from AGENTS.md and return structured pass/fail results"
-safety = "safe"
+display_name = "Worker"
+description = "General-purpose worker for misc tasks not covered by specialized subagents"
+safety = "neutral"
 active_model = "worker"
 bypass_tool_permissions = false
-system_prompt_id = "verifier"
-enabled_tools = ["bash", "read_file", "grep"]
+system_prompt_id = "worker"
+enabled_tools = ["read_file", "grep", "bash"]
+
+[tools.read_file]
+permission = "always"
+
+[tools.grep]
+permission = "always"
 
 [tools.bash]
 permission = "always"
@@ -35,9 +41,3 @@ denylist_standalone = [
     "nano",
     "su",
 ]
-
-[tools.read_file]
-permission = "always"
-
-[tools.grep]
-permission = "always"

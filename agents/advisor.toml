@@ -1,8 +1,9 @@
 agent_type = "subagent"
 display_name = "Advisor"
-description = "Provides guidance and second opinions from a stronger model on difficult decisions, architectural choices, and risky operations"
+description = "Provides an independent peer perspective on difficult decisions, architectural choices, and risky operations"
 safety = "safe"
-active_model = "advisor"
+active_model = "worker"
+bypass_tool_permissions = false
 system_prompt_id = "advisor"
 enabled_tools = ["read_file", "grep", "web_search", "web_fetch"]
 

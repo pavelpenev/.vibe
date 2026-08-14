@@ -1,17 +1,29 @@
 agent_type = "subagent"
-display_name = "Code Reviewer"
-description = "Reviews code for quality, security, and best practices"
-safety = "safe"
+display_name = "Generic Implementor"
+description = "Takes implementation intent for Python/JSON/YAML/MD/TOML files; reads the file itself, decides and makes the edit, returns a concise structured summary"
+safety = "neutral"
 active_model = "worker"
 bypass_tool_permissions = false
-system_prompt_id = "code-reviewer"
-enabled_tools = ["read_file", "grep", "bash"]
+system_prompt_id = "generic-implementor"
+enabled_tools = ["read_file", "write_file", "edit", "bash"]
 
 [tools.read_file]
 permission = "always"
 
-[tools.grep]
+[tools.write_file]
 permission = "always"
+allowlist = []
+sensitive_patterns = [
+    "**/.env",
+    "**/.env.*",
+]
+
+[tools.edit]
+permission = "always"
+sensitive_patterns = [
+    "**/.env",
+    "**/.env.*",
+]
 
 [tools.bash]
 permission = "always"

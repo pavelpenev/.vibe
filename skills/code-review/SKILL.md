@@ -89,4 +89,4 @@ If the subagent reports "No changes found to review", relay that and ask the use
 
 - All review logic (check categories, severity levels, report format) lives in `~/.vibe/prompts/code-reviewer.md` - do not duplicate it here
 - The subagent is read-only; this skill must not modify files either
-- Other skills (e.g., auto-task self-review) may invoke this skill; the flow is identical
+- Other skills may invoke this skill; the flow is identical

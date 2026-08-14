@@ -2,6 +2,8 @@ agent_type = "subagent"
 display_name = "Researcher"
 description = "Perform technical research, return summary, optionally save report"
 safety = "safe"
+active_model = "worker"
+bypass_tool_permissions = false
 system_prompt_id = "researcher"
 enabled_tools = ["web_search", "web_fetch", "read_file", "grep", "write_file"]
 
@@ -18,4 +20,8 @@ permission = "always"
 permission = "always"
 
 [tools.write_file]
-permission = "ask"
+permission = "always"
+sensitive_patterns = [
+    "**/.env",
+    "**/.env.*",
+]

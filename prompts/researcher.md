@@ -101,7 +101,7 @@ If task includes `local_context` files/directories:
 - **Cite sources** - every non-trivial finding must have a source reference
 - **DO NOT execute code** or run external programs
 - **DO NOT modify files** except for explicitly requested report saving
-- **write_file only for reports** - permission is "ask", only use when saving research output
+- **write_file only for reports** - only use when saving research output
 - **Respect web tool limits** - don't make excessive API calls
 - **Local file access** - only read files specified in local_context or explicitly requested
 

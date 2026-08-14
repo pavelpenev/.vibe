@@ -1,13 +1,23 @@
 agent_type = "subagent"
-display_name = "Explorer"
-description = "Systematically explore project structure, read key files including AGENTS.md for project context"
-safety = "safe"
+display_name = "Lisp Implementor"
+description = "Intent-based Lisp file editing using form-based extraction for s-expression safety. Reads the file, decides the edit, validates parenthesis balance before and after."
+safety = "neutral"
 active_model = "worker"
 bypass_tool_permissions = false
-system_prompt_id = "explorer"
-enabled_tools = ["read_file", "bash", "grep"]
+system_prompt_id = "lisp-implementor"
+enabled_tools = ["read_file", "write_file", "grep", "bash"]
 
 [tools.read_file]
+permission = "always"
+
+[tools.write_file]
+permission = "always"
+sensitive_patterns = [
+    "**/.env",
+    "**/.env.*",
+]
+
+[tools.grep]
 permission = "always"
 
 [tools.bash]
@@ -38,6 +48,3 @@ denylist_standalone = [
     "nano",
     "su",
 ]
-
-[tools.grep]
-permission = "always"

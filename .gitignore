@@ -4,5 +4,7 @@ shell-tool/
 plans/
 cache.toml
 connector_bootstrap_cache.json
+experiment_eval_cache.json
+scratchpad-*.json
 vibehistory
 trusted_folders.toml

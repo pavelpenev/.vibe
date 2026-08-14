@@ -2,7 +2,8 @@ agent_type = "subagent"
 display_name = "Finder"
 description = "Search for patterns across files using grep/find commands"
 safety = "safe"
-active_model = "small-model"
+active_model = "worker"
+bypass_tool_permissions = false
 system_prompt_id = "finder"
 enabled_tools = ["grep", "bash"]
 
@@ -10,38 +11,30 @@ enabled_tools = ["grep", "bash"]
 permission = "always"
 
 [tools.bash]
-permission = "ask"
-allowlist = [
-  "cd",
-  "echo",
-  "ls",
-  "find",
-  "cat",
-  "head",
-  "tail",
-  "wc",
-  "grep",
-  "pwd",
-  "test -f",
-  "rg",
-  "ag",
-  "sed",
-  "sort",
-  "uniq",
-  "cut",
-  "awk",
-  "comm",
-  "tr",
-  "xargs",
-  "basename",
-  "dirname",
-  "stat",
-  "which",
-  "nl",
-  "od",
-  "read",
-  "printf",
-  "date",
-  "jq",
-  "python3"
+permission = "always"
+allowlist = []
+denylist = [
+    "git push",
+    "git reset --hard",
+    "git clean",
+    "git checkout",
+    "git stash drop",
+    "rm -rf",
+    "sudo",
+]
+sensitive_patterns = [
+    "sudo",
+]
+denylist_standalone = [
+    "python",
+    "python3",
+    "ipython",
+    "bash",
+    "sh",
+    "nohup",
+    "vi",
+    "vim",
+    "emacs",
+    "nano",
+    "su",
 ]
