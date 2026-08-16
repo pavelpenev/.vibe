@@ -19,7 +19,7 @@ allowed-tools:
 
 ## Overview
 
-Generates unit and integration tests for a **single file or module** with automatic framework detection, comprehensive edge case coverage, and self-review of output. Uses code-review skill to validate generated tests before presentation.
+Generates unit and integration tests for a **single file or module** with automatic framework detection, comprehensive edge case coverage, and self-review of output. Uses the review skill to validate generated tests before presentation.
 
 **Scope Limitation**: This skill is designed for single file/module test generation only. Requests for large subsystems or entire codebases are out of scope and should be rejected with guidance to break down the request.
 
@@ -192,10 +192,10 @@ Determine test file location based on project conventions and project AGENTS.md:
 
 ## Step 7: Self-Review
 
-Use the code-review skill to assess the generated tests:
-- Invoke code-review skill on the generated test file
+Use the review skill to assess the generated tests:
+- Invoke the review skill on the generated test file
 - Check for quality issues, style problems, or bugs in the tests
-- If code-review identifies issues: Attempt to fix them automatically
+- If the review identifies issues: Attempt to fix them automatically
 - If issues persist after one fix attempt: Surface to user for resolution
 
 ## Step 8: Quality Validation
@@ -309,7 +309,7 @@ Before output, verify:
 
 - **Context priority**: Project-local AGENTS.md > PLAN.md > Global AGENTS.md
 - **PLAN.md**: You may read PLAN.md for context but must not modify it unless explicitly told
-- **Skills**: May invoke code-review for self-assessment of generated tests
+- **Skills**: May invoke review for self-assessment of generated tests
 - **Todo tool**: Use for tracking test generation steps and issues
 - **Project AGENTS.md**: Check for project-specific test location, framework, and run instructions
 

@@ -35,7 +35,7 @@ default_agent = "auto-approve"
 enabled_skills = [
     "skill-creator",
     "deep-research",
-    "code-review",
+    "review",
     "test-generator",
     "debugging",
     "git-workflow",
@@ -225,7 +225,10 @@ max_todos = 100
 [tools.task]
 permission = "always"
 allowlist = [
-    "code-reviewer",
+    "reviewer-deepseek",
+    "reviewer-luna",
+    "reviewer-glm",
+    "reviewer-sol",
     "lisp-implementor",
     "finder",
     "explorer",

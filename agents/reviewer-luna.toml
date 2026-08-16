@@ -1,10 +1,10 @@
 agent_type = "subagent"
-display_name = "Code Reviewer"
-description = "Reviews code for quality, security, and best practices"
+display_name = "Reviewer (Luna)"
+description = "Independent artifact reviewer on GPT-5.6-luna; read-only review of code, docs, specs, plans"
 safety = "safe"
-active_model = "worker"
+active_model = "gpt-5.6-luna"
 bypass_tool_permissions = false
-system_prompt_id = "code-reviewer"
+system_prompt_id = "reviewer"
 enabled_tools = ["read_file", "grep", "bash"]
 
 [tools.read_file]

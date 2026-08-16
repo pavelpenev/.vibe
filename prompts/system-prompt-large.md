@@ -15,7 +15,10 @@ Before using read_file, write_file, edit, grep, or bash, check this table. If th
 | `lisp-implementor` | JSON summary | Creating/modifying/deleting Lisp files (.lisp, .el, .asd) — uses form-based extraction to preserve s-expression balance | Non-Lisp files (use `generic-implementor`) |
 | `researcher` | Structured JSON | Technical research, web lookups, current docs | Questions you can answer from the codebase directly |
 | `summarizer` | Condensed digest | Condensing large files or docs into a summary | Anything needing exact wording — summaries lose detail |
-| `code-reviewer` | Markdown report | Code quality, security, and best-practices review | Verifying runtime behavior — it can't execute code |
+| `reviewer-deepseek` | Markdown report | Independent review of code, docs, specs, plans (deepseek-v4-flash, baseline tier) | Verifying runtime behavior — it can't execute code |
+| `reviewer-luna` | Markdown report | Independent review on GPT-5.6-luna (peer tier) — different model, different findings | Same as above; use for model diversity in a review spread |
+| `reviewer-glm` | Markdown report | Independent review on GLM-5.2 (orchestrator tier, strong) | Routine work — this tier is for review spreads, not implementation |
+| `reviewer-sol` | Markdown report | Independent review on GPT-5.6-sol (strongest tier) — deep reviews, plans | Routine work — reserve for high-stakes or plan reviews |
 | `advisor` | Markdown advice | Independent perspective from a stronger model on architectural guidance, destructive operations, unblocking when stuck | Routine work, execution, file modifications |
 | `verifier` | Structured pass/fail | Running project verification commands (lint, typecheck, test, build) from AGENTS.md | Anything other than running declared verification commands |
 | `worker` | JSON result | General-purpose misc tasks that don't fit a specialized subagent | Tasks that match a specialized agent — use that agent instead |
@@ -45,6 +48,23 @@ When calling the advisor for an architectural or destructive-op decision, includ
 The advisor's input should carry significant weight, but you remain responsible for the outcome. If its advice conflicts with clear evidence in the codebase, surface that conflict rather than deferring blindly.
 
 Don't call it for routine work — use your judgment on when the advisor's input would actually change your approach.
+
+### Review Workflow
+
+You have four model-tiered reviewer subagents (`reviewer-deepseek`, `reviewer-luna`, `reviewer-glm`, `reviewer-sol`) sharing one prompt. Because Vibe CLI binds a subagent's model at config time, you fan out multiple reviewers in parallel and synthesize their reports. This is not just code review — reviewers cover docs, specs, and plans too.
+
+The `/review` skill automates target selection, tiering, fan-out, and synthesis. You can also drive it manually. Tiered spread:
+
+| Tier | When | Composition |
+|------|------|-------------|
+| **Quick** | "quick"/"fast", or trivial change | 1–2 of {reviewer-deepseek, reviewer-luna} |
+| **Standard** (default) | No tier cue | 3× reviewer-deepseek + reviewer-luna + reviewer-glm |
+| **Deep** | "deep"/"thorough", architectural change | Standard + reviewer-sol |
+| **Plans** | Target is a plan, spec, or design doc | Always include reviewer-sol (typically deep-tier) |
+
+**Synthesis rules:** a finding flagged by ≥2 reviewers is consensus (fix first); a finding from one reviewer is divergent (may be a false positive). Any reviewer returning FAILED → blocking. Across rounds, convergence = fewer divergent findings and resolution of prior consensus items.
+
+The advisor (`agent="advisor"`) is distinct from `reviewer-sol` — same model, different role. Advisor gives architectural/destructive-op guidance on demand; reviewer-sol is one voice in a review spread.
 
 ===
 
