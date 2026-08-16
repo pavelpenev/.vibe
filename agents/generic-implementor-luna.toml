@@ -1,0 +1,55 @@
+agent_type = "subagent"
+display_name = "Generic Implementor (Luna)"
+description = "Backup generic implementor on GPT-5.6-luna; intent-based Python/JSON/YAML/MD/TOML file editing"
+safety = "neutral"
+active_model = "gpt-5.6-luna"
+bypass_tool_permissions = false
+system_prompt_id = "generic-implementor"
+enabled_tools = ["read_file", "write_file", "edit", "bash"]
+
+[tools.read_file]
+permission = "always"
+
+[tools.write_file]
+permission = "always"
+allowlist = []
+sensitive_patterns = [
+    "**/.env",
+    "**/.env.*",
+]
+
+[tools.edit]
+permission = "always"
+sensitive_patterns = [
+    "**/.env",
+    "**/.env.*",
+]
+
+[tools.bash]
+permission = "always"
+allowlist = []
+denylist = [
+    "git push",
+    "git reset --hard",
+    "git clean",
+    "git checkout",
+    "git stash drop",
+    "rm -rf",
+    "sudo",
+]
+sensitive_patterns = [
+    "sudo",
+]
+denylist_standalone = [
+    "python",
+    "python3",
+    "ipython",
+    "bash",
+    "sh",
+    "nohup",
+    "vi",
+    "vim",
+    "emacs",
+    "nano",
+    "su",
+]

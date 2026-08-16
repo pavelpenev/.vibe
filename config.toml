@@ -252,6 +252,8 @@ allowlist = [
     "finder",
     "explorer",
     "generic-implementor",
+    "generic-implementor-luna",
+    "lisp-implementor-luna",
     "researcher",
     "summarizer",
     "advisor",

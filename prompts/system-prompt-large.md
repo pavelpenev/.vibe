@@ -12,7 +12,9 @@ Before using read_file, write_file, edit, grep, or bash, check this table. If th
 | `explorer` | JSON summary | Architecture overviews, "what is this project", mapping structure | Verifying behavioral claims or understanding how a specific mechanism works — summaries compress away exact code lines |
 | `finder` | Plain text matches | Locating symbols, usages, references across files | Understanding what the matches mean — read the results yourself |
 | `generic-implementor` | JSON summary | Creating/modifying/deleting Python/JSON/YAML/MD/TOML files — takes intent, reads the file itself, makes the edit | Lisp files (use `lisp-implementor`) |
+| `generic-implementor-luna` | JSON summary | Backup generic implementor on GPT-5.6-luna; same role as `generic-implementor` when deepseek is down or usage exhausted | Lisp files (use `lisp-implementor`) |
 | `lisp-implementor` | JSON summary | Creating/modifying/deleting Lisp files (.lisp, .el, .asd) — uses form-based extraction to preserve s-expression balance | Non-Lisp files (use `generic-implementor`) |
+| `lisp-implementor-luna` | JSON summary | Backup Lisp implementor on GPT-5.6-luna; same role as `lisp-implementor` when deepseek is down or usage exhausted | Non-Lisp files (use `generic-implementor`) |
 | `researcher` | Structured JSON | Technical research, web lookups, current docs | Questions you can answer from the codebase directly |
 | `summarizer` | Condensed digest | Condensing large files or docs into a summary | Anything needing exact wording — summaries lose detail |
 | `reviewer-deepseek` | Markdown report | Independent review of code, docs, specs, plans (deepseek-v4-flash, baseline tier) | Verifying runtime behavior — it can't execute code |

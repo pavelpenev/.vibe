@@ -30,7 +30,7 @@ genuine model uplift. Luna-worker is a backup when deepseek is unavailable.
 Sol and luna also serve as reviewer tiers (reviewer-sol, reviewer-luna); GLM
 doubles as reviewer-glm in the standard review spread.
 
-## Agents (14)
+## Agents (16)
 
 | Name | Purpose | Model | Safety |
 |---|---|---|---|
@@ -42,7 +42,9 @@ doubles as reviewer-glm in the standard review spread.
 | explorer | Project exploration | worker | Safe |
 | finder | Pattern searching | worker | Safe |
 | generic-implementor | Intent-based file editing (Python/JSON/YAML/MD/TOML) | worker | Neutral |
+| generic-implementor-luna | Backup generic implementor (GPT-5.6-luna) | gpt-5.6-luna | Neutral |
 | lisp-implementor | Intent-based Lisp editing with form extraction | worker | Neutral |
+| lisp-implementor-luna | Backup Lisp implementor (GPT-5.6-luna) | gpt-5.6-luna | Neutral |
 | luna-worker | Backup worker (GPT-5.6-luna) | gpt-5.6-luna | Neutral |
 | researcher | Technical research | worker | Safe |
 | summarizer | Document summarization | worker | Safe |
