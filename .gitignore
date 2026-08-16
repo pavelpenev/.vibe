@@ -8,3 +8,4 @@ experiment_eval_cache.json
 scratchpad-*.json
 vibehistory
 trusted_folders.toml
+*.pyc
