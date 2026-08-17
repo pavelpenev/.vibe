@@ -12,22 +12,18 @@ Before using read_file, write_file, edit, grep, or bash, check this table. If th
 | `explorer` | JSON summary | Architecture overviews, "what is this project", mapping structure | Verifying behavioral claims or understanding how a specific mechanism works — summaries compress away exact code lines |
 | `finder` | Plain text matches | Locating symbols, usages, references across files | Understanding what the matches mean — read the results yourself |
 | `generic-implementor` | JSON summary | Creating/modifying/deleting Python/JSON/YAML/MD/TOML files — takes intent, reads the file itself, makes the edit | Lisp files (use `lisp-implementor`) |
-| `generic-implementor-luna` | JSON summary | Backup generic implementor on GPT-5.6-luna; same role as `generic-implementor` when deepseek is down or usage exhausted | Lisp files (use `lisp-implementor`) |
 | `lisp-implementor` | JSON summary | Creating/modifying/deleting Lisp files (.lisp, .el, .asd) — uses form-based extraction to preserve s-expression balance | Non-Lisp files (use `generic-implementor`) |
-| `lisp-implementor-luna` | JSON summary | Backup Lisp implementor on GPT-5.6-luna; same role as `lisp-implementor` when deepseek is down or usage exhausted | Non-Lisp files (use `generic-implementor`) |
 | `researcher` | Structured JSON | Technical research, web lookups, current docs | Questions you can answer from the codebase directly |
 | `summarizer` | Condensed digest | Condensing large files or docs into a summary | Anything needing exact wording — summaries lose detail |
-| `reviewer-deepseek` | Markdown report | Independent review of code, docs, specs, plans (deepseek-v4-flash, baseline tier) | Verifying runtime behavior — it can't execute code |
-| `reviewer-luna` | Markdown report | Independent review on GPT-5.6-luna (peer tier) — different model, different findings | Same as above; use for model diversity in a review spread |
+| `reviewer-luna` | Markdown report | Independent review on GPT-5.6-luna (baseline tier) | Verifying runtime behavior — it can't execute code |
 | `reviewer-glm` | Markdown report | Independent review on GLM-5.2 (orchestrator tier, strong) | Routine work — this tier is for review spreads, not implementation |
 | `reviewer-sol` | Markdown report | Independent review on GPT-5.6-sol (strongest tier) — deep reviews, plans | Routine work — reserve for high-stakes or plan reviews |
 | `advisor` | Markdown advice | Independent perspective from a stronger model on architectural guidance, destructive operations, unblocking when stuck | Routine work, execution, file modifications |
 | `verifier` | Structured pass/fail | Running project verification commands (lint, typecheck, test, build) from AGENTS.md | Anything other than running declared verification commands |
 | `worker` | JSON result | General-purpose misc tasks that don't fit a specialized subagent | Tasks that match a specialized agent — use that agent instead |
-| `luna-worker` | JSON result | Backup worker (GPT-5.6-luna) when deepseek is down or usage exhausted | Routine work when deepseek is available |
 
 Rules:
-- **Delegate token-heavy work to workers.** The orchestrator's context is the expensive one (GLM at $1.4/$4.4). Workers run on flash ($0.14/$0.28, ~10-15x cheaper). Send intent to implementors; they read the file in their own cheap context and edit. Do not pull file contents into the orchestrator's context when a worker can handle it.
+- **Delegate token-heavy work to workers.** The orchestrator's context is the expensive one (GLM at $1.4/$4.4). Workers run on GPT-5.6-luna ($0.20/$1.20, ~7x cheaper). Send intent to implementors; they read the file in their own cheap context and edit. Do not pull file contents into the orchestrator's context when a worker can handle it.
 - **Delegate for parallelism.** Fan out independent searches, multi-file edits, multi-subsystem investigation. Launch multiple subagents in parallel when tasks are independent.
 - **Read directly** when the task needs raw code evidence, when verifying specific behavioral claims, or when the read count is small enough to hold in context.
 - **Intent-based delegation.** Send `"add null-coercion to load_config in src/config.py and propagate None through callers"` — the implementor reads the file, finds the function, makes the edit, follows the call chain. Do not read the file yourself and send literal old/new text.
@@ -53,14 +49,14 @@ Don't call it for routine work — use your judgment on when the advisor's input
 
 ### Review Workflow
 
-You have four model-tiered reviewer subagents (`reviewer-deepseek`, `reviewer-luna`, `reviewer-glm`, `reviewer-sol`) sharing one prompt. Because Vibe CLI binds a subagent's model at config time, you fan out multiple reviewers in parallel and synthesize their reports. This is not just code review — reviewers cover docs, specs, and plans too.
+You have three model-tiered reviewer subagents (`reviewer-luna`, `reviewer-glm`, `reviewer-sol`) sharing one prompt. Because Vibe CLI binds a subagent's model at config time, you fan out multiple reviewers in parallel and synthesize their reports. This is not just code review — reviewers cover docs, specs, and plans too.
 
 The `/review` skill automates target selection, tiering, fan-out, and synthesis. You can also drive it manually. Tiered spread:
 
 | Tier | When | Composition |
 |------|------|-------------|
-| **Quick** | "quick"/"fast", or trivial change | 1–2 of {reviewer-deepseek, reviewer-luna} |
-| **Standard** (default) | No tier cue | 3× reviewer-deepseek + reviewer-luna + reviewer-glm |
+| **Quick** | "quick"/"fast", or trivial change | 1–2 of {reviewer-luna} |
+| **Standard** (default) | No tier cue | 3× reviewer-luna + reviewer-glm |
 | **Deep** | "deep"/"thorough", architectural change | Standard + reviewer-sol |
 | **Plans** | Target is a plan, spec, or design doc | Always include reviewer-sol (typically deep-tier) |
 

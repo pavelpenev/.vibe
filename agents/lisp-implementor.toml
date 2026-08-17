@@ -1,8 +1,8 @@
 agent_type = "subagent"
 display_name = "Lisp Implementor"
-description = "Intent-based Lisp file editing using form-based extraction for s-expression safety. Reads the file, decides the edit, validates parenthesis balance before and after."
+description = "Intent-based Lisp editing with form extraction for s-expression safety"
 safety = "neutral"
-active_model = "worker"
+active_model = "gpt-5.6-luna"
 bypass_tool_permissions = false
 system_prompt_id = "lisp-implementor"
 enabled_tools = ["read_file", "write_file", "grep", "bash"]

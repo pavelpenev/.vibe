@@ -1,8 +1,8 @@
 agent_type = "subagent"
 display_name = "Generic Implementor"
-description = "Takes implementation intent for Python/JSON/YAML/MD/TOML files; reads the file itself, decides and makes the edit, returns a concise structured summary"
+description = "Intent-based Python/JSON/YAML/MD/TOML file editing"
 safety = "neutral"
-active_model = "worker"
+active_model = "gpt-5.6-luna"
 bypass_tool_permissions = false
 system_prompt_id = "generic-implementor"
 enabled_tools = ["read_file", "write_file", "edit", "bash"]

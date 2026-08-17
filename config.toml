@@ -244,7 +244,6 @@ max_todos = 100
 [tools.task]
 permission = "always"
 allowlist = [
-    "reviewer-deepseek",
     "reviewer-luna",
     "reviewer-glm",
     "reviewer-sol",
@@ -252,14 +251,11 @@ allowlist = [
     "finder",
     "explorer",
     "generic-implementor",
-    "generic-implementor-luna",
-    "lisp-implementor-luna",
     "researcher",
     "summarizer",
     "advisor",
     "verifier",
     "worker",
-    "luna-worker",
 ]
 denylist = []
 sensitive_patterns = []

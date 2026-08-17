@@ -24,8 +24,7 @@ All share one prompt (`~/.vibe/prompts/reviewer.md`) but run on different models
 
 | Agent | Model | Tier |
 |-------|-------|------|
-| `reviewer-deepseek` | deepseek-v4-flash (worker) | baseline |
-| `reviewer-luna` | gpt-5.6-luna | peer |
+| `reviewer-luna` | gpt-5.6-luna | baseline |
 | `reviewer-glm` | glm-5.2 (orchestrator) | strong |
 | `reviewer-sol` | gpt-5.6-sol | strongest |
 
@@ -76,8 +75,8 @@ Capture the output. If the verifier returns "No verification commands found", pr
 
 | Tier | When | Composition |
 |------|------|-------------|
-| **Quick** | User says "quick"/"fast", or the change is trivial (one-liner, rename) | 1–2 of {reviewer-deepseek, reviewer-luna} |
-| **Standard** (default) | User doesn't name a tier, or says "review"/"standard" | 3× reviewer-deepseek + reviewer-luna + reviewer-glm |
+| **Quick** | User says "quick"/"fast", or the change is trivial (one-liner, rename) | 1–2 of {reviewer-luna} |
+| **Standard** (default) | User doesn't name a tier, or says "review"/"standard" | 3× reviewer-luna + reviewer-glm |
 | **Deep** | User says "deep"/"thorough", or architectural change | Standard + reviewer-sol |
 | **Plans** | Target is a plan, spec, or design doc | Always include reviewer-sol (typically a deep-tier spread) |
 
@@ -103,11 +102,10 @@ Verification results captured:
 Review: <target>. Intent: <description>
 ```
 
-Delegation (standard tier example — issue all five in one block):
+Delegation (standard tier example — issue all four in one block):
 ```python
-task(task="{task_string}", agent="reviewer-deepseek")
-task(task="{task_string}", agent="reviewer-deepseek")
-task(task="{task_string}", agent="reviewer-deepseek")
+task(task="{task_string}", agent="reviewer-luna")
+task(task="{task_string}", agent="reviewer-luna")
 task(task="{task_string}", agent="reviewer-luna")
 task(task="{task_string}", agent="reviewer-glm")
 ```

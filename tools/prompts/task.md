@@ -8,7 +8,7 @@ Usage:
 
 Subagent capabilities:
 - Subagents cannot use `ask_user_question` for conversational clarification, and cannot spawn other subagents.
-- Subagents run on their own context with their pinned model (most on deepseek-v4-flash "worker"; advisor and reviewer-sol on gpt-5.6-sol, reviewer-luna and luna-worker on gpt-5.6-luna, reviewer-glm on the orchestrator tier). Permission prompts do not occur — safe tools are set to always, dangerous commands are denylisted (silent skip).
+- Subagents run on their own context with their pinned model (most on gpt-5.6-luna; advisor and reviewer-sol on gpt-5.6-sol, reviewer-luna on gpt-5.6-luna, reviewer-glm on the orchestrator tier). Permission prompts do not occur — safe tools are set to always, dangerous commands are denylisted (silent skip).
 - Some subagents can modify files (e.g., `generic-implementor`, `lisp-implementor`); check the delegation table in your system prompt for each subagent's returns and capabilities.
 
 Delegation guidance:
