@@ -161,6 +161,17 @@ thinking = "high"
 alias = "worker"
 
 [[models]]
+name = "ox-alpha-free"
+provider = "opencode"
+input_price = 0.0
+output_price = 0.0
+cached_input_price = 0.0
+thinking = "high"
+supports_images = true
+auto_compact_threshold = 500000
+alias = "ox-alpha-free"
+
+[[models]]
 name = "local"
 provider = "llamacpp"
 input_price = 0.0
@@ -244,6 +255,14 @@ max_todos = 100
 [tools.task]
 permission = "always"
 allowlist = [
+    "lisp-implementor-ox-alpha-free",
+    "reviewer-ox-alpha-free",
+    "generic-implementor-ox-alpha-free",
+    "reviewer-deepseek",
+    "lisp-implementor-deepseek",
+    "generic-implementor-deepseek",
+    "lisp-implementor-glm",
+    "generic-implementor-glm",
     "reviewer-luna",
     "reviewer-glm",
     "reviewer-sol",

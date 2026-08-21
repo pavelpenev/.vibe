@@ -24,9 +24,11 @@ All share one prompt (`~/.vibe/prompts/reviewer.md`) but run on different models
 
 | Agent | Model | Tier |
 |-------|-------|------|
+| `reviewer-deepseek` | deepseek-v4-flash (worker) | baseline |
 | `reviewer-luna` | gpt-5.6-luna | baseline |
 | `reviewer-glm` | glm-5.2 (orchestrator) | strong |
 | `reviewer-sol` | gpt-5.6-sol | strongest |
+| `reviewer-ox-alpha-free` | Ox Alpha Free (ox-alpha-free) | — |
 
 ## Triggering Conditions
 
@@ -75,8 +77,8 @@ Capture the output. If the verifier returns "No verification commands found", pr
 
 | Tier | When | Composition |
 |------|------|-------------|
-| **Quick** | User says "quick"/"fast", or the change is trivial (one-liner, rename) | 1–2 of {reviewer-luna} |
-| **Standard** (default) | User doesn't name a tier, or says "review"/"standard" | 3× reviewer-luna + reviewer-glm |
+| **Quick** | User says "quick"/"fast", or the change is trivial (one-liner, rename) | 1–2 of {reviewer-luna, reviewer-deepseek} |
+| **Standard** (default) | User doesn't name a tier, or says "review"/"standard" | 3× reviewer-luna + reviewer-glm + reviewer-deepseek + reviewer-ox-alpha-free |
 | **Deep** | User says "deep"/"thorough", or architectural change | Standard + reviewer-sol |
 | **Plans** | Target is a plan, spec, or design doc | Always include reviewer-sol (typically a deep-tier spread) |
 

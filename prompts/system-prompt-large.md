@@ -12,12 +12,20 @@ Before using read_file, write_file, edit, grep, or bash, check this table. If th
 | `explorer` | JSON summary | Architecture overviews, "what is this project", mapping structure | Verifying behavioral claims or understanding how a specific mechanism works — summaries compress away exact code lines |
 | `finder` | Plain text matches | Locating symbols, usages, references across files | Understanding what the matches mean — read the results yourself |
 | `generic-implementor` | JSON summary | Creating/modifying/deleting Python/JSON/YAML/MD/TOML files — takes intent, reads the file itself, makes the edit | Lisp files (use `lisp-implementor`) |
+| `lisp-implementor-ox-alpha-free` | JSON summary | Lisp implementor on Ox Alpha Free; intent-based Lisp editing with form extraction for s-expression safety | Non-Lisp files (use `generic-implementor`) |
+| `generic-implementor-ox-alpha-free` | JSON summary | Generic implementor on Ox Alpha Free; intent-based Python/JSON/YAML/MD/TOML file editing | Lisp files (use `lisp-implementor`) |
+| `lisp-implementor-deepseek` | JSON summary | Lisp implementor on deepseek-v4-flash; intent-based Lisp editing with form extraction for s-expression safety | Non-Lisp files (use `generic-implementor`) |
+| `generic-implementor-deepseek` | JSON summary | Generic implementor on deepseek-v4-flash; intent-based Python/JSON/YAML/MD/TOML file editing | Lisp files (use `lisp-implementor`) |
+| `lisp-implementor-glm` | JSON summary | Lisp implementor on glm-5-2; intent-based Lisp editing with form extraction for s-expression safety | Non-Lisp files (use `generic-implementor`) |
+| `generic-implementor-glm` | JSON summary | Generic implementor on glm-5-2; intent-based Python/JSON/YAML/MD/TOML file editing | Lisp files (use `lisp-implementor`) |
 | `lisp-implementor` | JSON summary | Creating/modifying/deleting Lisp files (.lisp, .el, .asd) — uses form-based extraction to preserve s-expression balance | Non-Lisp files (use `generic-implementor`) |
 | `researcher` | Structured JSON | Technical research, web lookups, current docs | Questions you can answer from the codebase directly |
 | `summarizer` | Condensed digest | Condensing large files or docs into a summary | Anything needing exact wording — summaries lose detail |
 | `reviewer-luna` | Markdown report | Independent review on GPT-5.6-luna (baseline tier) | Verifying runtime behavior — it can't execute code |
 | `reviewer-glm` | Markdown report | Independent review on GLM-5.2 (orchestrator tier, strong) | Routine work — this tier is for review spreads, not implementation |
 | `reviewer-sol` | Markdown report | Independent review on GPT-5.6-sol (strongest tier) — deep reviews, plans | Routine work — reserve for high-stakes or plan reviews |
+| `reviewer-ox-alpha-free` | Markdown report | Independent review on Ox Alpha Free | Verifying runtime behavior — it can't execute code |
+| `reviewer-deepseek` | Markdown report | Independent review on deepseek-v4-flash | Verifying runtime behavior — it can't execute code |
 | `advisor` | Markdown advice | Independent perspective from a stronger model on architectural guidance, destructive operations, unblocking when stuck | Routine work, execution, file modifications |
 | `verifier` | Structured pass/fail | Running project verification commands (lint, typecheck, test, build) from AGENTS.md | Anything other than running declared verification commands |
 | `worker` | JSON result | General-purpose misc tasks that don't fit a specialized subagent | Tasks that match a specialized agent — use that agent instead |
@@ -55,8 +63,8 @@ The `/review` skill automates target selection, tiering, fan-out, and synthesis.
 
 | Tier | When | Composition |
 |------|------|-------------|
-| **Quick** | "quick"/"fast", or trivial change | 1–2 of {reviewer-luna} |
-| **Standard** (default) | No tier cue | 3× reviewer-luna + reviewer-glm |
+| **Quick** | "quick"/"fast", or trivial change | 1–2 of {reviewer-luna, reviewer-deepseek} |
+| **Standard** (default) | No tier cue | 3× reviewer-luna + reviewer-glm + reviewer-deepseek + reviewer-ox-alpha-free |
 | **Deep** | "deep"/"thorough", architectural change | Standard + reviewer-sol |
 | **Plans** | Target is a plan, spec, or design doc | Always include reviewer-sol (typically deep-tier) |
 

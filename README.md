@@ -30,7 +30,7 @@ genuine model uplift. All non-advisor subagents run on GPT-5.6-luna, the default
 cheap model. Sol and luna also serve as reviewer tiers (reviewer-sol,
 reviewer-luna); GLM doubles as reviewer-glm in the standard review spread.
 
-## Agents (12)
+## Agents (20)
 
 | Name | Purpose | Model | Safety |
 |---|---|---|---|
@@ -38,10 +38,18 @@ reviewer-luna); GLM doubles as reviewer-glm in the standard review spread.
 | reviewer-luna | Independent artifact review (baseline tier) | gpt-5.6-luna | Safe |
 | reviewer-glm | Independent artifact review (strong tier) | orchestrator | Safe |
 | reviewer-sol | Independent artifact review (strongest tier) | gpt-5.6-sol | Safe |
+| reviewer-ox-alpha-free | Independent artifact review | ox-alpha-free | Safe |
+| reviewer-deepseek | Independent artifact review | worker | Safe |
 | explorer | Project exploration | gpt-5.6-luna | Safe |
 | finder | Pattern searching | gpt-5.6-luna | Safe |
 | generic-implementor | Intent-based file editing (Python/JSON/YAML/MD/TOML) | gpt-5.6-luna | Neutral |
+| generic-implementor-ox-alpha-free | Generic implementor (Ox Alpha Free) | ox-alpha-free | Neutral |
+| generic-implementor-deepseek | Generic implementor (deepseek-v4-flash) | worker | Neutral |
+| generic-implementor-glm | Generic implementor (glm-5-2) | orchestrator | Neutral |
 | lisp-implementor | Intent-based Lisp editing with form extraction | gpt-5.6-luna | Neutral |
+| lisp-implementor-ox-alpha-free | Lisp implementor (Ox Alpha Free) | ox-alpha-free | Neutral |
+| lisp-implementor-deepseek | Lisp implementor (deepseek-v4-flash) | worker | Neutral |
+| lisp-implementor-glm | Lisp implementor (glm-5-2) | orchestrator | Neutral |
 | researcher | Technical research | gpt-5.6-luna | Safe |
 | summarizer | Document summarization | gpt-5.6-luna | Safe |
 | verifier | Run project verification commands | gpt-5.6-luna | Safe |
@@ -65,8 +73,8 @@ matching reviewers in parallel, and synthesizes reports into a convergence view
 
 | Tier | When | Composition |
 |---|---|---|
-| Quick | "quick"/"fast" or trivial change | 1-2 of {reviewer-luna} |
-| Standard (default) | no tier cue | 3x reviewer-luna + reviewer-glm |
+| Quick | "quick"/"fast" or trivial change | 1-2 of {reviewer-luna, reviewer-deepseek} |
+| Standard (default) | no tier cue | 3x reviewer-luna + reviewer-glm + reviewer-deepseek + reviewer-ox-alpha-free |
 | Deep | "deep"/"thorough" or architectural change | Standard + reviewer-sol |
 | Plans | plan, spec, or design doc | Always reviewer-sol (typically deep-tier) |
 
