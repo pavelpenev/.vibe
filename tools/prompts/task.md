@@ -8,8 +8,8 @@ Usage:
 
 Subagent capabilities:
 - Subagents cannot use `ask_user_question` for conversational clarification, and cannot spawn other subagents.
-- Subagents run on their own context with their pinned model (most on gpt-5.6-luna; advisor and reviewer-sol on gpt-5.6-sol, reviewer-luna on gpt-5.6-luna, reviewer-glm on the orchestrator tier). Permission prompts do not occur — safe tools are set to always, dangerous commands are denylisted (silent skip).
-- Some subagents can modify files (e.g., `generic-implementor`, `lisp-implementor`); check the delegation table in your system prompt for each subagent's returns and capabilities.
+- Subagents run on their own context with their pinned model. Each generic subagent loads a role skill (implementor, reviewer, advisor, etc.) to specialize. Permission prompts do not occur — safe tools are set to always, dangerous commands are denylisted (silent skip).
+- Some roles can modify files (e.g., `implementor`, `lisp-implementor`); check the delegation table in your system prompt for each role's returns and capabilities. Read-only roles (reviewer, advisor, explorer, finder, summarizer, verifier) are instructed not to write even though write tools are available.
 
 Delegation guidance:
 - Delegate for parallelism (fan-out searches, multi-subsystem investigation) and bulk isolation (large explorations that would crowd working memory).

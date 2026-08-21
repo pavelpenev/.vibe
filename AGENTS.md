@@ -4,7 +4,7 @@
 
 - Syntax: `task(task="<clear task description>", agent="<subagent-name>")`
 - Subagents inherit the global `active_model` from config.toml unless their TOML
-  sets `active_model`. All workers are pinned to `gpt-5.6-luna`.
+  sets `active_model`. Each generic subagent is pinned to a specific model.
 - Subagents return plain text only, cannot ask the user questions, and cannot
   spawn other subagents (depth limit 1).
 - Provide all needed context in the task description — the subagent sees nothing else.

@@ -20,15 +20,15 @@ User Request → review skill (interactive) → tiered reviewer subagents (paral
 
 ## Reviewer Subagents
 
-All share one prompt (`~/.vibe/prompts/reviewer.md`) but run on different models:
+Reviewers are generic subagents that load the `reviewer` skill. Each runs on a different model:
 
 | Agent | Model | Tier |
 |-------|-------|------|
-| `reviewer-deepseek` | deepseek-v4-flash (worker) | baseline |
-| `reviewer-luna` | gpt-5.6-luna | baseline |
-| `reviewer-glm` | glm-5.2 (orchestrator) | strong |
-| `reviewer-sol` | gpt-5.6-sol | strongest |
-| `reviewer-ox-alpha-free` | Ox Alpha Free (ox-alpha-free) | — |
+| `generic-deepseek` | deepseek-v4-flash | baseline |
+| `generic-luna` | gpt-5.6-luna | baseline |
+| `generic-glm` | glm-5-2 | strong |
+| `generic-sol` | gpt-5.6-sol | strongest |
+| `generic-ox-alpha-free` | Ox Alpha Free (ox-alpha-free) | — |
 
 ## Triggering Conditions
 
@@ -68,7 +68,7 @@ For plans/specs: the intent is the plan's stated goal. If the document has a cle
 Before delegating a code review, run the project's verification commands:
 
 ```python
-task(task="Run verification on the changed files", agent="verifier")
+task(task="Load the verifier skill and run verification on the changed files", agent="generic-luna")
 ```
 
 Capture the output. If the verifier returns "No verification commands found", proceed without results. Skip this step for non-code artifacts.
@@ -77,10 +77,10 @@ Capture the output. If the verifier returns "No verification commands found", pr
 
 | Tier | When | Composition |
 |------|------|-------------|
-| **Quick** | User says "quick"/"fast", or the change is trivial (one-liner, rename) | 1–2 of {reviewer-luna, reviewer-deepseek} |
-| **Standard** (default) | User doesn't name a tier, or says "review"/"standard" | 3× reviewer-luna + reviewer-glm + reviewer-deepseek + reviewer-ox-alpha-free |
-| **Deep** | User says "deep"/"thorough", or architectural change | Standard + reviewer-sol |
-| **Plans** | Target is a plan, spec, or design doc | Always include reviewer-sol (typically a deep-tier spread) |
+| **Quick** | User says "quick"/"fast", or the change is trivial (one-liner, rename) | 1–2 of {generic-luna, generic-deepseek} with `reviewer` skill |
+| **Standard** (default) | User doesn't name a tier, or says "review"/"standard" | 3× generic-luna + generic-deepseek + generic-ox-alpha-free, all with `reviewer` skill |
+| **Deep** | User says "deep"/"thorough", or architectural change | Standard + generic-glm + generic-sol with `reviewer` skill |
+| **Plans** | Target is a plan, spec, or design doc | Always include generic-sol with `reviewer` skill (typically a deep-tier spread) |
 
 Inference rules:
 - The word "quick"/"fast" → quick tier
@@ -104,12 +104,13 @@ Verification results captured:
 Review: <target>. Intent: <description>
 ```
 
-Delegation (standard tier example — issue all four in one block):
+Delegation (standard tier example — issue all five in one block):
 ```python
-task(task="{task_string}", agent="reviewer-luna")
-task(task="{task_string}", agent="reviewer-luna")
-task(task="{task_string}", agent="reviewer-luna")
-task(task="{task_string}", agent="reviewer-glm")
+task(task="Load the reviewer skill. {task_string}", agent="generic-luna")
+task(task="Load the reviewer skill. {task_string}", agent="generic-luna")
+task(task="Load the reviewer skill. {task_string}", agent="generic-luna")
+task(task="Load the reviewer skill. {task_string}", agent="generic-deepseek")
+task(task="Load the reviewer skill. {task_string}", agent="generic-ox-alpha-free")
 ```
 
 Target formats the reviewers understand:
@@ -164,7 +165,7 @@ If a reviewer reports "No changes found to review", note it in Per-Reviewer Stat
 
 ## Notes
 
-- All review logic (check categories, severity levels, report format) lives in `~/.vibe/prompts/reviewer.md` — do not duplicate it here.
+- All review logic (check categories, severity levels, report format) lives in the `reviewer` skill (`~/.vibe/skills/reviewer/SKILL.md`) — do not duplicate it here.
 - Reviewers are read-only; this skill must not modify files either.
 - Other skills may invoke this skill; the flow is identical.
 - For iterative review rounds, keep the tier and target the same across rounds so reports are comparable; the synthesis tracks convergence.

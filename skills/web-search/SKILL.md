@@ -70,10 +70,10 @@ Quick web search assistant for finding accurate information. This skill expands 
 - Version compatibility checks
 - Quick comparisons between 2-3 known options
 
-**Contrast with deep-research:**
-- Deep research is for complex multi-faceted questions requiring sustained investigation
-- Deep research involves multiple search iterations, prior art surveys, and comprehensive reports
-- Deep research requires more user input and guidance on scope
+**Contrast with the researcher role:**
+- Research is for complex multi-faceted questions requiring sustained investigation
+- Research involves multiple search iterations, prior art surveys, and comprehensive reports
+- Research requires more user input and guidance on scope
 - Web search should complete with 1-3 queries; deep research may require many more
 
 ## Search Techniques
@@ -143,7 +143,7 @@ Source: [URL]
 - **No results**: "No relevant information found. Try these alternatives: [2-3 specific suggestions]"
 - **All results low quality**: "Primary sources not found. Consider checking: [official docs URL] or using different terms: [suggestions]"
 - **Conflicting information**: Present both perspectives, note the discrepancy and source dates, ask user for preference if needed
-- **Query limit reached** (after 3 queries): "Found partial information. For deeper investigation, use the deep-research skill."
+- **Query limit reached** (after 3 queries): "Found partial information. For deeper investigation, delegate to a generic subagent with the researcher skill."
 - **Connection timeout**: "Search timed out. Try a more specific query or check your connection."
 
 ## User Clarification

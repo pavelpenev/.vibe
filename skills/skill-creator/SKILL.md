@@ -30,7 +30,6 @@ Guides users through the complete process of creating, validating, and enabling 
 - "build a skill for <task>"
 
 **When NOT to use:**
-- For creating subagents (use `/subagent-creator`)
 - For one-off tasks that don't need reusability
 - When a similar skill already exists (adapt existing instead)
 
@@ -146,7 +145,7 @@ Before creating files, validate:
 1. **Name validation:**
    - Only contains: `a-z`, `0-9`, `-`
    - Length: 2-40 characters
-   - Not a reserved name (skill-creator, subagent-creator, etc.)
+   - Not a reserved name (skill-creator, etc.)
 
 2. **Uniqueness check:**
    ```bash

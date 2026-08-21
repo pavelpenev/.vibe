@@ -1,69 +1,80 @@
 # Mistral Vibe Custom Configuration
 
-GLM-orchestrator + luna-worker architecture for Mistral Vibe CLI.
+GLM-5.2 main agent + multi-model generic subagents for Mistral Vibe CLI.
 
 ## Architecture
 
 ```
-Main Agent (GLM-5.2 "orchestrator")
+Main Agent (GLM-5.2)
   Orchestrates, keeps context lean, delegates token-heavy work
   Auto-approve (bypass=true), system-prompt-large.md
     |
     v
-Subagents (gpt-5.6-luna)
-  bypass=false, permission=always on safe tools
-  bash denylist (dangerous commands silently skipped)
+Generic Subagents (one per model)
+  Load role skills to specialize (implementor, reviewer, advisor, etc.)
+  bypass=false, permission=always on tools, bash denylist
 ```
 
 ## Models
 
 | Alias | Model | Provider | Role | Compaction |
 |---|---|---|---|---|
-| orchestrator | glm-5-2 | mistral | main | 500k |
-| worker | deepseek-v4-flash | opencode | unused (deepseek) | 800k |
-| gpt-5.6-sol | gpt-5.6-sol | codex | advisor | 500k |
-| gpt-5.6-luna | gpt-5.6-luna | codex | all subagents | 200k |
+| glm-5-2 | glm-5-2 | mistral | main | 500k |
+| deepseek-v4-flash | deepseek-v4-flash | opencode | generic subagent | 800k |
+| gpt-5.6-sol | gpt-5.6-sol | codex | generic subagent | 500k |
+| gpt-5.6-luna | gpt-5.6-luna | codex | generic subagent | 200k |
+| ox-alpha-free | ox-alpha-free | opencode | generic subagent | 500k |
 
 mistral-vibe-cli-latest (vision) and mistral-small-latest remain in config
-without aliases for vision tasks via `/model`. Advisor runs on GPT-5.6-sol for
-genuine model uplift. All non-advisor subagents run on GPT-5.6-luna, the default
-cheap model. Sol and luna also serve as reviewer tiers (reviewer-sol,
-reviewer-luna); GLM doubles as reviewer-glm in the standard review spread.
+without aliases for vision tasks via `/model`. Generic subagents run on each
+model; the main agent picks the model by cost/tier and the role skill by
+task. Sol serves as the advisor/deep-review tier; luna is the cheap default;
+GLM doubles as a strong-tier reviewer in the standard review spread.
 
-## Agents (20)
+## Agents (5)
 
-| Name | Purpose | Model | Safety |
-|---|---|---|---|
-| advisor | Independent perspective from a stronger model | gpt-5.6-sol | Safe |
-| reviewer-luna | Independent artifact review (baseline tier) | gpt-5.6-luna | Safe |
-| reviewer-glm | Independent artifact review (strong tier) | orchestrator | Safe |
-| reviewer-sol | Independent artifact review (strongest tier) | gpt-5.6-sol | Safe |
-| reviewer-ox-alpha-free | Independent artifact review | ox-alpha-free | Safe |
-| reviewer-deepseek | Independent artifact review | worker | Safe |
-| explorer | Project exploration | gpt-5.6-luna | Safe |
-| finder | Pattern searching | gpt-5.6-luna | Safe |
-| generic-implementor | Intent-based file editing (Python/JSON/YAML/MD/TOML) | gpt-5.6-luna | Neutral |
-| generic-implementor-ox-alpha-free | Generic implementor (Ox Alpha Free) | ox-alpha-free | Neutral |
-| generic-implementor-deepseek | Generic implementor (deepseek-v4-flash) | worker | Neutral |
-| generic-implementor-glm | Generic implementor (glm-5-2) | orchestrator | Neutral |
-| lisp-implementor | Intent-based Lisp editing with form extraction | gpt-5.6-luna | Neutral |
-| lisp-implementor-ox-alpha-free | Lisp implementor (Ox Alpha Free) | ox-alpha-free | Neutral |
-| lisp-implementor-deepseek | Lisp implementor (deepseek-v4-flash) | worker | Neutral |
-| lisp-implementor-glm | Lisp implementor (glm-5-2) | orchestrator | Neutral |
-| researcher | Technical research | gpt-5.6-luna | Safe |
-| summarizer | Document summarization | gpt-5.6-luna | Safe |
-| verifier | Run project verification commands | gpt-5.6-luna | Safe |
-| worker | General-purpose misc tasks | gpt-5.6-luna | Neutral |
+One generic subagent per model. Each loads a role skill (implementor,
+lisp-implementor, reviewer, advisor, explorer, finder, researcher, summarizer,
+verifier, worker) to specialize. Roles live in `skills/`, not in per-role
+agent TOMLs.
 
-The three reviewers share one prompt (`prompts/reviewer.md`); each is pinned to a
-different model tier so the orchestrator can fan them out in parallel and
-synthesize. Vibe CLI binds a subagent's model at config time, so model diversity
-requires separate agents.
+| Name | Model | Safety |
+|---|---|---|
+| generic-sol | gpt-5.6-sol | Neutral |
+| generic-luna | gpt-5.6-luna | Neutral |
+| generic-glm | glm-5-2 | Neutral |
+| generic-deepseek | deepseek-v4-flash | Neutral |
+| generic-ox-alpha-free | ox-alpha-free | Neutral |
 
-## Skills (10)
+All share one prompt (`prompts/generic-subagent.md`); each is pinned to a
+different model. The main agent picks the model by cost/tier and the skill by
+role: `task(task="Load the <skill> skill and <intent>", agent="generic-<model>")`.
 
-debugging, deep-research, git-workflow, lisp-spec-writer, research-synthesis,
-review, skill-creator, subagent-creator, test-generator, web-search.
+### Model dispatch
+
+Use the cheapest model capable of the task. Defaults:
+
+| Role | Default | Escalate to | When |
+|------|---------|-------------|------|
+| implementor / lisp-implementor | generic-luna | generic-sol | Multi-file architectural changes |
+| reviewer | generic-luna | generic-glm / generic-sol | Per review tier |
+| advisor | generic-sol | — | Always sol |
+| explorer / verifier | generic-luna | — | Mechanical tasks |
+| finder / summarizer / worker | generic-deepseek | generic-luna | Cheapest for bulk work |
+| researcher | generic-luna | — | Cost sweet spot |
+| (any, parallel) | generic-ox-alpha-free | — | Free extra capacity |
+
+Never use generic-sol for mechanical work — it's 25x the cost of luna with no
+quality benefit for simple edits, searches, or verification.
+
+## Skills (17)
+
+debugging, git-workflow, lisp-spec-writer, review, skill-creator,
+test-generator, web-search, implementor, lisp-implementor, reviewer, advisor,
+explorer, finder, researcher, summarizer, verifier, worker.
+
+The first 7 are user-invocable workflow skills. The last 10 are role skills
+loaded by generic subagents (not user-invocable).
 
 ## Review Workflow
 
@@ -73,10 +84,10 @@ matching reviewers in parallel, and synthesizes reports into a convergence view
 
 | Tier | When | Composition |
 |---|---|---|
-| Quick | "quick"/"fast" or trivial change | 1-2 of {reviewer-luna, reviewer-deepseek} |
-| Standard (default) | no tier cue | 3x reviewer-luna + reviewer-glm + reviewer-deepseek + reviewer-ox-alpha-free |
-| Deep | "deep"/"thorough" or architectural change | Standard + reviewer-sol |
-| Plans | plan, spec, or design doc | Always reviewer-sol (typically deep-tier) |
+| Quick | "quick"/"fast" or trivial change | 1-2 of {generic-luna, generic-deepseek} with `reviewer` skill |
+| Standard (default) | no tier cue | 3x generic-luna + generic-deepseek + generic-ox-alpha-free, all with `reviewer` skill |
+| Deep | "deep"/"thorough" or architectural change | Standard + generic-glm + generic-sol with `reviewer` skill |
+| Plans | plan, spec, or design doc | Always generic-sol with `reviewer` skill (typically deep-tier) |
 
 Reviews cover code, docs, specs, and plans — not just code.
 
@@ -102,13 +113,13 @@ Reviews cover code, docs, specs, and plans — not just code.
 
 ## Creating New Subagents
 
-1. Create TOML in `agents/<name>.toml` and prompt in `prompts/<name>.md`
-2. Add to `[tools.task]` allowlist in config.toml
-3. Set `active_model` to the alias for the tier (`gpt-5.6-luna` for most; `orchestrator`, `gpt-5.6-sol` for model-diverse roles)
-4. `bypass_tool_permissions = false`, `permission = "always"` on safe tools, denylist on bash
-5. Model-diverse roles (e.g. reviewers) share one prompt across multiple TOMLs — duplicate the TOML, change `active_model` and `display_name` only
+1. Copy `agents/generic-luna.toml` to `agents/generic-<suffix>.toml` and change `display_name`, `description`, and `active_model`
+2. Add the new agent name to `[tools.task]` allowlist in config.toml
+3. To add a new role, create `skills/<role>/SKILL.md` with frontmatter (`user-invocable: false`, `allowed-tools`) and add the skill name to `enabled_skills` in config.toml
+4. `bypass_tool_permissions = false`, `permission = "always"` on tools, denylist on bash
+5. All generic subagents share `prompts/generic-subagent.md` — no per-role prompts needed
 
 ## Notes
 
 - TUI model changes strip comments from config.toml; keep notes here, not in config
-- Subagents without `active_model` inherit the global default — always pin to `gpt-5.6-luna`
+- Generic subagents load role skills via the `skill` tool — roles are defined in `skills/`, not duplicated across agent TOMLs

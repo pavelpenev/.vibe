@@ -39,7 +39,7 @@ Drafts formal Common Lisp specifications approaching ANSI CL spec (CLHS), AMOP, 
 User Request → lisp-spec-writer skill (interactive) → Research phase (researcher subagent for CLHS precedents) → Draft phase (main agent synthesis) → Review → Save
 ```
 
-The skill follows the deep-research interactive-front-end pattern. It never generates a full spec in one shot — spec writing requires iteration and back-and-forth.
+The skill follows an interactive front-end pattern. It never generates a full spec in one shot — spec writing requires iteration and back-and-forth.
 
 ## Modes
 
@@ -181,7 +181,7 @@ Extract: feature description, protocol contracts, lambda lists, invariants, edge
 Delegate to the researcher subagent to find how CLHS specifies analogous features:
 
 ```
-task(task="Research how CLHS specifies [analogous feature]. Fetch the relevant CLHS pages for [specific entries]. Return: (1) which CLHS chapters cover this domain, (2) the dictionary entry structure for the closest analogous functions/macros, (3) how CLHS handles [specific concern like protocol contracts, reader macros, etc.].", agent="researcher")
+task(task="Load the researcher skill and research how CLHS specifies [analogous feature]. Fetch the relevant CLHS pages for [specific entries]. Return: (1) which CLHS chapters cover this domain, (2) the dictionary entry structure for the closest analogous functions/macros, (3) how CLHS handles [specific concern like protocol contracts, reader macros, etc.].", agent="generic-luna")
 ```
 
 This step grounds the spec in CLHS conventions and prevents reinventing specification patterns.
@@ -228,7 +228,7 @@ Key review questions to surface:
 
 ### Step 7: Refine
 
-Based on user feedback, refine the draft. For targeted changes, use the lisp-implementor subagent if the spec file contains Lisp forms. Otherwise, edit directly.
+Based on user feedback, refine the draft. For targeted changes, delegate to a generic subagent with the `lisp-implementor` skill if the spec file contains Lisp forms. Otherwise, edit directly.
 
 ### Step 8: Save
 

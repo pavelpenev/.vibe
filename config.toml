@@ -1,4 +1,4 @@
-active_model = "orchestrator"
+active_model = "glm-5-2"
 vim_keybindings = false
 disable_welcome_banner_animation = false
 autocopy_to_clipboard = true
@@ -34,15 +34,22 @@ installed_agents = []
 default_agent = "auto-approve"
 enabled_skills = [
     "skill-creator",
-    "deep-research",
     "review",
     "test-generator",
     "debugging",
     "git-workflow",
     "web-search",
-    "subagent-creator",
-    "research-synthesis",
     "lisp-spec-writer",
+    "implementor",
+    "lisp-implementor",
+    "reviewer",
+    "advisor",
+    "explorer",
+    "finder",
+    "researcher",
+    "summarizer",
+    "verifier",
+    "worker",
 ]
 disabled_skills = []
 enable_experimental_hooks = true
@@ -138,7 +145,7 @@ cached_input_price = 0.14
 thinking = "high"
 supports_images = false
 auto_compact_threshold = 500000
-alias = "orchestrator"
+alias = "glm-5-2"
 
 [[models]]
 name = "mistral-small-latest"
@@ -158,7 +165,7 @@ output_price = 0.28
 cached_input_price = 0.01
 auto_compact_threshold = 800000
 thinking = "high"
-alias = "worker"
+alias = "deepseek-v4-flash"
 
 [[models]]
 name = "ox-alpha-free"
@@ -255,26 +262,11 @@ max_todos = 100
 [tools.task]
 permission = "always"
 allowlist = [
-    "lisp-implementor-ox-alpha-free",
-    "reviewer-ox-alpha-free",
-    "generic-implementor-ox-alpha-free",
-    "reviewer-deepseek",
-    "lisp-implementor-deepseek",
-    "generic-implementor-deepseek",
-    "lisp-implementor-glm",
-    "generic-implementor-glm",
-    "reviewer-luna",
-    "reviewer-glm",
-    "reviewer-sol",
-    "lisp-implementor",
-    "finder",
-    "explorer",
-    "generic-implementor",
-    "researcher",
-    "summarizer",
-    "advisor",
-    "verifier",
-    "worker",
+    "generic-sol",
+    "generic-luna",
+    "generic-glm",
+    "generic-deepseek",
+    "generic-ox-alpha-free",
 ]
 denylist = []
 sensitive_patterns = []

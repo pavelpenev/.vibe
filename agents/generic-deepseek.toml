@@ -1,11 +1,11 @@
 agent_type = "subagent"
-display_name = "Generic Implementor (Deepseek)"
-description = "Generic implementor on deepseek-v4-flash; intent-based Python/JSON/YAML/MD/TOML file editing"
+display_name = "Generic Subagent (Deepseek)"
+description = "Generic subagent on deepseek-v4-flash; loads role skills (implementor, reviewer, advisor, etc.) to perform any delegated role"
 safety = "neutral"
-active_model = "worker"
+active_model = "deepseek-v4-flash"
 bypass_tool_permissions = false
-system_prompt_id = "generic-implementor"
-enabled_tools = ["read_file", "write_file", "edit", "bash"]
+system_prompt_id = "generic-subagent"
+enabled_tools = ["read_file", "write_file", "edit", "grep", "bash", "skill", "web_search", "web_fetch"]
 
 [tools.read_file]
 permission = "always"
@@ -24,6 +24,9 @@ sensitive_patterns = [
     "**/.env",
     "**/.env.*",
 ]
+
+[tools.grep]
+permission = "always"
 
 [tools.bash]
 permission = "always"
@@ -53,3 +56,12 @@ denylist_standalone = [
     "nano",
     "su",
 ]
+
+[tools.skill]
+permission = "always"
+
+[tools.web_search]
+permission = "always"
+
+[tools.web_fetch]
+permission = "always"

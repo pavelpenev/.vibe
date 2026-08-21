@@ -1,16 +1,24 @@
 agent_type = "subagent"
-display_name = "Lisp Implementor (Deepseek)"
-description = "Lisp implementor on deepseek-v4-flash; intent-based Lisp editing with form extraction for s-expression safety"
+display_name = "Generic Subagent (Ox Alpha Free)"
+description = "Generic subagent on Ox Alpha Free; loads role skills (implementor, reviewer, advisor, etc.) to perform any delegated role"
 safety = "neutral"
-active_model = "worker"
+active_model = "ox-alpha-free"
 bypass_tool_permissions = false
-system_prompt_id = "lisp-implementor"
-enabled_tools = ["read_file", "write_file", "grep", "bash"]
+system_prompt_id = "generic-subagent"
+enabled_tools = ["read_file", "write_file", "edit", "grep", "bash", "skill", "web_search", "web_fetch"]
 
 [tools.read_file]
 permission = "always"
 
 [tools.write_file]
+permission = "always"
+allowlist = []
+sensitive_patterns = [
+    "**/.env",
+    "**/.env.*",
+]
+
+[tools.edit]
 permission = "always"
 sensitive_patterns = [
     "**/.env",
@@ -48,3 +56,12 @@ denylist_standalone = [
     "nano",
     "su",
 ]
+
+[tools.skill]
+permission = "always"
+
+[tools.web_search]
+permission = "always"
+
+[tools.web_fetch]
+permission = "always"
