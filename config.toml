@@ -72,6 +72,18 @@ reasoning_field_name = "reasoning_content"
 project_id = ""
 region = ""
 
+[[providers]]
+name = "mistral2"
+api_base = "https://api.mistral.ai/v1"
+api_key_env_var = "MISTRAL_API_KEY2"
+browser_auth_base_url = "https://console.mistral.ai"
+browser_auth_api_base_url = "https://console.mistral.ai/api"
+api_style = "openai"
+backend = "mistral"
+reasoning_field_name = "reasoning_content"
+project_id = ""
+region = ""
+
 [providers.extra_headers]
 
 [[providers]]
@@ -109,7 +121,7 @@ provider = "codex"
 input_price = 5.0
 output_price = 30.0
 cached_input_price = 0.5
-thinking = "high"
+thinking = "medium"
 supports_images = true
 auto_compact_threshold = 500000
 alias = "gpt-5.6-sol"
@@ -148,6 +160,17 @@ auto_compact_threshold = 500000
 alias = "glm-5-2"
 
 [[models]]
+name = "glm-5-2"
+provider = "mistral2"
+input_price = 1.4
+output_price = 4.4
+cached_input_price = 0.14
+thinking = "high"
+supports_images = false
+auto_compact_threshold = 500000
+alias = "glm-5-2[API]"
+
+[[models]]
 name = "mistral-small-latest"
 provider = "mistral"
 input_price = 0.15
@@ -158,11 +181,21 @@ auto_compact_threshold = 200000
 alias = "mistral-small-latest"
 
 [[models]]
+name = "mistral-medium-latest"
+provider = "mistral"
+input_price = 1.5
+output_price = 7.5
+cached_input_price = 0.15
+thinking = "high"
+auto_compact_threshold = 200000
+alias = "mistral-medium-latest"
+
+[[models]]
 name = "deepseek-v4-flash"
 provider = "opencode"
-input_price = 0.14
-output_price = 0.28
-cached_input_price = 0.01
+input_price = 0.44
+output_price = 1.32
+cached_input_price = 0.014
 auto_compact_threshold = 800000
 thinking = "high"
 alias = "deepseek-v4-flash"

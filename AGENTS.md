@@ -30,3 +30,11 @@ state you modified, and confirm the corrected understanding before proceeding.
 State intent and confirm first for actions that span many files, delete resources,
 rewrite git history, publish, or are otherwise hard to reverse. Format: "I will
 [action] on [target] to achieve [outcome]. Confirm?"
+
+## Local AGENTS file
+
+At the start of every session, check the working directory for a
+project-specific `AGENTS.local.md`. It is gitignored (via `.git/info/exclude`,
+not a tracked `.gitignore`) and Vibe does not auto-load it. If it exists, read
+it before doing anything else. It is untracked and local — never commit it,
+and never reference its contents in tracked files.
