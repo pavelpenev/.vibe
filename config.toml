@@ -19,6 +19,7 @@ enable_update_checks = true
 enable_auto_update = true
 enable_notifications = true
 api_timeout = 720.0
+log_level = "INFO"
 auto_compact_threshold = 500000
 compaction_prompt_id = "compact-v4"
 tool_paths = []

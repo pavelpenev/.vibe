@@ -60,6 +60,8 @@ Examples:
 | `verifier` | `generic-luna` | — | Verification is mechanical — run commands, report results |
 | `worker` | `generic-deepseek` | `generic-luna` | Use deepseek for simple misc tasks (cheapest); luna if the task is non-trivial |
 
+Before dispatching subagents, call the `usage-tool_dispatch` MCP tool with the task type and estimated input tokens to get live provider availability, cost rankings, and a recommended model. Use the recommendation when choosing which subagent model to dispatch, especially when a provider is near its limit.
+
 **Parallel fan-out:** when launching multiple subagents for independent work, prefer cheaper models to keep cost down. Use `generic-glm-flash` (low cost) for extra parallel capacity when you need more workers than the cost budget allows — especially in review spreads.
 
 **Never use `generic-sol` for mechanical work** (simple edits, searches, summarization, verification) — it's 25x the cost of luna with no quality benefit for those tasks. Reserve sol for advisor calls, deep/plan reviews, and complex implementor work where the stronger model genuinely changes the outcome.
