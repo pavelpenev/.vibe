@@ -1,8 +1,8 @@
 agent_type = "subagent"
-display_name = "Generic Subagent (Ox Alpha Free)"
-description = "Generic subagent on Ox Alpha Free; loads role skills (implementor, reviewer, advisor, etc.) to perform any delegated role"
+display_name = "Generic Subagent (GLM-5.3 Flash)"
+description = "Generic subagent on GLM-5.3 Flash; loads role skills (implementor, reviewer, advisor, etc.) to perform any delegated role"
 safety = "neutral"
-active_model = "ox-alpha-free"
+active_model = "glm-5.3-flash"
 bypass_tool_permissions = false
 system_prompt_id = "generic-subagent"
 enabled_tools = ["read_file", "write_file", "edit", "grep", "bash", "skill", "web_search", "web_fetch"]

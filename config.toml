@@ -22,7 +22,13 @@ api_timeout = 720.0
 auto_compact_threshold = 500000
 compaction_prompt_id = "compact-v4"
 tool_paths = []
-mcp_servers = []
+[[mcp_servers]]
+name = "usage-tool"
+transport = "stdio"
+command = "/home/pav/code/usage-tool/.venv/bin/python"
+args = ["-m", "usage_tool.mcp_server"]
+startup_timeout_sec = 10
+tool_timeout_sec = 60
 connectors = []
 enabled_tools = []
 disabled_tools = []
@@ -160,17 +166,6 @@ auto_compact_threshold = 500000
 alias = "glm-5-2"
 
 [[models]]
-name = "glm-5-2"
-provider = "mistral2"
-input_price = 1.4
-output_price = 4.4
-cached_input_price = 0.14
-thinking = "high"
-supports_images = false
-auto_compact_threshold = 500000
-alias = "glm-5-2[API]"
-
-[[models]]
 name = "mistral-small-latest"
 provider = "mistral"
 input_price = 0.15
@@ -201,26 +196,15 @@ thinking = "high"
 alias = "deepseek-v4-flash"
 
 [[models]]
-name = "ox-alpha-free"
+name = "glm-5.3-flash"
 provider = "opencode"
-input_price = 0.0
-output_price = 0.0
-cached_input_price = 0.0
+input_price = 0.15
+output_price = 0.5
+cached_input_price = 0.03
 thinking = "high"
 supports_images = true
 auto_compact_threshold = 500000
-alias = "ox-alpha-free"
-
-[[models]]
-name = "local"
-provider = "llamacpp"
-input_price = 0.0
-output_price = 0.0
-cached_input_price = 0.0
-thinking = "high"
-supports_images = false
-auto_compact_threshold = 100000
-alias = "qwen3-27b-local"
+alias = "glm-5.3-flash"
 
 [[transcribe_providers]]
 name = "mistral"
@@ -299,7 +283,7 @@ allowlist = [
     "generic-luna",
     "generic-glm",
     "generic-deepseek",
-    "generic-ox-alpha-free",
+    "generic-glm-flash",
 ]
 denylist = []
 sensitive_patterns = []

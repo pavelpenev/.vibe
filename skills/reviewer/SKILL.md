@@ -58,7 +58,7 @@ Read full file content (`read_file`) for every file under review — diffs alone
 
 ## Step 1: Mechanical Checks (code only)
 
-If the task includes pre-run verification results, use them as the mechanical layer — do not re-run commands yourself.
+If the task includes pre-run verification results, use them as the mechanical layer. Do NOT re-run verification commands yourself -- the orchestrator already ran them once to avoid redundant test runs across reviewers.
 
 Otherwise, read the project's `AGENTS.md` for a `## Verification` section and run the declared check-only commands (lint, typecheck, test). Never run mutating commands (`--fix`, `format`, `--write`). If no commands are found, note it and proceed to manual review.
 

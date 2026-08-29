@@ -26,9 +26,9 @@ Reviewers are generic subagents that load the `reviewer` skill. Each runs on a d
 |-------|-------|------|
 | `generic-deepseek` | deepseek-v4-flash | baseline |
 | `generic-luna` | gpt-5.6-luna | baseline |
+| `generic-glm-flash` | glm-5.3-flash | low-cost |
 | `generic-glm` | glm-5-2 | strong |
 | `generic-sol` | gpt-5.6-sol | strongest |
-| `generic-ox-alpha-free` | Ox Alpha Free (ox-alpha-free) | — |
 
 ## Triggering Conditions
 
@@ -65,21 +65,23 @@ For plans/specs: the intent is the plan's stated goal. If the document has a cle
 
 ## Step 3: Run Verification (code only)
 
-Before delegating a code review, run the project's verification commands:
+Before delegating a code review, run the project's verification commands once via a verifier subagent:
 
 ```python
 task(task="Load the verifier skill and run verification on the changed files", agent="generic-luna")
 ```
 
-Capture the output. If the verifier returns "No verification commands found", proceed without results. Skip this step for non-code artifacts.
+Capture the full output. If the verifier returns "No verification commands found", proceed without results. Skip this step for non-code artifacts.
+
+**Important:** The verifier output must be included verbatim in the task string sent to all reviewers (Step 5a). This ensures reviewers do NOT re-run the test suite themselves -- the reviewer skill instructs them to use pre-run results when provided. Running tests N times across N reviewers is redundant and wastes time.
 
 ## Step 4: Pick a Tier
 
 | Tier | When | Composition |
 |------|------|-------------|
 | **Quick** | User says "quick"/"fast", or the change is trivial (one-liner, rename) | 1–2 of {generic-luna, generic-deepseek} with `reviewer` skill |
-| **Standard** (default) | User doesn't name a tier, or says "review"/"standard" | 3× generic-luna + generic-deepseek + generic-ox-alpha-free, all with `reviewer` skill |
-| **Deep** | User says "deep"/"thorough", or architectural change | Standard + generic-glm + generic-sol with `reviewer` skill |
+| **Standard** (default) | User doesn't name a tier, or says "review"/"standard" | 3× generic-luna + generic-deepseek + generic-glm-flash, all with `reviewer` skill |
+| **Deep** | User says "deep"/"thorough", or architectural change | Standard phase 1, then phase 2: generic-glm + generic-sol with `reviewer` skill (get phase 1 findings, find new issues) |
 | **Plans** | Target is a plan, spec, or design doc | Always include generic-sol with `reviewer` skill (typically a deep-tier spread) |
 
 Inference rules:
@@ -91,9 +93,11 @@ Inference rules:
 
 When unsure, default to standard.
 
-## Step 5: Fan Out (parallel)
+## Step 5: Fan Out
 
-Launch all reviewers for the tier **in parallel** — issue every `task()` call in a single response block. Each reviewer gets the same task string (target + intent + verification results), so their reports are directly comparable.
+### 5a. Phase 1 -- breadth reviewers (parallel)
+
+Launch all phase 1 reviewers **in parallel** -- issue every `task()` call in a single response block. Each reviewer gets the same task string (target + intent + verification results), so their reports are directly comparable.
 
 Construct the shared task string, prepending verification results if code:
 
@@ -104,14 +108,37 @@ Verification results captured:
 Review: <target>. Intent: <description>
 ```
 
-Delegation (standard tier example — issue all five in one block):
+Standard tier (phase 1 only -- issue all five in one block):
 ```python
 task(task="Load the reviewer skill. {task_string}", agent="generic-luna")
 task(task="Load the reviewer skill. {task_string}", agent="generic-luna")
 task(task="Load the reviewer skill. {task_string}", agent="generic-luna")
 task(task="Load the reviewer skill. {task_string}", agent="generic-deepseek")
-task(task="Load the reviewer skill. {task_string}", agent="generic-ox-alpha-free")
+task(task="Load the reviewer skill. {task_string}", agent="generic-glm-flash")
 ```
+
+### 5b. Phase 2 -- depth reviewers (after phase 1, with findings)
+
+Deep and Plans tiers only. Wait for phase 1 to complete. Extract the findings from their reports (consensus findings flagged by >=2 reviewers, plus notable divergent findings). Then dispatch both phase 2 reviewers **in parallel** with the same target and intent, plus the phase 1 findings prepended so they don't waste output re-reporting them:
+
+```
+Verification results captured:
+{verifier_output}
+
+Review: <target>. Intent: <description>
+
+Findings already identified by other reviewers (do NOT re-report these -- find NEW issues they likely missed):
+{extracted_findings from phase 1 reports}
+```
+
+Phase 2 reviewers still read the same code independently -- they're not adjudicating or synthesizing the phase 1 reports. They just know what's already been found so their output focuses on new findings: architectural impact, system-level concerns, severity judgment, edge cases that require deeper reasoning.
+
+```python
+task(task="Load the reviewer skill. {phase2_task_string}", agent="generic-glm)
+task(task="Load the reviewer skill. {phase2_task_string}", agent="generic-sol)
+```
+
+For Quick and Standard tiers, skip step 5b entirely.
 
 Target formats the reviewers understand:
 - `Review: file1.py, file2.py` — specific files
