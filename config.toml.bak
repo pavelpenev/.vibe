@@ -110,13 +110,6 @@ api_style = "openai-responses"
 backend = "generic"
 
 [[providers]]
-name = "ollama"
-api_base = "https://ollama.com/v1"
-api_key_env_var = "OLLAMA_API_KEY"
-api_style = "openai"
-backend = "generic"
-
-[[providers]]
 name = "llamacpp"
 api_base = "http://127.0.0.1:8080/v1"
 api_key_env_var = ""
@@ -173,7 +166,7 @@ provider = "opencode"
 input_price = 0.44
 output_price = 1.32
 cached_input_price = 0.014
-auto_compact_threshold = 500000
+auto_compact_threshold = 800000
 thinking = "high"
 alias = "deepseek-v4-flash"
 
@@ -187,17 +180,6 @@ thinking = "high"
 supports_images = true
 auto_compact_threshold = 500000
 alias = "glm-5.3-flash"
-
-[[models]]
-name = "glm-5.3:cloud"
-provider = "ollama"
-thinking = "high"
-input_price = 1.4
-output_price = 4.4
-cached_input_price = 0.14
-supports_images = false
-auto_compact_threshold = 500000
-alias = "glm-5.3"
 
 [[transcribe_providers]]
 name = "mistral"
@@ -275,7 +257,6 @@ allowlist = [
     "generic-sol",
     "generic-luna",
     "generic-glm",
-    "generic-glm53",
     "generic-deepseek",
     "generic-glm-flash",
 ]

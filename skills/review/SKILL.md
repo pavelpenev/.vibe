@@ -29,6 +29,7 @@ Reviewers are generic subagents that load the `reviewer` skill. Each runs on a d
 | `generic-glm-flash` | glm-5.3-flash | low-cost |
 | `generic-glm` | glm-5-2 | strong |
 | `generic-sol` | gpt-5.6-sol | strongest |
+| `generic-glm53` | glm-5.3 | strongest (advisor/deep-review tier, cross-family second opinion to sol) |
 
 ## Triggering Conditions
 
@@ -81,8 +82,8 @@ Capture the full output. If the verifier returns "No verification commands found
 |------|------|-------------|
 | **Quick** | User says "quick"/"fast", or the change is trivial (one-liner, rename) | 1–2 of {generic-luna, generic-deepseek} with `reviewer` skill |
 | **Standard** (default) | User doesn't name a tier, or says "review"/"standard" | 3× generic-luna + generic-deepseek + generic-glm-flash, all with `reviewer` skill |
-| **Deep** | User says "deep"/"thorough", or architectural change | Standard phase 1, then phase 2: generic-glm + generic-sol with `reviewer` skill (get phase 1 findings, find new issues) |
-| **Plans** | Target is a plan, spec, or design doc | Always include generic-sol with `reviewer` skill (typically a deep-tier spread) |
+| **Deep** | User says "deep"/"thorough", or architectural change | Standard phase 1, then phase 2: generic-glm + generic-sol + generic-glm53 with `reviewer` skill (get phase 1 findings, find new issues) |
+| **Plans** | Target is a plan, spec, or design doc | Always include generic-sol and generic-glm53 with `reviewer` skill (typically a deep-tier spread) |
 
 Inference rules:
 - The word "quick"/"fast" → quick tier
@@ -119,7 +120,7 @@ task(task="Load the reviewer skill. {task_string}", agent="generic-glm-flash")
 
 ### 5b. Phase 2 -- depth reviewers (after phase 1, with findings)
 
-Deep and Plans tiers only. Wait for phase 1 to complete. Extract the findings from their reports (consensus findings flagged by >=2 reviewers, plus notable divergent findings). Then dispatch both phase 2 reviewers **in parallel** with the same target and intent, plus the phase 1 findings prepended so they don't waste output re-reporting them:
+Deep and Plans tiers only. Wait for phase 1 to complete. Extract the findings from their reports (consensus findings flagged by >=2 reviewers, plus notable divergent findings). Then dispatch all phase 2 reviewers **in parallel** with the same target and intent, plus the phase 1 findings prepended so they don't waste output re-reporting them:
 
 ```
 Verification results captured:
@@ -134,8 +135,9 @@ Findings already identified by other reviewers (do NOT re-report these -- find N
 Phase 2 reviewers still read the same code independently -- they're not adjudicating or synthesizing the phase 1 reports. They just know what's already been found so their output focuses on new findings: architectural impact, system-level concerns, severity judgment, edge cases that require deeper reasoning.
 
 ```python
-task(task="Load the reviewer skill. {phase2_task_string}", agent="generic-glm)
-task(task="Load the reviewer skill. {phase2_task_string}", agent="generic-sol)
+task(task="Load the reviewer skill. {phase2_task_string}", agent="generic-glm")
+task(task="Load the reviewer skill. {phase2_task_string}", agent="generic-sol")
+task(task="Load the reviewer skill. {phase2_task_string}", agent="generic-glm53")
 ```
 
 For Quick and Standard tiers, skip step 5b entirely.

@@ -24,14 +24,16 @@ Generic Subagents (one per model)
 | gpt-5.6-sol | gpt-5.6-sol | codex | generic subagent | 500k |
 | gpt-5.6-luna | gpt-5.6-luna | codex | generic subagent | 200k |
 | glm-5.3-flash | glm-5.3-flash | opencode | generic subagent | 500k |
+| glm-5.3 | glm-5.3:cloud | ollama | generic subagent | 500k |
 
 mistral-vibe-cli-latest (vision) and mistral-small-latest remain in config
 without aliases for vision tasks via `/model`. Generic subagents run on each
 model; the main agent picks the model by cost/tier and the role skill by
-task. Sol serves as the advisor/deep-review tier; luna is the cheap default;
-glm-flash provides low-cost cross-family diversity in review spreads.
+task. Sol and glm-5.3 serve as the advisor/deep-review tier; luna is the
+cheap default; glm-flash provides low-cost cross-family diversity in review
+spreads.
 
-## Agents (6)
+## Agents (7)
 
 One generic subagent per model. Each loads a role skill (implementor,
 lisp-implementor, reviewer, advisor, explorer, finder, researcher, summarizer,
@@ -45,6 +47,7 @@ agent TOMLs.
 | generic-glm | glm-5-2 | Neutral |
 | generic-deepseek | deepseek-v4-flash | Neutral |
 | generic-glm-flash | glm-5.3-flash | Neutral |
+| generic-glm53 | glm-5.3 | Neutral |
 
 All share one prompt (`prompts/generic-subagent.md`); each is pinned to a
 different model. The main agent picks the model by cost/tier and the skill by
@@ -57,8 +60,8 @@ Use the cheapest model capable of the task. Defaults:
 | Role | Default | Escalate to | When |
 |------|---------|-------------|------|
 | implementor / lisp-implementor | generic-luna | generic-sol | Multi-file architectural changes |
-| reviewer | generic-luna | generic-sol | Per review tier |
-| advisor | generic-sol | — | Always sol |
+| reviewer | generic-luna | generic-sol / generic-glm53 | Per review tier |
+| advisor | generic-sol | generic-glm53 | Strong model always; glm53 when sol is unavailable or for cross-family second opinion |
 | explorer / verifier | generic-luna | — | Mechanical tasks |
 | finder / summarizer / worker | generic-deepseek | generic-luna | Cheapest for bulk work |
 | researcher | generic-luna | — | Cost sweet spot |
@@ -86,12 +89,12 @@ matching reviewers in parallel, and synthesizes reports into a convergence view
 |---|---|---|
 | Quick | "quick"/"fast" or trivial change | 1-2 of {generic-luna, generic-deepseek} with `reviewer` skill |
 | Standard (default) | no tier cue | 3x generic-luna + generic-deepseek + generic-glm-flash, all with `reviewer` skill |
-| Deep | "deep"/"thorough" or architectural change | Standard phase 1, then phase 2: generic-glm + generic-sol with `reviewer` skill (get phase 1 findings, find new issues) |
-| Plans | plan, spec, or design doc | Always generic-sol with `reviewer` skill (typically deep-tier) |
+| Deep | "deep"/"thorough" or architectural change | Standard phase 1, then phase 2: generic-glm + generic-sol + generic-glm53 with `reviewer` skill (get phase 1 findings, find new issues) |
+| Plans | plan, spec, or design doc | Always generic-sol and generic-glm53 with `reviewer` skill (typically deep-tier) |
 
 Reviews cover code, docs, specs, and plans — not just code.
 
-In deep/plans tiers, phase 2 (generic-glm + generic-sol) runs after phase 1 completes. Both get the phase 1 findings so they focus on new issues the cheaper reviewers missed, not duplicating known findings.
+In deep/plans tiers, phase 2 (generic-glm + generic-sol + generic-glm53) runs after phase 1 completes. All get the phase 1 findings so they focus on new issues the cheaper reviewers missed, not duplicating known findings.
 
 ## Compaction
 

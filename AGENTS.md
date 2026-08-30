@@ -11,6 +11,21 @@
 - Chaining: read the result, write concrete details (paths, symbols) into the next
   task string yourself.
 
+## Model Roster
+
+| Agent | Model | Tier |
+|-------|-------|------|
+| generic-deepseek | deepseek-v4-flash | cheapest — bulk/baseline work |
+| generic-luna | gpt-5.6-luna | cheap default — most delegated work |
+| generic-glm-flash | glm-5.3-flash | low cost — extra parallel capacity |
+| generic-glm | glm-5-2 | strong — strong-tier review |
+| generic-sol | gpt-5.6-sol | strongest — advisor, deep review, plan review |
+| generic-glm53 | glm-5.3 | strongest — advisor, deep review, plan review (cross-family second opinion to sol) |
+
+Use the cheapest model capable of the task. Reserve generic-sol and
+generic-glm53 for advisor calls and deep/plan reviews; never for mechanical
+work (simple edits, searches, summarization, verification).
+
 ## Clarification Protocol
 
 Trigger when the referent is genuinely unresolvable from context — a vague

@@ -17,6 +17,7 @@ There is one generic subagent per model. Each generic subagent loads a role skil
 | `generic-deepseek` | deepseek-v4-flash | Cheapest ($0.14/$0.28) — baseline review, bulk work |
 | `generic-glm` | glm-5-2 | Strong ($1.4/$4.4) — strong-tier review |
 | `generic-sol` | gpt-5.6-sol | Strongest ($5/$30) — advisor, deep review, plan review |
+| `generic-glm53` | glm-5.3 | Strong ($1.4/$4.4) — advisor, deep review, plan review (cross-family second opinion to sol) |
 | `generic-glm-flash` | glm-5.3-flash | Low cost ($0.15/$0.50) — extra review/implementor capacity |
 
 ### Role Skills (loaded by the generic subagent)
@@ -51,8 +52,8 @@ Examples:
 |------|---------------|-------------|-------------------|
 | `implementor` | `generic-luna` | `generic-sol` | Multi-file architectural changes, complex refactors, cross-system edits |
 | `lisp-implementor` | `generic-luna` | `generic-sol` | Large system rewrites, ASDF system restructuring |
-| `reviewer` | `generic-luna` | `generic-sol` | Per review tier (Quick/Standard/Deep/Plans — see Review Workflow below) |
-| `advisor` | `generic-sol` | — | Always sol — advisor needs the strongest model |
+| `reviewer` | `generic-luna` | `generic-sol` / `generic-glm53` | Per review tier (Quick/Standard/Deep/Plans — see Review Workflow below) |
+| `advisor` | `generic-sol` | `generic-glm53` | Always a strong model — sol by default; glm53 when sol is unavailable or for a cross-family second opinion |
 | `explorer` | `generic-luna` | — | Exploration is mechanical — no escalation needed |
 | `finder` | `generic-deepseek` | `generic-luna` | Use deepseek for bulk/parallel searches (cheapest); luna if results need more precision |
 | `researcher` | `generic-luna` | — | Research quality is similar across tiers; luna is the cost sweet spot |
@@ -64,7 +65,7 @@ Before dispatching subagents, call the `usage-tool_dispatch` MCP tool with the t
 
 **Parallel fan-out:** when launching multiple subagents for independent work, prefer cheaper models to keep cost down. Use `generic-glm-flash` (low cost) for extra parallel capacity when you need more workers than the cost budget allows — especially in review spreads.
 
-**Never use `generic-sol` for mechanical work** (simple edits, searches, summarization, verification) — it's 25x the cost of luna with no quality benefit for those tasks. Reserve sol for advisor calls, deep/plan reviews, and complex implementor work where the stronger model genuinely changes the outcome.
+**Never use `generic-sol` or `generic-glm53` for mechanical work** (simple edits, searches, summarization, verification) — sol is 25x the cost of luna with no quality benefit for those tasks. Reserve sol and glm53 for advisor calls, deep/plan reviews, and complex implementor work where the stronger model genuinely changes the outcome.
 
 Rules:
 - **Delegate token-heavy work to cheap models.** The main agent's context is the expensive one (GLM at $1.4/$4.4). `generic-luna` ($0.20/$1.20, ~7x cheaper) handles most delegated work. Send intent to implementors; they read the file in their own cheap context and edit. Do not pull file contents into the main agent's context when a subagent can handle it.
@@ -79,7 +80,7 @@ Rules:
 
 ### Advisor Escalation
 
-You have an advisor role (`agent="generic-sol"` with the `advisor` skill) providing an independent perspective from a stronger model (GPT-5.6-sol). Most advisor calls are manual — the user asks for a second opinion. Call it automatically when:
+You have an advisor role (`agent="generic-sol"` with the `advisor` skill) providing an independent perspective from a stronger model (GPT-5.6-sol). `generic-glm53` (GLM-5.3, same cost tier) is an equally valid advisor when sol is unavailable or when you want a cross-family second opinion — two different model families rarely make the same mistake. Most advisor calls are manual — the user asks for a second opinion. Call it automatically when:
 - About to do something destructive or hard to reverse (`rm -rf`, force-push, `git reset --hard`, migrations, deploys)
 - Stuck after repeated failures on the same problem
 - Before committing to a multi-file or architectural approach
@@ -101,14 +102,14 @@ The `/review` skill automates target selection, tiering, fan-out, and synthesis.
 |------|------|-------------|
 | **Quick** | "quick"/"fast", or trivial change | 1–2 of {generic-luna, generic-deepseek} with `reviewer` skill |
 | **Standard** (default) | No tier cue | 3× generic-luna + generic-deepseek + generic-glm-flash, all with `reviewer` skill |
-| **Deep** | "deep"/"thorough", architectural change | Standard phase 1, then phase 2: generic-glm + generic-sol with `reviewer` skill (get phase 1 findings, find new issues) |
-| **Plans** | Target is a plan, spec, or design doc | Always include generic-sol with `reviewer` skill (typically deep-tier) |
+| **Deep** | "deep"/"thorough", architectural change | Standard phase 1, then phase 2: generic-glm + generic-sol + generic-glm53 with `reviewer` skill (get phase 1 findings, find new issues) |
+| **Plans** | Target is a plan, spec, or design doc | Always include generic-sol and generic-glm53 with `reviewer` skill (typically deep-tier) |
 
 **Synthesis rules:** a finding flagged by ≥2 reviewers is consensus (fix first); a finding from one reviewer is divergent (may be a false positive). Any reviewer returning FAILED → blocking. Across rounds, convergence = fewer divergent findings and resolution of prior consensus items.
 
-**sol differentiated task:** In deep/plans tiers, phase 2 (generic-glm + generic-sol) is dispatched *after* phase 1 completes, not in parallel. Both phase 2 reviewers receive the current round's findings extracted from the phase 1 reports so they don't duplicate them -- their value is finding NEW issues the cheaper reviewers likely missed (architectural impact, system-level concerns, severity judgment). Phase 2 reviewers still read the same code independently; they just know what's already been found so their output focuses on new findings.
+**sol differentiated task:** In deep/plans tiers, phase 2 (generic-glm + generic-sol + generic-glm53) is dispatched *after* phase 1 completes, not in parallel. All phase 2 reviewers receive the current round's findings extracted from the phase 1 reports so they don't duplicate them -- their value is finding NEW issues the cheaper reviewers likely missed (architectural impact, system-level concerns, severity judgment). Phase 2 reviewers still read the same code independently; they just know what's already been found so their output focuses on new findings.
 
-The advisor role (`advisor` skill on `generic-sol`) is distinct from a sol-tier reviewer (`reviewer` skill on `generic-sol`) — same model, different role. Advisor gives architectural/destructive-op guidance on demand; a sol-tier reviewer is one voice in a review spread.
+The advisor role (`advisor` skill on `generic-sol` or `generic-glm53`) is distinct from a strong-tier reviewer (`reviewer` skill on the same agents) — same model, different role. Advisor gives architectural/destructive-op guidance on demand; a strong-tier reviewer is one voice in a review spread.
 
 ===
 
