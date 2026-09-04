@@ -1,4 +1,4 @@
-active_model = "glm-5.3-flash"
+active_model = "glm-5-2"
 vim_keybindings = false
 disable_welcome_banner_animation = false
 autocopy_to_clipboard = true
@@ -26,17 +26,6 @@ tool_paths = []
 applied_migrations = [
     "bash_read_only_defaults_v1",
 ]
-
-[[mcp_servers]]
-name = "usage-tool"
-transport = "stdio"
-command = "/home/pav/code/usage-tool/.venv/bin/python"
-args = [
-    "-m",
-    "usage_tool.mcp_server",
-]
-startup_timeout_sec = 10
-tool_timeout_sec = 60
 connectors = []
 enabled_tools = []
 disabled_tools = []
@@ -67,12 +56,20 @@ enabled_skills = [
 ]
 disabled_skills = []
 enable_experimental_hooks = true
-applied_migrations = [
-    "bash_read_only_defaults_v1",
-]
 experimental_enable_registry_skills = true
 vibe_code_enabled = true
 show_thinking_nodes = true
+
+[[mcp_servers]]
+name = "usage-tool"
+transport = "stdio"
+command = "/home/pav/code/usage-tool/.venv/bin/python"
+args = [
+    "-m",
+    "usage_tool.mcp_server",
+]
+startup_timeout_sec = 10
+tool_timeout_sec = 60
 
 [[providers]]
 name = "mistral"
@@ -169,7 +166,7 @@ alias = "mistral-small-latest"
 
 [[models]]
 name = "deepseek-v4-flash"
-provider = "opencode"
+provider = "ollama"
 input_price = 0.44
 output_price = 1.32
 cached_input_price = 0.014
@@ -179,7 +176,7 @@ alias = "deepseek-v4-flash"
 
 [[models]]
 name = "glm-5.3-flash"
-provider = "opencode"
+provider = "ollama"
 input_price = 0.15
 output_price = 0.5
 cached_input_price = 0.03
@@ -198,6 +195,17 @@ cached_input_price = 0.14
 supports_images = false
 auto_compact_threshold = 500000
 alias = "glm-5.3"
+
+[[models]]
+name = "omen-alpha"
+provider = "opencode"
+input_price = 0.2
+output_price = 0.66
+cached_input_price = 0.02
+thinking = "high"
+supports_images = true
+auto_compact_threshold = 400000
+alias = "omen-alpha"
 
 [[transcribe_providers]]
 name = "mistral"
@@ -247,7 +255,7 @@ allowlist = []
 denylist = []
 sensitive_patterns = []
 timeout = 120
-model = "mistral-vibe-cli-fast"
+model = "mistral-small-latest"
 
 [tools.write_file]
 permission = "ask"
@@ -275,9 +283,9 @@ allowlist = [
     "generic-sol",
     "generic-luna",
     "generic-glm",
-    "generic-glm53",
     "generic-deepseek",
     "generic-glm-flash",
+    "generic-omen",
 ]
 denylist = []
 sensitive_patterns = []
@@ -296,10 +304,7 @@ sensitive_patterns = []
 
 [tools.web_fetch]
 permission = "ask"
-allowlist = [
-    "docs.ollama.com",
-    "ollama.com",
-]
+allowlist = []
 denylist = []
 sensitive_patterns = []
 default_timeout = 30
@@ -453,4 +458,7 @@ sensitive_patterns = [
 max_read_bytes = 64000
 
 [tools.usage-tool_get_allowances]
+permission = "always"
+
+[tools.usage-tool_dispatch]
 permission = "always"

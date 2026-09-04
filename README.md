@@ -25,15 +25,17 @@ Generic Subagents (one per model)
 | gpt-5.6-luna | gpt-5.6-luna | codex | generic subagent | 200k |
 | glm-5.3-flash | glm-5.3-flash | opencode | generic subagent | 500k |
 | glm-5.3 | glm-5.3:cloud | ollama | generic subagent | 500k |
+| omen-alpha | omen-alpha | opencode | generic subagent | 400k |
 
 mistral-vibe-cli-latest (vision) and mistral-small-latest remain in config
 without aliases for vision tasks via `/model`. Generic subagents run on each
 model; the main agent picks the model by cost/tier and the role skill by
 task. Sol and glm-5.3 serve as the advisor/deep-review tier; luna is the
 cheap default; glm-flash provides low-cost cross-family diversity in review
-spreads.
+spreads. Omen Alpha is a cheap preview model (likely glm-5.3-air) positioned
+below luna — reserve it for bulk mechanical work and extra parallel capacity.
 
-## Agents (7)
+## Agents (8)
 
 One generic subagent per model. Each loads a role skill (implementor,
 lisp-implementor, reviewer, advisor, explorer, finder, researcher, summarizer,
@@ -48,6 +50,7 @@ agent TOMLs.
 | generic-deepseek | deepseek-v4-flash | Neutral |
 | generic-glm-flash | glm-5.3-flash | Neutral |
 | generic-glm53 | glm-5.3 | Neutral |
+| generic-omen | omen-alpha | Neutral |
 
 All share one prompt (`prompts/generic-subagent.md`); each is pinned to a
 different model. The main agent picks the model by cost/tier and the skill by
@@ -66,6 +69,7 @@ Use the cheapest model capable of the task. Defaults:
 | finder / summarizer / worker | generic-deepseek | generic-luna | Cheapest for bulk work |
 | researcher | generic-luna | — | Cost sweet spot |
 | (any, parallel) | generic-glm-flash | — | Low-cost extra capacity |
+| (any, parallel) | generic-omen | — | Cheapest, bulk mechanical work |
 
 Never use generic-sol for mechanical work — it's 25x the cost of luna with no
 quality benefit for simple edits, searches, or verification.

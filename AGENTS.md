@@ -21,6 +21,7 @@
 | generic-glm | glm-5-2 | strong — strong-tier review |
 | generic-sol | gpt-5.6-sol | strongest — advisor, deep review, plan review |
 | generic-glm53 | glm-5.3 | strongest — advisor, deep review, plan review (cross-family second opinion to sol) |
+| generic-omen | omen-alpha | cheap — preview model (likely glm-5.3-air), below luna; bulk mechanical work and parallel capacity |
 
 Use the cheapest model capable of the task. Reserve generic-sol and
 generic-glm53 for advisor calls and deep/plan reviews; never for mechanical
