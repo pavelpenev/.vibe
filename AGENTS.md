@@ -1,56 +1,33 @@
-# Global Agent Instructions
+# Shared Agent Instructions
 
-## Subagent Mechanics
+These rules apply to the main agent and all subagents.
 
-- Syntax: `task(task="<clear task description>", agent="<subagent-name>")`
-- Subagents inherit the global `active_model` from config.toml unless their TOML
-  sets `active_model`. Each generic subagent is pinned to a specific model.
-- Subagents return plain text only, cannot ask the user questions, and cannot
-  spawn other subagents (depth limit 1).
-- Provide all needed context in the task description — the subagent sees nothing else.
-- Chaining: read the result, write concrete details (paths, symbols) into the next
-  task string yourself.
+## Clarification
 
-## Model Roster
+When a request is genuinely ambiguous, the MAIN agent asks the user one concrete question. A SUBAGENT does not ask the user; it returns a structured blocker naming the ambiguity and the information needed. Clear requests should be executed without presenting a menu of strategies.
 
-| Agent | Model | Tier |
-|-------|-------|------|
-| generic-deepseek | deepseek-v4-flash | cheapest — bulk/baseline work |
-| generic-luna | gpt-5.6-luna | cheap default — most delegated work |
-| generic-glm-flash | glm-5.3-flash | low cost — extra parallel capacity |
-| generic-glm | glm-5-2 | strong — strong-tier review |
-| generic-sol | gpt-5.6-sol | strongest — advisor, deep review, plan review |
-| generic-glm53 | glm-5.3 | strongest — advisor, deep review, plan review (cross-family second opinion to sol) |
-| generic-omen | omen-alpha | cheap — preview model (likely glm-5.3-air), below luna; bulk mechanical work and parallel capacity |
+## After corrections
 
-Use the cheapest model capable of the task. Reserve generic-sol and
-generic-glm53 for advisor calls and deep/plan reviews; never for mechanical
-work (simple edits, searches, summarization, verification).
+When the user corrects the MAIN agent, it stops tool operations, acknowledges the specific misunderstanding, asks whether to undo state it modified, and confirms the corrected understanding before proceeding.
 
-## Clarification Protocol
+## High-risk actions
 
-Trigger when the referent is genuinely unresolvable from context — a vague
-descriptor with no antecedent, multiple plausible targets that change the outcome,
-or references to things never established this session. If the referent is clear
-from context, proceed without asking. When triggered: list the concrete options
-and ask one question. Do not guess.
+Before actions that span many files, delete resources, rewrite history, publish, deploy, migrate, or are otherwise hard to reverse, state the action, target, and outcome and obtain confirmation. Existing explicit authorization applies only to the stated scope and does not generalize to other targets.
 
-## After Corrections
+## Subagent mechanics
 
-When the user corrects you ("no", "wrong", "I meant", "actually"): stop tool
-operations, acknowledge the specific misunderstanding, ask whether to undo any
-state you modified, and confirm the corrected understanding before proceeding.
+Subagents receive a self-contained task, load the named role skill first, cannot ask the user questions, and cannot spawn child subagents. They return the skill's required result format. The MAIN agent owns task state and synthesis. A SUBAGENT returns results unless explicitly assigned an artifact path; blockers are returned in the result rather than escalated conversationally.
 
-## High-Risk Actions
+## Safety and scope
 
-State intent and confirm first for actions that span many files, delete resources,
-rewrite git history, publish, or are otherwise hard to reverse. Format: "I will
-[action] on [target] to achieve [outcome]. Confirm?"
+Do not touch `.env` files or expose secrets. Preserve unrelated user changes. Do not use destructive checkout, reset, clean, or history-rewrite operations. Keep tool permissions and denylist protections unchanged unless the task explicitly scopes a change. Use scratchpads or task workspaces for transient artifacts; do not create recurring reports unless requested.
+
+Implementors may clean up temporary artifacts they themselves created during the current assignment, within their assigned scope (e.g. generated caches or scratch files). They must never delete pre-existing files, other agents' artifacts, or anything of uncertain ownership. An explicit no-deletion instruction in the task overrides this permission. This does not authorize `rm -rf`, destructive operations requiring approval, or bypassing denied tool actions — all existing confirmation and tool restrictions still apply.
+
+## Verification
+
+The MAIN agent records concrete validation commands and results, distinguishes source evidence from behavioral evidence, and never claims a fresh-session or runtime pass that was not observed. Subagents report what they actually checked.
 
 ## Local AGENTS file
 
-At the start of every session, check the working directory for a
-project-specific `AGENTS.local.md`. It is gitignored (via `.git/info/exclude`,
-not a tracked `.gitignore`) and Vibe does not auto-load it. If it exists, read
-it before doing anything else. It is untracked and local — never commit it,
-and never reference its contents in tracked files.
+When the applicable task directory (or an ancestor of it) contains an `AGENTS.local.md`, both the MAIN agent and subagents read it before acting on files in that directory. It is a local, untracked convention — never commit it and never reference its contents in tracked files.

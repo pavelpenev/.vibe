@@ -1,6 +1,6 @@
 agent_type = "subagent"
 display_name = "Generic Subagent (GLM-5.3 Flash)"
-description = "Generic subagent on GLM-5.3 Flash; loads role skills (implementor, reviewer, advisor, etc.) to perform any delegated role"
+description = "Generic subagent on GLM-5.3 Flash; loads subagent role skills (sub-implementor, sub-reviewer, sub-advisor, etc.) to perform any delegated role"
 safety = "neutral"
 active_model = "glm-5.3-flash"
 bypass_tool_permissions = false

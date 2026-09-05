@@ -1,134 +1,46 @@
 # Mistral Vibe Custom Configuration
 
-GLM-5.2 main agent + multi-model generic subagents for Mistral Vibe CLI.
+Configuration and prompts for a role-based main agent with bounded generic subagents. The intended main default is GLM-5.2 on Mistral; `config.toml` intentionally keeps the current `active_model = "gpt-6-astra"` until the user switches it.
 
-## Architecture
+## Roster
 
-```
-Main Agent (GLM-5.2)
-  Orchestrates, keeps context lean, delegates token-heavy work
-  Auto-approve (bypass=true), system-prompt-large.md
-    |
-    v
-Generic Subagents (one per model)
-  Load role skills to specialize (implementor, reviewer, advisor, etc.)
-  bypass=false, permission=always on tools, bash denylist
-```
-
-## Models
-
-| Alias | Model | Provider | Role | Compaction |
-|---|---|---|---|---|
-| glm-5-2 | glm-5-2 | mistral | main | 500k |
-| deepseek-v4-flash | deepseek-v4-flash | opencode | generic subagent | 800k |
-| gpt-5.6-sol | gpt-5.6-sol | codex | generic subagent | 500k |
-| gpt-5.6-luna | gpt-5.6-luna | codex | generic subagent | 200k |
-| glm-5.3-flash | glm-5.3-flash | opencode | generic subagent | 500k |
-| glm-5.3 | glm-5.3:cloud | ollama | generic subagent | 500k |
-| omen-alpha | omen-alpha | opencode | generic subagent | 400k |
-
-mistral-vibe-cli-latest (vision) and mistral-small-latest remain in config
-without aliases for vision tasks via `/model`. Generic subagents run on each
-model; the main agent picks the model by cost/tier and the role skill by
-task. Sol and glm-5.3 serve as the advisor/deep-review tier; luna is the
-cheap default; glm-flash provides low-cost cross-family diversity in review
-spreads. Omen Alpha is a cheap preview model (likely glm-5.3-air) positioned
-below luna — reserve it for bulk mechanical work and extra parallel capacity.
-
-## Agents (8)
-
-One generic subagent per model. Each loads a role skill (implementor,
-lisp-implementor, reviewer, advisor, explorer, finder, researcher, summarizer,
-verifier, worker) to specialize. Roles live in `skills/`, not in per-role
-agent TOMLs.
-
-| Name | Model | Safety |
+| Agent | Model | Intended use |
 |---|---|---|
-| generic-sol | gpt-5.6-sol | Neutral |
-| generic-luna | gpt-5.6-luna | Neutral |
-| generic-glm | glm-5-2 | Neutral |
-| generic-deepseek | deepseek-v4-flash | Neutral |
-| generic-glm-flash | glm-5.3-flash | Neutral |
-| generic-glm53 | glm-5.3 | Neutral |
-| generic-omen | omen-alpha | Neutral |
+| `generic-astra` | gpt-6-astra | Strong work and Deep/Plans review phase two |
+| `generic-glm53` | glm-5.3 | Astra backup and strong cross-family review |
+| `generic-glm-flash` | glm-5.3-flash | Primary implementor, explorer, and general worker |
+| `generic-luna` | gpt-5.6-luna | Reviewer and fallback worker when Ollama is exhausted |
+| `generic-deepseek` | deepseek-v4-flash | Supplementary reviewer |
+| `generic-glm` | glm-5-2 | Available strong subagent |
+| `generic-omen` | omen-alpha | Manual evaluation only; never auto-dispatched or promoted automatically |
 
-All share one prompt (`prompts/generic-subagent.md`); each is pinned to a
-different model. The main agent picks the model by cost/tier and the skill by
-role: `task(task="Load the <skill> skill and <intent>", agent="generic-<model>")`.
+All generic agents use `prompts/generic-subagent.md`, are model-pinned in `agents/`, and retain the configured tool permissions, denylists, and sensitive-pattern protections. The task allowlist is the dispatch roster in `config.toml`.
 
-### Model dispatch
+## Skills
 
-Use the cheapest model capable of the task. Defaults:
+Main workflow skills: `main-design`, `main-plan`, `main-orchestrate`, `main-review`, `main-debugging`, `main-git-workflow`, `main-lisp-spec-writer`, and `main-test-generator`.
 
-| Role | Default | Escalate to | When |
-|------|---------|-------------|------|
-| implementor / lisp-implementor | generic-luna | generic-sol | Multi-file architectural changes |
-| reviewer | generic-luna | generic-sol / generic-glm53 | Per review tier |
-| advisor | generic-sol | generic-glm53 | Strong model always; glm53 when sol is unavailable or for cross-family second opinion |
-| explorer / verifier | generic-luna | — | Mechanical tasks |
-| finder / summarizer / worker | generic-deepseek | generic-luna | Cheapest for bulk work |
-| researcher | generic-luna | — | Cost sweet spot |
-| (any, parallel) | generic-glm-flash | — | Low-cost extra capacity |
-| (any, parallel) | generic-omen | — | Cheapest, bulk mechanical work |
+Subagent role skills: `sub-advisor`, `sub-architecture-mapper`, `sub-explorer`, `sub-finder`, `sub-implementor`, `sub-lisp-implementor`, `sub-researcher`, `sub-reviewer`, `sub-summarizer`, `sub-verifier`, and `sub-worker`. `web-search` is shared. `skill-creator` is vendor-provided and remains unchanged.
 
-Never use generic-sol for mechanical work — it's 25x the cost of luna with no
-quality benefit for simple edits, searches, or verification.
+## Review tiers
 
-## Skills (17)
+Review tier composition, reviewer agents, and backup behavior are owned by the `main-review` skill and are not restated here. In brief: Quick is Flash only; Standard runs Luna, Flash, and Deepseek independently in parallel; Deep runs Standard first, then Astra with glm53 as backup; Plans use the Deep procedure.
 
-debugging, git-workflow, lisp-spec-writer, review, skill-creator,
-test-generator, web-search, implementor, lisp-implementor, reviewer, advisor,
-explorer, finder, researcher, summarizer, verifier, worker.
+The review and orchestration skills keep rounds bounded. The usage tool is retained for explicit user requests only; it is not called automatically.
 
-The first 7 are user-invocable workflow skills. The last 10 are role skills
-loaded by generic subagents (not user-invocable).
+## Workspaces
 
-## Review Workflow
+Task records live outside repositories at `~/.vibe/workspaces/<project>/tasks/<task>/state.md`. Project identity is recorded in the corresponding `project.toml`. Workspaces are ignored locally through `.git/info/exclude`; repository documentation is promoted explicitly rather than collected automatically.
 
-Tiered multi-model review. The `/review` skill picks a tier, fans out the
-matching reviewers in parallel, and synthesizes reports into a convergence view
-(consensus vs divergent findings, round-over-round convergence).
-
-| Tier | When | Composition |
-|---|---|---|
-| Quick | "quick"/"fast" or trivial change | 1-2 of {generic-luna, generic-deepseek} with `reviewer` skill |
-| Standard (default) | no tier cue | 3x generic-luna + generic-deepseek + generic-glm-flash, all with `reviewer` skill |
-| Deep | "deep"/"thorough" or architectural change | Standard phase 1, then phase 2: generic-glm + generic-sol + generic-glm53 with `reviewer` skill (get phase 1 findings, find new issues) |
-| Plans | plan, spec, or design doc | Always generic-sol and generic-glm53 with `reviewer` skill (typically deep-tier) |
-
-Reviews cover code, docs, specs, and plans — not just code.
-
-In deep/plans tiers, phase 2 (generic-glm + generic-sol + generic-glm53) runs after phase 1 completes. All get the phase 1 findings so they focus on new issues the cheaper reviewers missed, not duplicating known findings.
-
-## Compaction
-
-- Prompt: `compact-v4.md` (`<summary>` tags, qualitative compression)
-- Threshold: 500k tokens
-- Compaction model: inherits active model
-
-## Directory Structure
+## Layout
 
 ```
 ~/.vibe/
-├── AGENTS.md                # Cross-cutting instructions (all agents)
-├── config.toml              # Vibe CLI configuration
-├── agents/                  # Subagent TOML configurations
-├── prompts/                 # System prompts + compaction
-├── scripts/                 # Helper scripts (extract_lisp_forms.py)
-├── skills/                  # Skill definitions
-├── templates/               # Lisp test templates
-└── tools/prompts/           # Custom tool description overrides
+├── AGENTS.md
+├── config.toml
+├── agents/
+├── prompts/
+├── skills/
+├── tools/prompts/
+└── workspaces/<project>/tasks/<task>/
 ```
-
-## Creating New Subagents
-
-1. Copy `agents/generic-luna.toml` to `agents/generic-<suffix>.toml` and change `display_name`, `description`, and `active_model`
-2. Add the new agent name to `[tools.task]` allowlist in config.toml
-3. To add a new role, create `skills/<role>/SKILL.md` with frontmatter (`user-invocable: false`, `allowed-tools`) and add the skill name to `enabled_skills` in config.toml
-4. `bypass_tool_permissions = false`, `permission = "always"` on tools, denylist on bash
-5. All generic subagents share `prompts/generic-subagent.md` — no per-role prompts needed
-
-## Notes
-
-- TUI model changes strip comments from config.toml; keep notes here, not in config
-- Generic subagents load role skills via the `skill` tool — roles are defined in `skills/`, not duplicated across agent TOMLs

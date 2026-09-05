@@ -1,6 +1,6 @@
 agent_type = "subagent"
 display_name = "Generic Subagent (Deepseek)"
-description = "Generic subagent on deepseek-v4-flash; loads role skills (implementor, reviewer, advisor, etc.) to perform any delegated role"
+description = "Generic subagent on deepseek-v4-flash; loads subagent role skills (sub-implementor, sub-reviewer, sub-advisor, etc.) to perform any delegated role"
 safety = "neutral"
 active_model = "deepseek-v4-flash"
 bypass_tool_permissions = false

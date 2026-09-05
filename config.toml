@@ -1,4 +1,4 @@
-active_model = "glm-5-2"
+active_model = "gpt-6-astra"
 vim_keybindings = false
 disable_welcome_banner_animation = false
 autocopy_to_clipboard = true
@@ -37,22 +37,27 @@ installed_agents = []
 default_agent = "auto-approve"
 enabled_skills = [
     "skill-creator",
-    "review",
-    "test-generator",
-    "debugging",
-    "git-workflow",
+    "main-design",
+    "main-plan",
+    "main-orchestrate",
+    "workspace",
+    "main-review",
+    "main-test-generator",
+    "main-debugging",
+    "main-git-workflow",
     "web-search",
-    "lisp-spec-writer",
-    "implementor",
-    "lisp-implementor",
-    "reviewer",
-    "advisor",
-    "explorer",
-    "finder",
-    "researcher",
-    "summarizer",
-    "verifier",
-    "worker",
+    "main-lisp-spec-writer",
+    "sub-implementor",
+    "sub-lisp-implementor",
+    "sub-reviewer",
+    "sub-advisor",
+    "sub-explorer",
+    "sub-architecture-mapper",
+    "sub-finder",
+    "sub-researcher",
+    "sub-summarizer",
+    "sub-verifier",
+    "sub-worker",
 ]
 disabled_skills = []
 enable_experimental_hooks = true
@@ -122,15 +127,15 @@ backend = "generic"
 reasoning_field_name = "reasoning_content"
 
 [[models]]
-name = "gpt-5.6-sol"
+name = "gpt-6-astra"
 provider = "codex"
-input_price = 5.0
-output_price = 30.0
-cached_input_price = 0.5
-thinking = "medium"
+input_price = 10.0
+output_price = 50.0
+cached_input_price = 1.0
+thinking = "low"
 supports_images = true
 auto_compact_threshold = 500000
-alias = "gpt-5.6-sol"
+alias = "gpt-6-astra"
 
 [[models]]
 name = "gpt-5.6-luna"
@@ -280,9 +285,10 @@ max_todos = 100
 [tools.task]
 permission = "always"
 allowlist = [
-    "generic-sol",
+    "generic-astra",
     "generic-luna",
     "generic-glm",
+    "generic-glm53",
     "generic-deepseek",
     "generic-glm-flash",
     "generic-omen",

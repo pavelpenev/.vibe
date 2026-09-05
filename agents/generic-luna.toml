@@ -1,6 +1,6 @@
 agent_type = "subagent"
 display_name = "Generic Subagent (Luna)"
-description = "Generic subagent on GPT-5.6-luna; loads role skills (implementor, reviewer, advisor, etc.) to perform any delegated role"
+description = "Generic subagent on GPT-5.6-luna; loads subagent role skills (sub-implementor, sub-reviewer, sub-advisor, etc.) to perform any delegated role"
 safety = "neutral"
 active_model = "gpt-5.6-luna"
 bypass_tool_permissions = false
