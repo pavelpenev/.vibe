@@ -181,10 +181,8 @@ Extract: feature description, protocol contracts, lambda lists, invariants, edge
 Delegate to the `sub-researcher` subagent to find how CLHS specifies analogous features:
 
 ```
-task(task="Load the sub-researcher skill and research how CLHS specifies [analogous feature]. Fetch the relevant CLHS pages for [specific entries]. Return: (1) which CLHS chapters cover this domain, (2) the dictionary entry structure for the closest analogous functions/macros, (3) how CLHS handles [specific concern like protocol contracts, reader macros, etc.].", agent="generic-glm-flash")
+task(task="Load the sub-researcher skill and research how CLHS specifies [analogous feature]. Fetch the relevant CLHS pages for [specific entries]. Return: (1) which CLHS chapters cover this domain, (2) the dictionary entry structure for the closest analogous functions/macros, (3) how CLHS handles [specific concern like protocol contracts, reader macros, etc.].", agent="generic-luna")
 ```
-
-Use `generic-luna` for this research dispatch only as an explicit fallback when `generic-glm-flash` is observed unavailable or exhausted.
 
 This step grounds the spec in CLHS conventions and prevents reinventing specification patterns.
 

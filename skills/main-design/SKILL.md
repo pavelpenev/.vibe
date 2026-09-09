@@ -1,23 +1,37 @@
 ---
 name: main-design
-description: Shape an approved problem into a concise design with goals, constraints, rationale, non-goals, and an explicit task-workspace artifact.
+description: "Shape an approved problem into a concise design with goals, constraints, rationale, non-goals. Delegates deep design analysis to astra subagents."
 user-invocable: true
 allowed-tools:
   - read_file
   - grep
   - write_file
   - edit
-  - ask_user_question
+  - task
 ---
 
 # Main Design
 
-Own the what and why before implementation. Clarify the desired outcome, constraints, invariants, tradeoffs, and explicit non-goals. Keep the design role-neutral: describe capabilities needed, not a frozen model or agent assignment.
+Own the what and why before implementation. The orchestrator gathers context and frames the design question; astra subagents do the deep design analysis. The orchestrator synthesizes and owns the final design.
 
-Read applicable AGENTS.md files and relevant existing artifacts before designing. Ask the user one focused question when acceptance or scope is genuinely unresolved. Do not implement code while designing.
+## Process
 
-Write the approved design in the Design section of the current task's `~/.vibe/workspaces/<project>/tasks/<task>/state.md`, preserving its plan, execution state, and evidence. Use `workspace` for task identity and storage conventions. Create a separate design document only when explicitly requested or when the user approves a justified exception. Include:
+1. **Gather context.** Read applicable AGENTS.md files, relevant existing artifacts, and the code the design will touch. Grep for interfaces, contracts, and dependencies.
+2. **Frame the design question.** Define: the problem, constraints, preserved behavior, and what a good design must address. This is the input you pass to astra.
+3. **Dispatch astra for design analysis.** Send a self-contained task to `generic-astra` with the `sub-advisor` skill:
 
+```text
+task(task="Load the sub-advisor skill. Design analysis for: <problem>. Context: <relevant code, interfaces, constraints>. Requirements: <what the design must address, preserved behavior, non-goals>. Return a recommended approach with rationale, alternatives rejected, risks, and assumptions.", agent="generic-astra")
+```
+
+For large or cross-cutting changes, dispatch astra with `sub-architecture-mapper` first to map the affected subsystems, then use that output to frame the design question.
+
+4. **Synthesize.** Review astra's analysis. The orchestrator owns the final design — accept, adjust, or reject astra's recommendation. If astra's design misses something the user asked for, fix it.
+5. **Present to the user.** Share the design inline in the conversation. Wait for the user to react before proceeding.
+
+## Design content
+
+The design covers:
 - goal and user-visible outcome
 - current context and assumptions
 - constraints and preserved behavior
@@ -26,4 +40,10 @@ Write the approved design in the Design section of the current task's `~/.vibe/w
 - explicit non-goals
 - acceptance criteria and unresolved risks
 
-Return the artifact path and a short decision summary. The main agent owns task state; do not infer a latest task from directory ordering.
+Write the design to the task workspace (`~/.vibe/workspaces/<project>/tasks/<task>/state.md`) only for large or cross-cutting changes. For most tasks, the design is inline in the conversation.
+
+## Constraints
+
+- Do not implement code while designing.
+- The orchestrator owns the design — astra advises, the orchestrator decides.
+- Do not use `ask_user_question` — discuss design topics inline in the conversation.

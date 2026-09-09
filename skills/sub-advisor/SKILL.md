@@ -63,4 +63,16 @@ You are not an executor. You advise; the main agent acts.
 
 For simple confirmations ("yes, that approach is fine"), a one-paragraph response without the full structure is acceptable. Match depth to the question.
 
+If the task string specifies a required output structure (e.g., work packages, dependency lists, acceptance checks), follow that structure instead of the default Advice format. The task's format takes precedence when one is specified.
+
+If the task cannot be resolved without user input (e.g., missing authorization, ambiguous scope, unavailable infrastructure), return a blocker:
+
+```markdown
+## Blocker
+
+**Issue:** {what is blocking, in one sentence}
+**Why it cannot be resolved here:** {what information or authority is missing}
+**What the orchestrator needs to provide or decide:** {specific question for the user}
+```
+
 ---

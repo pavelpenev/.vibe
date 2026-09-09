@@ -32,10 +32,6 @@ disabled_tools = []
 enabled_agents = []
 disabled_agents = [
     "explore",
-    "generic-glm53",
-    "generic-deepseek",
-    "generic-glm-flash",
-    "generic-omen",
 ]
 installed_agents = []
 default_agent = "auto-approve"
@@ -95,40 +91,11 @@ region = ""
 [providers.extra_headers]
 
 [[providers]]
-name = "opencode"
-api_base = "https://opencode.ai/zen/go/v1"
-api_key_env_var = "OPENCODE_API_KEY"
-api_style = "openai"
-backend = "generic"
-
-[[providers]]
-name = "openrouter"
-api_base = "https://openrouter.ai/api/v1"
-api_key_env_var = "OPENROUTER_API_KEY"
-api_style = "openai"
-backend = "generic"
-
-[[providers]]
 name = "codex"
 api_base = "http://127.0.0.1:18080/v1"
 api_key_env_var = ""
 api_style = "openai-responses"
 backend = "generic"
-
-[[providers]]
-name = "ollama"
-api_base = "https://ollama.com/v1"
-api_key_env_var = "OLLAMA_API_KEY"
-api_style = "openai"
-backend = "generic"
-
-[[providers]]
-name = "llamacpp"
-api_base = "http://127.0.0.1:8080/v1"
-api_key_env_var = ""
-api_style = "openai"
-backend = "generic"
-reasoning_field_name = "reasoning_content"
 
 [[models]]
 name = "gpt-6-astra"
@@ -147,10 +114,32 @@ provider = "codex"
 input_price = 0.2
 output_price = 1.2
 cached_input_price = 0.02
-thinking = "high"
+thinking = "medium"
 supports_images = true
 auto_compact_threshold = 200000
 alias = "gpt-5.6-luna"
+
+[[models]]
+name = "gpt-5.6-sol"
+provider = "codex"
+input_price = 4.0
+output_price = 20.0
+cached_input_price = 0.4
+thinking = "low"
+supports_images = true
+auto_compact_threshold = 500000
+alias = "gpt-5.6-sol"
+
+[[models]]
+name = "gpt-5.6-terra"
+provider = "codex"
+input_price = 2.0
+output_price = 12.0
+cached_input_price = 0.2
+thinking = "medium"
+supports_images = true
+auto_compact_threshold = 500000
+alias = "gpt-5.6-terra"
 
 [[models]]
 name = "glm-5-2"
@@ -160,7 +149,7 @@ output_price = 4.4
 cached_input_price = 0.14
 thinking = "high"
 supports_images = false
-auto_compact_threshold = 500000
+auto_compact_threshold = 900000
 alias = "glm-5-2"
 
 [[models]]
@@ -172,49 +161,6 @@ cached_input_price = 0.01
 thinking = "high"
 auto_compact_threshold = 200000
 alias = "mistral-small-latest"
-
-[[models]]
-name = "deepseek-v4-flash"
-provider = "ollama"
-input_price = 0.44
-output_price = 1.32
-cached_input_price = 0.014
-auto_compact_threshold = 500000
-thinking = "high"
-alias = "deepseek-v4-flash"
-
-[[models]]
-name = "glm-5.3-flash"
-provider = "ollama"
-input_price = 0.15
-output_price = 0.5
-cached_input_price = 0.03
-thinking = "high"
-supports_images = true
-auto_compact_threshold = 500000
-alias = "glm-5.3-flash"
-
-[[models]]
-name = "glm-5.3:cloud"
-provider = "ollama"
-thinking = "high"
-input_price = 1.4
-output_price = 4.4
-cached_input_price = 0.14
-supports_images = false
-auto_compact_threshold = 500000
-alias = "glm-5.3"
-
-[[models]]
-name = "omen-alpha"
-provider = "opencode"
-input_price = 0.2
-output_price = 0.66
-cached_input_price = 0.02
-thinking = "high"
-supports_images = true
-auto_compact_threshold = 400000
-alias = "omen-alpha"
 
 [[transcribe_providers]]
 name = "mistral"
@@ -292,13 +238,10 @@ allowlist = [
     "generic-luna",
     "generic-glm",
     "generic-astra",
+    "generic-sol",
+    "generic-terra",
 ]
-denylist = [
-    "generic-glm53",
-    "generic-deepseek",
-    "generic-glm-flash",
-    "generic-omen",
-]
+denylist = []
 sensitive_patterns = []
 
 [tools.exit_plan_mode]

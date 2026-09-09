@@ -1,8 +1,8 @@
 agent_type = "subagent"
-display_name = "Generic Subagent (GLM-5.3 Flash)"
-description = "Generic subagent on GLM-5.3 Flash; loads subagent role skills (sub-implementor, sub-reviewer, sub-advisor, etc.) to perform any delegated role"
+display_name = "Generic Subagent (Terra)"
+description = "Generic subagent on GPT-5.6-Terra; loads subagent role skills (sub-implementor, sub-reviewer, sub-advisor, etc.) to perform any delegated role"
 safety = "neutral"
-active_model = "glm-5.3-flash"
+active_model = "gpt-5.6-terra"
 bypass_tool_permissions = false
 system_prompt_id = "generic-subagent"
 enabled_tools = ["read_file", "write_file", "edit", "grep", "bash", "skill", "web_search", "web_fetch"]

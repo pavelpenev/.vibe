@@ -1,20 +1,18 @@
 # Mistral Vibe Custom Configuration
 
-Configuration and prompts for a role-based main agent with bounded generic subagents. The intended main default is GLM-5.2 on Mistral; `config.toml` intentionally keeps the current `active_model = "gpt-6-astra"` until the user switches it.
+Configuration and prompts for a role-based main agent with bounded generic subagents. The intended main default is GLM-5.2 on Mistral; `config.toml` keeps `active_model = "glm-5-2"`. Two providers are active: Mistral (for GLM-5.2 and Mistral Small) and Codex (local OpenAI proxy at `127.0.0.1:18080` exposing GPT-6-Astra, GPT-5.6-Luna, GPT-5.6-Sol, and GPT-5.6-Terra).
 
 ## Roster
 
-| Agent | Model | Intended use |
-|---|---|---|
-| `generic-astra` | gpt-6-astra | Strong work and Deep/Plans review phase two |
-| `generic-glm53` | glm-5.3 | Astra backup and strong cross-family review |
-| `generic-glm-flash` | glm-5.3-flash | Primary implementor, explorer, and general worker |
-| `generic-luna` | gpt-5.6-luna | Reviewer and fallback worker when Ollama is exhausted |
-| `generic-deepseek` | deepseek-v4-flash | Supplementary reviewer |
-| `generic-glm` | glm-5-2 | Available strong subagent |
-| `generic-omen` | omen-alpha | Manual evaluation only; never auto-dispatched or promoted automatically |
+| Agent | Model | Provider | Thinking | Intended use |
+|---|---|---|---|---|
+| `generic-astra` | gpt-6-astra | codex | medium | Deep review, architecture, most complex implementation, and design/planning support |
+| `generic-sol` | gpt-5.6-sol | codex | low | Demanding implementation: complex logic, refactoring, broad impact |
+| `generic-terra` | gpt-5.6-terra | codex | medium | Implementation: multi-file edits, feature work |
+| `generic-luna` | gpt-5.6-luna | codex | medium | Trivial tasks: search, grep, verification, single-file edits |
+| `generic-glm` | glm-5-2 | mistral | high | Cross-family subagent |
 
-All generic agents use `prompts/generic-subagent.md`, are model-pinned in `agents/`, and retain the configured tool permissions, denylists, and sensitive-pattern protections. The task allowlist is the dispatch roster in `config.toml`.
+All generic agents use `prompts/generic-subagent.md`, are model-pinned in `agents/`, and retain the configured tool permissions, denylists, and sensitive-pattern protections. The task allowlist is the dispatch roster in `config.toml`. Dispatch rules are in `prompts/system-prompt-large.md` under "Model dispatch" — match agent to task complexity, from luna for trivial work up to astra for deep review, architecture, and the most complex implementation.
 
 ## Skills
 
@@ -24,7 +22,7 @@ Subagent role skills: `sub-advisor`, `sub-architecture-mapper`, `sub-explorer`, 
 
 ## Review tiers
 
-Review tier composition, reviewer agents, and backup behavior are owned by the `main-review` skill and are not restated here. In brief: Quick is Flash only; Standard runs Luna, Flash, and Deepseek independently in parallel; Deep runs Standard first, then Astra with glm53 as backup; Plans use the Deep procedure.
+Review tier composition, reviewer agents, and backup behavior are owned by the `main-review` skill. In brief: Quick is Terra only; Standard defaults to Terra, optionally with Luna for a second perspective; Deep runs Standard first, then Astra; Plans use the Deep procedure.
 
 The review and orchestration skills keep rounds bounded. The usage tool is retained for explicit user requests only; it is not called automatically.
 

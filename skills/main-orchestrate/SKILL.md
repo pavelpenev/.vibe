@@ -1,6 +1,6 @@
 ---
 name: main-orchestrate
-description: Execute an approved task plan through bounded work, explicit state checkpoints, verification, review, refinement, and user escalation for scope or acceptance changes.
+description: "Execution guidance for the implementation phase: task granularity, worker routing, state management, and verification during implementation."
 user-invocable: true
 allowed-tools:
   - task
@@ -9,22 +9,34 @@ allowed-tools:
   - edit
   - grep
   - bash
-  - ask_user_question
 ---
 
 # Main Orchestrate
 
-Execute approved scope only. Read the design and plan artifacts plus applicable AGENTS.md files. The main agent owns task state, checkpoints, synthesis, and the final acceptance decision. Subagents are non-interactive: they return results and blockers, unless explicitly assigned an artifact path.
+This skill provides detailed execution guidance for the implementation phase (Phase 4) of the mandatory workflow defined in `prompts/system-prompt-large.md`. The workflow phases (Understand, Respond, Design, Plan, Implement, Verify, Review) are in the system prompt and are not restated here. This skill covers task granularity, worker routing, and state management during execution.
 
-Decompose work into bounded jobs, dispatch independent jobs in parallel, checkpoint after each dependency boundary, run declared verification, and review the result before refinement. Default to at most two refinement rounds per artifact. Any scope, design, acceptance, destructive-operation, or budget change is a proposal; escalate it to the user before acting.
+The main agent owns task state, checkpoints, synthesis, and the final acceptance decision. Subagents are non-interactive: they return results and blockers, unless explicitly assigned an artifact path. Any scope, design, acceptance, destructive-operation, or budget change is a proposal; escalate it to the user before acting.
+
+## Task granularity
+
+Split implementation tasks into focused units so subagents complete faster. Minutes of waiting are acceptable for genuinely complex work — the goal is to cut unnecessary time, not to force every task to be trivial.
+
+- **One file per implementor when practical.** If a change spans three files with no dependencies, dispatch three implementors in parallel. But a complex change in one file that needs deep reasoning is one task for a strong agent — do not split it artificially.
+- **Provide context, not exploration.** Give each subagent the signatures, types, or interface contracts it needs so it does not grep and read sibling files to understand them. This is the biggest time saver — most subagent minutes are spent reading context the orchestrator already has.
+- **Parallel over sequential when independent.** Dispatch independent edits simultaneously. Wait only when one edit's output is another's input.
+- **Match the split to the task.** A feature touching five files with simple changes each: five parallel luna tasks. A refactor that restructures a core module: one sol or astra task with the full scope. Let the task's complexity decide the split, not a fixed rule.
 
 ## Worker routing
 
-- `generic-glm-flash` is the primary worker for implementor, explorer, and general worker roles, and the default for any unrouted routine role (finder, researcher, summarizer, verifier, and similar).
-- Use `generic-luna` as the fallback when Ollama capacity is observed unavailable or exhausted; do not probe providers or call usage tools automatically.
-- `generic-deepseek` is supplementary reviewer-only capacity, not a primary implementation worker.
-- Use `generic-astra` for strong work and the second phase of Deep or Plans review; use `generic-glm53` as the Astra backup when Astra is unavailable.
-- `generic-omen` is manual evaluation only. Never auto-dispatch it and do not create an automatic promotion or evaluation path.
+Dispatch the cheapest agent that can handle the task. The full dispatch table and rules are in `prompts/system-prompt-large.md` under "Model dispatch"; they are not restated here. In brief:
+
+- `generic-luna` for trivial tasks (search, grep, verification, single-file edits).
+- `generic-terra` for normal implementation (multi-file edits, feature work) and as the default reviewer.
+- `generic-sol` for demanding implementation (complex logic, refactoring, broad impact).
+- `generic-astra` for the most complex implementation, deep review, and design/planning support when the orchestrator needs a strong second perspective on approach, decomposition, or risk.
+- `generic-glm` for rare cross-family second opinions.
+
+Use astra to aid in design and planning: dispatch it with a design or plan target and the `sub-advisor` or `sub-reviewer` skill when the orchestrator needs to validate an approach, surface risks, or decompose a complex task before committing to implementation.
 
 Each dispatch task names exactly one `sub-*` role skill, states the target and intent, and specifies the required result format. Review tiers are owned by `main-review` and are not restated here: follow `main-review` for tier composition, reviewer agents, and backup behavior.
 
