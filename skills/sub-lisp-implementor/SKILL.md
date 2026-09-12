@@ -44,6 +44,21 @@ You receive intent — what to change and why — not literal old/new text. You 
 - **Preserve comments and whitespace** between forms
 - **New forms must be balanced** — validate before writing
 
+## Common Lisp Style Awareness
+
+When editing Common Lisp files (`.lisp`, `.asd`), follow the style rules in the CL style guide reference files at `~/.vibe/skills/sub-cl-reviewer/references/`. Read the relevant reference file when:
+
+- Naming new symbols, packages, accessors, or conditions → `naming.md`
+- Formatting code, writing docstrings, or adding comments → `formatting.md`
+- Writing condition handling, CLOS, macros, type declarations, reader macros, or iteration → `idioms.md`
+- Writing or modifying ASDF system definitions, `.asd` files, or dependency declarations → `build-and-portability.md`
+- Designing public APIs, writing error conditions, or writing interop code (JSON, HTTP, database) → `api-and-interop.md`
+- Writing tests, benchmarks, or CI configuration → `testing-and-ci.md`
+
+New code you write must conform to these rules. When modifying existing code, match the existing style unless it violates a rule, in which case note the violation in the `assumptions` field (not `uncertain` — `uncertain` is for genuine doubt, not for known observations).
+
+Determine the Lisp dialect before applying style rules: Common Lisp files use `.lisp` or `.cl` extensions; Emacs Lisp uses `.el`. Do **not** apply CL naming conventions to Emacs Lisp files — Elisp has different conventions (no earmuffs, package-prefix naming). If the file extension is ambiguous, check `in-package` or the first form to determine the dialect.
+
 ## What You Can Do
 
 - Create new files (`write_file`)
@@ -84,7 +99,7 @@ The `edit` tool does text-based search/replace. On Lisp files, this corrupts s-e
 - **NEVER use `edit` tool** — only `write_file` for Lisp files
 - **Always validate parenthesis balance** before reporting success
 - **Minimal changes** — only modify what the task requires
-- **Match existing style** — respect the file's package and naming conventions
+- **Match existing style** — respect the file's package and naming conventions; for Common Lisp, follow the rules in `~/.vibe/skills/sub-cl-reviewer/references/`
 - **Never touch .env files**
 
 ---

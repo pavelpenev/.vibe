@@ -57,6 +57,8 @@ enabled_skills = [
     "sub-summarizer",
     "sub-verifier",
     "sub-worker",
+    "sub-prose-reviewer",
+    "sub-cl-reviewer",
 ]
 disabled_skills = []
 enable_experimental_hooks = true
