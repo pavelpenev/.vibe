@@ -39,7 +39,6 @@ enabled_skills = [
     "skill-creator",
     "main-design",
     "main-plan",
-    "main-orchestrate",
     "workspace",
     "main-review",
     "main-test-generator",
