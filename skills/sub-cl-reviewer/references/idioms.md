@@ -86,7 +86,7 @@
 ### CL-33 — Respect the accessor protocol
 **Signal:** Application code uses `slot-value` or broadly uses `with-slots`.
 **Problem:** Direct slot access bypasses accessor methods and future protocol extension.
-**Exception:** `with-slots` is reasonable in the class's methods or a proven hot loop.
+**Exception:** `with-slots` is reasonable in the class's own methods or a proven hot loop; `slot-value` is reasonable when no public accessor protocol is intended.
 **Example:**
 ```lisp
 ;; Before: (slot-value widget 'name)
@@ -312,7 +312,7 @@
 (defun make-queue (&key capacity) (make-instance 'queue :capacity capacity))
 ```
 ### CL-61 — Make print-object nonintrusive
-**Signal:** `print-object` invokes costly work, I/O, conditions, recursive computation, or possibly unbound accessors. **Problem:** Diagnostics can recurse, fail, or mutate state. **Exception:** None for ordinary object display; use `print-unreadable-object` and bind `*print-circle*` when the graph can be circular.
+**Signal:** `print-object` invokes costly work, unrelated I/O, conditions, recursive computation, or possibly unbound accessors. **Problem:** Diagnostics can recurse, fail, or mutate state. **Exception:** Writing the object's representation to the supplied stream is the method's intended operation and is not prohibited.
 **Example:**
 ```lisp
 (print-unreadable-object (x stream :type t :identity t))
@@ -531,7 +531,7 @@
 ```
 ## Method combination
 ### CL-93 — Prefer standard method combination
-**Signal:** Auxiliary methods calculate the operation's essential result. **Problem:** Their return values are discarded under standard combination. **Exception:** Side effects, wrapping, or vetoing suit auxiliary qualifiers.
+**Signal:** `:before` or `:after` methods calculate the operation's essential result. **Problem:** Their return values are discarded under standard combination; `:around` methods that return values other than `call-next-method`'s result can also lose the primary result. **Exception:** Side effects, wrapping, or vetoing suit auxiliary qualifiers.
 **Example:**
 ```lisp
 (defmethod render :around ((x widget)) (authorize x) (call-next-method))

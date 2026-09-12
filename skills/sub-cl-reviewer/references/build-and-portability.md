@@ -94,7 +94,7 @@
 ## CL-110 — Use stable lowercase names
 **Rule ID:** CL-110  
 **Name:** Lowercase system names  
-Keep system names lowercase and hyphenated. Package names should also be lowercase but are separate from system names — a system named `myapp` may contain a package named `myapp.core`.
+Keep system names lowercase and hyphenated. Package designators in source code should be lowercase (the standard reader upcases them, so lowercase source spelling is a convention, not a semantic requirement). System and package names are separate — a system named `myapp` may contain a package named `myapp.core`.
 **Signal:** Public system names contain uppercase letters or underscores, or package designators conflate packages with their containing system names.
 **Problem:** Inconsistent naming harms portability, convention, and discoverability.
 **Exception:** Interoperating with a pre-existing externally named system can require its name.
@@ -163,7 +163,7 @@ Keep system names lowercase and hyphenated. Package names should also be lowerca
 ## Streams and pathnames
 ## CL-116 — Close streams reliably
 **Rule ID:** CL-116  
-**Name:** Always use `with-open-file`  
+**Name:** Close streams reliably  
 **Signal:** `open` lacks a matching `close` protected by `unwind-protect`.
 **Problem:** Non-local exits can leak descriptors and leave buffered output unfinished.
 **Exception:** A caller-owned stream intentionally returned from an API must document ownership.

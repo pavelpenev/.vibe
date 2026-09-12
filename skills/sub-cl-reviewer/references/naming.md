@@ -266,9 +266,9 @@
 ```
 
 ## CL-16c — Choosing `uiop:define-package`
-**Signal:** Check whether `uiop:define-package` is used for its extensions and whether UIOP is otherwise a dependency.
-**Problem:** Use it for features such as local nicknames, reexports, or package mixing; plain `cl:defpackage` keeps simple packages portable and avoids unnecessary coupling.
-**Exception:** None; flag an otherwise-unneeded UIOP dependency introduced solely for package syntax.
+**Signal:** `uiop:define-package` is used but no UIOP-specific features (local nicknames, reexports, package mixing) are employed; or UIOP is otherwise a dependency solely for package syntax.
+**Problem:** Plain `cl:defpackage` keeps simple packages portable and avoids unnecessary coupling. Using `uiop:define-package` for features such as local nicknames, reexports, or package mixing justifies the dependency; using it without those features does not.
+**Exception:** None; using a UIOP-specific feature is sufficient justification, but introducing UIOP solely for package syntax without using those features should be flagged.
 **Example:**
 ```lisp
 (uiop:define-package #:myapp.api

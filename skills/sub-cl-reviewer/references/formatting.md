@@ -65,7 +65,7 @@
       (report-empty)))
 ```
 
-Use four spaces from the operator for `let` and `let*` binding pairs, then two for their bodies.
+Use four spaces from the operator for `let` and `let*` binding pairs, then two spaces from the opening parenthesis of the `let` form for their bodies.
 Put each `cond`, `case`, or `typecase` clause on its own line and indent its body beneath the clause.
 Keep a short definition lambda list on its opening line; otherwise continue it cleanly and indent the body two spaces.
 Place one `defclass` slot per line with slot options aligned; align major `loop` clauses beneath `loop` and indent nested clauses further.
@@ -143,7 +143,7 @@ Prefer comments that record a non-obvious decision, constraint, trade-off, or su
 ## CL-24 — No Commented-Out Code
 **Signal:** Disabled executable forms remain in ordinary comments under version control.
 **Problem:** Dead snippets confuse maintenance and duplicate information already retained by history.
-**Exception:** Code may be briefly commented during active debugging, but it must not be committed that way.
+**Exception:** Code may be briefly commented during active debugging, but it must not be committed that way. Reader-suppressed comparisons (`#+(or)` or `#-(and)`) are subject to the same no-commit rule; use conditional compilation features for supported build variants, not for retaining obsolete code.
 **Example:**
 ```lisp
 #+(or)

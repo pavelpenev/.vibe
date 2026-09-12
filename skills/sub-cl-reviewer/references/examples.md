@@ -90,7 +90,7 @@
 (defparameter *routes* (make-hash-table :test #'equal))
 ```
 **Case:** LET bindings and body have flat indentation. **Rule:** CL-18  
-**Note:** Indent body forms two spaces past the binding list.
+**Note:** Indent body forms two spaces from the opening parenthesis of the `let` form.
 **Before**
 ```lisp
 (let ((timeout (client-timeout client))
