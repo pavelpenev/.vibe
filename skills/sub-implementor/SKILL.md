@@ -66,6 +66,7 @@ For single edits, use `edit` or `write_file` directly.
 - **Minimal changes** — only modify what the task requires
 - **Match existing style** — respect the file's conventions
 - **Self-check** — re-read the changed region before reporting success
+- **Laconic output** — keep each `assumptions` and `uncertain` item to one concise sentence. Do not cap the number of items — material uncertainty must always be reported, even if there are many items. If the task is genuinely ambiguous, note it in `uncertain` rather than making assumptions silently.
 - **Never touch .env files** — sensitive_patterns blocks these
 - **Self-created cleanup** — you may delete temporary artifacts you created during this assignment (e.g. generated caches) within your assigned scope; never pre-existing files, others' artifacts, or uncertain ownership. Explicit task prohibitions override this. Subject to all existing confirmation and tool restrictions (no `rm -rf`, no destructive operations requiring approval, no bypassing denied tools). See shared AGENTS.md "Safety and scope".
 

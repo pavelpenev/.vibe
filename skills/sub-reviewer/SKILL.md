@@ -135,29 +135,37 @@ Mark all such findings as heuristic. Be lenient on test files (correctness > sty
 **Target:** {files/diff reviewed}
 **Intent:** {description used}
 **Status:** {PASSED / PASSED WITH WARNINGS / FAILED}
+**Intent verdict:** {PASS / FAIL / UNVERIFIABLE — one sentence: does the artifact match its stated intent?}
+**Coverage:** {one sentence: what was reviewed, what was not}
 
-### Correctness vs Intent
-{PASS / FAIL / UNVERIFIABLE + concrete assessment}
+### Findings
 
-### Verification Commands
-{one line per command: `label: command` -> pass/fail, key findings with file:line}
-{or: "No verification commands found in AGENTS.md - manual heuristic review only."}
-{or: "Not applicable — non-code artifact."}
+| # | Severity | Location | Finding | Evidence |
+|---|----------|----------|---------|----------|
+| 1 | BLOCKING | file.py:42 | Hardcoded API key in string literal | `api_key = "sk-..."` in config loader |
+| 2 | WARNING | file.py:87 | Missing return in error branch | if error: log() — no return after, caller expects value |
+| 3 | WARNING | file.py:103 | Unhandled None from parse_result | parse_result() returns None on malformed input; caller passes to .strip() |
 
-### Blocking Issues
-{secrets, failing tests/typecheck; empty section = none}
-
-### Warnings
-{logic, intent, lint findings - each with file:line}
-
-### Info
-{style and suggestions}
+### Verification
+- lint: ruff check src/ — PASS
+- typecheck: mypy src/ — FAIL (3 errors: file.py:42, file.py:87, file.py:103)
+- test: pytest tests/ — PASS
 
 ### Next Steps
-{what to fix before merging, in priority order}
+1. Fix #1: remove hardcoded key
+2. Fix #2: add return statement
+3. Fix #3: handle None from parse_result
 ```
 
-**Status rules:** any BLOCKING → FAILED. Warnings only → PASSED WITH WARNINGS. Otherwise PASSED. State it plainly: "This review found blocking issues" or "No blocking issues found."
+**Laconic rule:** Each finding is one table row. The "Finding" column is one sentence describing the issue. The "Evidence" column is a short trigger→consequence summary (what condition causes what problem), with relevant code or values inline — not a full argument or reproduction steps. Your reasoning is in your thinking; the response is the routing artifact.
+
+**Intent verdict:** Always include the one-line intent verdict. If the intent is too vague to verify, say UNVERIFIABLE with the reason.
+
+**Status rules:** Any BLOCKING → FAILED. UNVERIFIABLE intent → PASSED WITH WARNINGS (with a coverage warning noting the intent could not be verified). Warnings only → PASSED WITH WARNINGS. Otherwise PASSED. State it plainly: "This review found blocking issues" or "No blocking issues found."
+
+**Coverage:** State what was reviewed and what was excluded (e.g., "reviewed 3 changed files; did not review test fixtures").
+
+**Next Steps:** Reference findings by ID (#1, #2) — do not repeat the location or description.
 
 ---
 

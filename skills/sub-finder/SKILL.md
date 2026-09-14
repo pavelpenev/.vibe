@@ -1,6 +1,6 @@
 ---
 name: sub-finder
-description: Search for patterns across files using grep, find, rg, or ag. Returns structured JSON with file, line_number, and line content for each match.
+description: Search for patterns across files using grep, find, rg, or ag. Returns structured JSON with file and line numbers for each match.
 user-invocable: false
 allowed-tools:
   - grep
@@ -31,15 +31,34 @@ Parse the task to understand:
 {
   "pattern": "searched_pattern",
   "path": "/path/searched",
-  "matches": [
+  "total_matches": 47,
+  "returned_matches": 15,
+  "complete": false,
+  "files": [
     {
       "file": "path/to/file.ext",
-      "line_number": 42,
-      "line": "line content containing the pattern"
+      "match_count": 8,
+      "line_numbers": [42, 87, 103, 155, 201, 234, 289, 301]
+    },
+    {
+      "file": "path/to/other.ext",
+      "match_count": 7,
+      "line_numbers": [10, 15, 22, 31, 44, 50, 67]
     }
   ],
-  "total_matches": 5,
   "command_used": "grep -rn 'pattern' /path"
+}
+```
+
+If the task explicitly asks for line content, use this per-file shape in place of `line_numbers`:
+
+```json
+{
+  "file": "path/to/file.ext",
+  "matches": [
+    {"line_number": 42, "text": "matched line content"},
+    {"line_number": 87, "text": "another matched line"}
+  ]
 }
 ```
 
@@ -58,5 +77,9 @@ Parse the task to understand:
 - DO NOT write scripts or temporary files
 - Only use read-only commands
 - If no matches found, return total_matches: 0
+- Return locations only (file + line numbers), not matched line content. The orchestrator dispatches workers with locations; it does not need the text.
+- If total_matches exceeds 50, return the first 50 locations grouped by file and set complete: false with the total count.
+- If the task explicitly asks for line content, use the per-match shape with line_number and text fields instead of the line_numbers array.
+- total_matches counts matching lines, not occurrences. If the search itself is incomplete (e.g., timed out), set complete: false and note it.
 
 ---

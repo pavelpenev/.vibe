@@ -65,7 +65,7 @@ For each discovered command:
 | Exit 127 (command not found) | ERROR | Missing tool/environment |
 | other non-zero | FAIL | Unrecognized failure |
 
-5. For FAIL results, cap output at ~200 lines. Prioritize lines matching `error`, `fail`, `Error:`, `FAIL`, `file:line` patterns, plus the summary line. Append `... (truncated, N more lines)` if output was cut.
+5. For FAIL results, report one line per command with: error count or test failure count, and for each error/failure: file:line + a short diagnostic (type, expected vs actual, or test name). Do not include full error text, stack traces, or multi-line code blocks. Include process crashes and collection errors even if they have no file location. Group repeated diagnostics of the same type — report the count and one example, not five identical errors. Preserve distinct failure classes: if there are both type errors and a collection error, include both even if it exceeds 5 items. Cap at 5 examples per failure class; append "... (N more)" if more remain.
 
 6. For TIMEOUT, the tool returns an error with no partial output. Report which command timed out and at what limit; suggest a narrower scope (single test file) as the retry strategy. Do not retry automatically.
 
@@ -82,33 +82,20 @@ For each discovered command:
 
 | Command | Status | Details |
 |---------|--------|---------|
-| lint: ruff check src/ | PASS | All checks passed |
-| typecheck: mypy src/ | FAIL | 3 errors |
-| test: pytest tests/ -q | TIMEOUT | 180s exceeded |
+| lint: ruff check src/ | PASS | |
+| typecheck: mypy src/ | FAIL | 3 errors: file.py:42 type mismatch, file.py:87 missing return, file.py:103 incompatible arg |
+| test: pytest tests/ -q | FAIL | 2 failures: test_parse_empty (test_core.py:15) assert None != [], test_parse_invalid (test_core.py:28) KeyError 'value' |
+| test: pytest tests/slow/ | TIMEOUT | 180s exceeded. Retry: pytest tests/slow/test_api.py -q |
 
-### Failure Details
-
-**typecheck: mypy src/** (FAIL, exit 1)
-```
-file.py:42: error: Argument 1 has incompatible type...
-file.py:87: error: Missing return statement...
-```
-
-**test: pytest tests/ -q** (TIMEOUT, 300s)
-No output available. Retry suggestion: run a narrower scope, e.g. `pytest tests/test_core.py -q`.
-
-Cache directories created: .mypy_cache, .pytest_cache
-```
-
-For all-PASS results, omit the Failure Details section. Include the cache note only if relevant.
-
-If any commands were skipped (mutating with no check equivalent, setup commands filtered out), list them in a Skipped section:
-
-```
 ### Skipped
-- `ruff check --fix .` — mutating, transformed to `ruff check .`
 - `ruff format .` — mutating, transformed to `ruff format --check .`
 ```
+
+For all-PASS results, the table alone is the response. Include the Skipped section only if there were skipped commands.
+
+For TIMEOUT results, include a compact retry suggestion in the Details column.
+
+If cache directories were created (`.pytest_cache`, `.mypy_cache`, etc.), include a note line after the table: `Cache directories created: .mypy_cache, .pytest_cache`
 
 ---
 

@@ -150,7 +150,7 @@ output_price = 4.4
 cached_input_price = 0.14
 thinking = "high"
 supports_images = false
-auto_compact_threshold = 900000
+auto_compact_threshold = 400000
 alias = "glm-5-2"
 
 [[models]]
