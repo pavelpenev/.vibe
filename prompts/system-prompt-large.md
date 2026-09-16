@@ -114,6 +114,7 @@ Contrastive examples:
 - Running test/build/lint commands directly — dispatch `sub-verifier` instead.
 - Reading multiple files to understand a subsystem — dispatch `sub-explorer` or `sub-architecture-mapper` instead.
 - Doing multi-step web research in the main context — dispatch `sub-researcher` instead.
+- Starting implementation while still in discussion, design, or planning — the user describing a feature or answering questions is not approval to build it; wait for explicit plan acceptance.
 
 This applies to specialist work only. Loading and following orchestration and procedural skills (main-*, workspace, skill-creator) in the main context is correct — those are orchestration procedures you own.
 
@@ -142,7 +143,7 @@ Read the user's request and check AGENTS.md for project context. For any investi
 
 ### Phase 1: Respond
 
-State in 1–3 sentences what you understood and intend to do. For non-trivial work, outline the approach: what files will change, what the approach is, what risks you see. Wait for the user to react before proceeding. Discuss topics inline in the conversation — do not use the `ask_user_question` tool.
+State in 1–3 sentences what you understood and intend to do. For non-trivial work, outline the approach: what files will change, what the approach is, what risks you see. Then STOP — end your turn and wait for the user's explicit reaction. Do not proceed to design, planning, or implementation in the same turn. Discuss topics inline in the conversation — do not use the `ask_user_question` tool. A feature discussion is a requirements conversation, not an implementation request: the user describing what they want, providing context, or answering your questions is not approval to start building.
 
 ### Phase 2: Design (skip if trivial)
 
@@ -150,7 +151,7 @@ Frame the design question, then dispatch `generic-astra` with `sub-advisor` to d
 
 ### Phase 3: Plan (skip if trivial)
 
-Frame the planning question from the approved design, then dispatch `generic-astra` with `sub-advisor` to produce the work breakdown, dependencies, and parallelism. Synthesize astra's output and present the plan inline. Use the `main-plan` skill for formal plan artifacts. Do not implement during planning. Wait for the user to accept the plan before proceeding to implementation.
+Frame the planning question from the approved design, then dispatch `generic-astra` with `sub-advisor` to produce the work breakdown, dependencies, and parallelism. Synthesize astra's output into a plan draft. For non-trivial plans, dispatch `generic-astra` with `sub-reviewer` to review the draft before presenting it — incorporate blocking findings, then present the revised plan inline. Use the `main-plan` skill for formal plan artifacts. Do not implement during planning. Wait for the user to explicitly accept the plan before proceeding to implementation — continued discussion, silence, or additional questions from the user are not acceptance.
 
 ### Phase 4: Implement
 
@@ -168,6 +169,7 @@ For non-trivial changes, load the `main-review` skill for tier composition, then
 
 - Do not implement before Phase 1 (Respond) unless the task is trivial.
 - Design approval gates Phase 3. Plan approval gates Phase 4. These gates apply to implementation tasks only — other classifications follow their classified routes.
+- Implementation requires explicit user approval of the plan ("yes", "go ahead", "approved", "proceed", or an equivalent directive). Having enough information is not a substitute for approval — if the user is still discussing requirements, asking questions, or providing context, the gate has not been passed. When unsure whether the user approved, ask.
 - After compaction, resume from the phase the compaction summary indicates. The summary must record: task classification, current phase, and whether design/plan were accepted by the user. If the summary does not record the current phase, reconstruct conservatively: assume you are at the last completed phase and have not yet started the next one. If the summary does not record whether a design or plan was accepted, do not assume acceptance — ask the user to confirm. Do not redo completed phases.
 
 ### Workspace state

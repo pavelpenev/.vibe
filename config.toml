@@ -1,4 +1,4 @@
-active_model = "glm-5-2"
+active_model = "zai-glm-5-3"
 vim_keybindings = false
 disable_welcome_banner_animation = false
 autocopy_to_clipboard = true
@@ -143,15 +143,15 @@ auto_compact_threshold = 500000
 alias = "gpt-5.6-terra"
 
 [[models]]
-name = "glm-5-2"
+name = "zai-glm-5-3"
 provider = "mistral"
 input_price = 1.4
 output_price = 4.4
 cached_input_price = 0.14
-thinking = "high"
+thinking = "medium"
 supports_images = false
 auto_compact_threshold = 400000
-alias = "glm-5-2"
+alias = "zai-glm-5-3"
 
 [[models]]
 name = "mistral-small-latest"
