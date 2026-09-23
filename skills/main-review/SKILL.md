@@ -20,9 +20,9 @@ For a pull request, fetch its branch before delegating, then review the branch c
 
 ## Tiers
 
-- **Quick:** one `generic-terra` reviewer. Use for quick, fast, trivial, or rename-only reviews.
-- **Standard:** dispatch `generic-terra` as the default reviewer, loading `sub-reviewer`. For broader coverage, add `generic-luna` in parallel for a second perspective.
-- **Deep:** run the Standard spread first. Give its findings to a second phase using `generic-astra`. The second phase seeks new architectural, system-level, severity, and edge-case findings rather than duplicating the first phase.
+- **Quick:** one `generic-luna` reviewer at max thinking. Use for quick, fast, trivial, or rename-only reviews.
+- **Standard:** dispatch one `generic-luna` reviewer at max thinking, loading `sub-reviewer`.
+- **Deep:** dispatch `generic-astra` at low thinking and `generic-glm` at high thinking in parallel, both loading `sub-reviewer`, then synthesize both reports.
 - **Plans:** use the Deep procedure for plans, specifications, and designs.
 
 Use only the listed agents. Do not call the usage tool automatically. Keep each phase bounded to one dispatch per listed reviewer and at most two refinement rounds unless the user approves a larger budget.
@@ -37,7 +37,7 @@ Each task string must be self-contained:
 task(task="Load the sub-reviewer skill. Review: <target>. Intent: <intent>. Tier: <tier>. Return the complete review report in the skill's format.", agent="<agent>")
 ```
 
-Issue independent Standard calls in one parallel tool block. For Deep and Plans, wait for Standard results, extract consensus and notable divergent findings, and include them in the Astra task.
+Issue independent Deep calls in one parallel tool block. For Deep and Plans, synthesize the astra and glm reports, extracting consensus and notable divergent findings.
 
 ## Synthesis
 

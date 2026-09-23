@@ -1,6 +1,6 @@
 agent_type = "subagent"
 display_name = "Generic Subagent (Astra)"
-description = "Generic subagent on GPT-6-Astra; loads subagent role skills (sub-implementor, sub-reviewer, sub-advisor, etc.) to perform delegated roles"
+description = "Advisor, planner, designer, and deep reviewer on GPT-6-Astra for architecture, design, and planning analysis"
 safety = "neutral"
 active_model = "gpt-6-astra"
 bypass_tool_permissions = false

@@ -104,43 +104,32 @@ provider = "codex"
 input_price = 10.0
 output_price = 50.0
 cached_input_price = 1.0
-thinking = "medium"
+thinking = "low"
 supports_images = true
 auto_compact_threshold = 500000
 alias = "gpt-6-astra"
 
 [[models]]
-name = "gpt-5.6-luna"
+name = "gpt-6-luna"
 provider = "codex"
-input_price = 0.2
-output_price = 1.2
-cached_input_price = 0.02
-thinking = "medium"
+input_price = 0.1
+output_price = 0.50
+cached_input_price = 0.01
+thinking = "max"
 supports_images = true
 auto_compact_threshold = 200000
-alias = "gpt-5.6-luna"
+alias = "gpt-6-luna"
 
 [[models]]
-name = "gpt-5.6-sol"
-provider = "codex"
-input_price = 4.0
-output_price = 20.0
-cached_input_price = 0.4
-thinking = "low"
-supports_images = true
-auto_compact_threshold = 500000
-alias = "gpt-5.6-sol"
-
-[[models]]
-name = "gpt-5.6-terra"
+name = "gpt-6-sol"
 provider = "codex"
 input_price = 2.0
-output_price = 12.0
+output_price = 10.0
 cached_input_price = 0.2
 thinking = "medium"
 supports_images = true
 auto_compact_threshold = 500000
-alias = "gpt-5.6-terra"
+alias = "gpt-6-sol"
 
 [[models]]
 name = "zai-glm-5-3"
@@ -148,7 +137,7 @@ provider = "mistral"
 input_price = 1.4
 output_price = 4.4
 cached_input_price = 0.14
-thinking = "medium"
+thinking = "high"
 supports_images = false
 auto_compact_threshold = 400000
 alias = "zai-glm-5-3"
@@ -240,7 +229,6 @@ allowlist = [
     "generic-glm",
     "generic-astra",
     "generic-sol",
-    "generic-terra",
 ]
 denylist = []
 sensitive_patterns = []

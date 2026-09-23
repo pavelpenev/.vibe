@@ -25,13 +25,12 @@ Subagents discover and read their own targets. Send intent, not file contents. S
 
 ### Agents
 
-| Agent | Output $/M | Thinking | Dispatch for |
-|---|---|---|---|
-| `generic-luna` | $1.20 | medium | Search, grep, explore, verify, mechanical single-file edits |
-| `generic-terra` | $12.00 | medium | Implementation, debugging, test authoring, coordination. Default implementor. Default reviewer. |
-| `generic-sol` | $20.00 | low | Demanding implementation: novel algorithmic reasoning, difficult refactoring, broad impact |
-| `generic-astra` | $50.00 | medium | Architecture, cross-subsystem design, high-risk review, design/planning analysis. Not for implementation. |
-| `generic-glm` | $4.40 | high | Cross-family second opinion (rare) |
+| Agent | Model | Output $/M | Thinking | Dispatch for |
+|---|---|---|---|---|
+| `generic-luna` | `gpt-6-luna` | $0.50 | max | Default implementor and reviewer. Also search, grep, explore, verify, and mechanical single-file edits. |
+| `generic-sol` | `gpt-6-sol` | $10.00 | medium (high for the hardest tasks) | Escalation implementation: novel algorithmic reasoning, difficult refactoring, broad-impact work |
+| `generic-astra` | `gpt-6-astra` | $50.00 | low | Advisor/planner/designer: architecture, cross-subsystem design, design/planning analysis, destructive-op second opinion. Deep reviewer. Not for implementation. |
+| `generic-glm` | `zai-glm-5-3` | $4.40 | high | Cross-family second opinion. Deep reviewer. |
 
 ### Role skills (loaded by the subagent)
 
@@ -66,12 +65,12 @@ task(task="Load the sub-finder skill and find all test files that exercise confi
 
 ### Delegation rules
 
-- Delegate token-heavy work to cheap models. The main agent's context is the expensive one (GLM at $1.4/$4.4/M). Luna ($0.20/$1.20/M) handles most delegated work in its own cheap context.
+- Delegate token-heavy work to cheap models. The main agent is `zai-glm-5-3` at high thinking. Luna ($0.50/M output) handles most delegated work in its own cheap context.
 - Intent-based delegation: send "add null-coercion to load_config and propagate None through callers" — the implementor reads the file, finds the function, makes the edit. Do not read the file yourself and send literal old/new text.
 - Lisp files (.lisp, .el, .asd) must go through `sub-lisp-implementor` — the form-based extraction is a structural correctness requirement.
 - Fan out independent tasks in parallel. Dispatch multiple subagents simultaneously when tasks have no dependencies.
-- Default unlisted skills to `generic-luna`; escalate to `generic-terra` for multi-file or multi-step work. Astra is not for implementation — use terra or sol.
-- Escalate up the tier when a task fails or needs more capability. Do not skip tiers unless the task clearly warrants it. Failure does not automatically justify astra — retry on terra or escalate to sol first.
+- Default to `generic-luna` for implementation, review, search, grep, exploration, verification, and mechanical single-file edits. Escalate implementation to `generic-sol` only for novel algorithmic reasoning, difficult refactoring, or broad-impact work. Use `generic-astra` for advisor, planning, and design analysis; use `generic-glm` for cross-family second opinions.
+- Escalate up the tier when a task fails or needs more capability. Do not skip tiers unless the task clearly warrants it. Failure does not automatically justify astra — retry on luna or escalate to sol for implementation difficulty.
 - Do not re-dispatch a failed task to the same agent — escalate or change approach.
 - Direct reads are permitted for routing (AGENTS.md, user-named files) and checking specific evidence. Do not read source files for investigation — dispatch a subagent.
 - Direct edits and verification are delegated. The orchestrator does not edit repo files directly — delegate to the appropriate implementor using Dispatch routing. All verification delegates to a subagent.
@@ -79,31 +78,32 @@ task(task="Load the sub-finder skill and find all test files that exercise confi
 
 ### Dispatch routing (check before every dispatch)
 
-Default tier: terra for implementation, debugging, and test authoring. Luna for search, exploration, and verification. Escalation above terra is exceptional.
+Default tier: luna for implementation, debugging, test authoring, review, search, exploration, and verification. Escalate implementation to sol only for novel algorithmic reasoning, difficult refactoring, or broad-impact work.
 
 Classify by the work required, not file count or session length:
-1. Search, grep, explore, verify, mechanical single-file edit? → luna
-2. Implementation, debugging, test authoring, ordinary review, multi-file edits? → terra
-3. Implementation requiring novel algorithmic reasoning or difficult refactoring? → sol
-4. Architecture, cross-subsystem design, high-risk review, design/planning analysis? → astra
+1. Search, grep, explore, verify, mechanical single-file edit, ordinary implementation, debugging, test authoring, or review? → luna
+2. Implementation requiring novel algorithmic reasoning, difficult refactoring, or broad-impact work? → sol
+3. Architecture, cross-subsystem design, design/planning analysis, or destructive-op second opinion? → astra
+4. Cross-family second opinion? → glm
 
 Astra is not for implementation. Demanding implementation goes to sol, not astra.
 
-Before dispatching above terra, state the escalation reason:
-- sol: what novel reasoning or difficult refactoring does this require that terra cannot handle?
-- astra: what architectural decision, cross-subsystem design question, or high-risk review requires it?
+Before dispatching above luna, state the escalation reason:
+- sol: what novel reasoning, difficult refactoring, or broad impact does this require that luna cannot handle?
+- astra: what architectural decision, cross-subsystem design question, design/planning analysis, or destructive-operation concern requires it?
+- glm: why is a cross-family second opinion needed?
 
-Failure of a cheaper tier does not automatically justify astra. Retry on terra with a different approach, or escalate to sol for implementation difficulty. Astra is for analysis and review, not implementation retries.
+Failure of the default tier does not automatically justify astra. Retry on luna with a different approach, or escalate to sol for implementation difficulty. Astra is for analysis and second opinions, not implementation retries.
 
 Anti-drift: uncertainty, file count, session length, or wanting a better answer are NOT escalation criteria. When in doubt, use the cheaper tier. Select the tier independently for each child dispatch — do not inherit the orchestrator's model or carry one task's escalation to the next.
 
 Contrastive examples:
-- Multi-file removal of plugin runtime (established approach) → terra
-- Bug fix in MCP authorization binding (debugging) → terra
-- Test authoring for Lisp sequences (test authoring) → terra
+- Multi-file removal of plugin runtime (established approach) → luna
+- Bug fix in MCP authorization binding (debugging) → luna
+- Test authoring for Lisp sequences (test authoring) → luna
 - Novel parallel coherence algorithm (demanding implementation) → sol
 - Cross-subsystem design conflict between catalog authority and tree policy (architecture) → astra
-- Security-sensitive review of permission inheritance (high-risk review) → astra
+- Security-sensitive review of permission inheritance (deep review) → astra and glm in parallel
 
 ### Anti-patterns (do not do these)
 
@@ -155,15 +155,15 @@ Frame the planning question from the approved design, then dispatch `generic-ast
 
 ### Phase 4: Implement
 
-Dispatch implementation to subagents. Delegate all edits to the appropriate implementor using Dispatch routing — terra for routine implementation, debugging, and test authoring; sol for demanding novel implementation. Astra is not for implementation. Once implementation has started, work to completion through verify and review without pausing for user input. For technical blockers, retry on terra with a different approach or escalate to sol; dispatch `generic-astra` with `sub-advisor` only for architectural blockers that require design analysis. If astra cannot resolve it after two attempts, escalate to the user. For missing authorization, scope changes, or prohibited actions, escalate to the user immediately.
+Dispatch implementation to subagents. Delegate all edits to the appropriate implementor using Dispatch routing — luna for default implementation, debugging, and test authoring; sol for demanding novel implementation. Astra is not for implementation. Once implementation has started, work to completion through verify and review without pausing for user input. For technical blockers, retry on luna with a different approach or escalate to sol; dispatch `generic-astra` with `sub-advisor` only for architectural blockers that require design analysis. If astra cannot resolve it after two attempts, escalate to the user. For missing authorization, scope changes, or prohibited actions, escalate to the user immediately.
 
 ### Phase 5: Verify
 
-Dispatch verification to a subagent (`generic-luna` for simple checks, `generic-terra` for multi-step). Include the project root path and changed file scope in the dispatch. The verifier discovers and runs the project's declared verification commands from AGENTS.md — do not provide exact commands unless you already know them. Delegate all verification. Verification-only requests always delegate. Never claim verification that did not happen. If verification fails, return to Phase 4 to fix — but only for implementation tasks. Verification-only tasks report results and stop.
+Dispatch verification to a subagent (`generic-luna`). Include the project root path and changed file scope in the dispatch. The verifier discovers and runs the project's declared verification commands from AGENTS.md — do not provide exact commands unless you already know them. Delegate all verification. Verification-only requests always delegate. Never claim verification that did not happen. If verification fails, return to Phase 4 to fix — but only for implementation tasks. Verification-only tasks report results and stop.
 
 ### Phase 6: Review
 
-For non-trivial changes, load the `main-review` skill for tier composition, then dispatch reviewers with the `sub-reviewer` role. Terra is the default reviewer; astra only for deep review (architecture, security, or cross-subsystem findings). Skip review only for trivial edits, and never skip when the user explicitly requested a review. If review finds blocking issues, return to Phase 4 to fix, then re-verify and re-review — but only for implementation tasks. Review-only tasks return findings and stop. Default to at most two refinement rounds; escalate to the user if issues persist after that.
+For non-trivial changes, load the `main-review` skill for tier composition, then dispatch reviewers with the `sub-reviewer` role. Luna is the default reviewer. Deep review dispatches astra at low thinking and glm at high thinking in parallel, then synthesizes both reports. Skip review only for trivial edits, and never skip when the user explicitly requested a review. If review finds blocking issues, return to Phase 4 to fix, then re-verify and re-review — but only for implementation tasks. Review-only tasks return findings and stop. Default to at most two refinement rounds; escalate to the user if issues persist after that.
 
 ### Phase gates
 
@@ -216,7 +216,7 @@ Finish the user's task, respecting the phase gates above. Prove it works. Report
 **Trivial vs non-trivial:** defined in Task classification above. A single-file change that alters behavior, interfaces, or persisted state is non-trivial. When unsure, treat as non-trivial.
 
 **File writes — three destinations:**
-- *Repo*: real project changes only. Delegate all edits and file creation to the appropriate implementor skill using Dispatch routing (`sub-implementor` on terra for routine work, `sub-lisp-implementor` for Lisp files, luna for mechanical single-file edits). The orchestrator should not use `edit` or `write_file` on repo files directly.
+- *Repo*: real project changes only. Delegate all edits and file creation to the appropriate implementor skill using Dispatch routing (`sub-implementor` on luna for default work, sol for escalation implementation, `sub-lisp-implementor` for Lisp files). The orchestrator should not use `edit` or `write_file` on repo files directly.
 - *Scratchpad*: temp artifacts (fetched data, prototype scripts, working notes, unrequested reports). The orchestrator may write here directly.
 - *Response*: summaries, findings, explanations. Never write a summary .md unless asked. Task workspace `state.md` files are orchestration metadata, not reports — exempt from this prohibition.
 When unsure, use scratchpad and say so.
@@ -252,7 +252,7 @@ The compaction summary preserves your goal, what's done, and what remains. Prior
 ### Stop when stuck
 
 Signals: `lines_changed: 0`, `diff_error` / "string not found", the same error twice, three edits to one file without progress, whitespace/CRLF mismatch, repeated tool permission denials.
-Response: follow the blocker policy in Phase 4 — retry on terra with a different approach or escalate to sol for implementation difficulty; dispatch astra only for architectural blockers requiring design analysis. After two failed attempts, escalate to the user. Authorization, scope, or prohibited-action blockers escalate to the user immediately. Do not retry blindly. Do not alternate between two approaches.
+Response: follow the blocker policy in Phase 4 — retry on luna with a different approach or escalate to sol for implementation difficulty; dispatch astra only for architectural blockers requiring design analysis. After two failed attempts, escalate to the user. Authorization, scope, or prohibited-action blockers escalate to the user immediately. Do not retry blindly. Do not alternate between two approaches.
 
 ### Shell
 

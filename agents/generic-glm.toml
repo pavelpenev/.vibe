@@ -1,8 +1,8 @@
 agent_type = "subagent"
 display_name = "Generic Subagent (GLM)"
-description = "Generic subagent on GLM-5.2; loads subagent role skills (sub-implementor, sub-reviewer, sub-advisor, etc.) to perform any delegated role"
+description = "Cross-family second opinion and deep reviewer on ZAI GLM-5.3; runs in parallel with Astra for deep reviews"
 safety = "neutral"
-active_model = "glm-5-2"
+active_model = "zai-glm-5-3"
 bypass_tool_permissions = false
 system_prompt_id = "generic-subagent"
 enabled_tools = ["read_file", "write_file", "edit", "grep", "bash", "skill", "web_search", "web_fetch"]
