@@ -1,6 +1,6 @@
 agent_type = "subagent"
 display_name = "Generic Subagent (GLM)"
-description = "Cross-family second opinion and deep reviewer on ZAI GLM-5.3; runs in parallel with Astra for deep reviews"
+description = "Cross-family second opinion and deep reviewer on ZAI GLM-5.3; runs in parallel with Sol High for deep reviews"
 safety = "neutral"
 active_model = "zai-glm-5-3"
 bypass_tool_permissions = false

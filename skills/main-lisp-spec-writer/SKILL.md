@@ -168,10 +168,10 @@ Extract from user input:
 
 ### Step 2: Read Source Material
 
-Read the design document (typically `design.org`). For a specific domain, grep for relevant sections:
+Read the user-named design document (typically `design.org`). If the source is not named, delegate locating it to `sub-finder`. For a specific domain, delegate section searches to `sub-finder`:
 
 ```
-grep -n "Equality\|equals\|hash-code\|CDR 8\|compare" design.org
+task(task="Load the sub-finder skill and locate sections about Equality, equals, hash-code, CDR 8, and compare in design.org. Report relevant sections and line references.", agent="generic-sol-low")
 ```
 
 Extract: feature description, protocol contracts, lambda lists, invariants, edge cases, dependencies on other features.
@@ -181,7 +181,7 @@ Extract: feature description, protocol contracts, lambda lists, invariants, edge
 Delegate to the `sub-researcher` subagent to find how CLHS specifies analogous features:
 
 ```
-task(task="Load the sub-researcher skill and research how CLHS specifies [analogous feature]. Fetch the relevant CLHS pages for [specific entries]. Return: (1) which CLHS chapters cover this domain, (2) the dictionary entry structure for the closest analogous functions/macros, (3) how CLHS handles [specific concern like protocol contracts, reader macros, etc.].", agent="generic-luna")
+task(task="Load the sub-researcher skill and research how CLHS specifies [analogous feature]. Fetch the relevant CLHS pages for [specific entries]. Return: (1) which CLHS chapters cover this domain, (2) the dictionary entry structure for the closest analogous functions/macros, (3) how CLHS handles [specific concern like protocol contracts, reader macros, etc.].", agent="generic-sol-medium")
 ```
 
 This step grounds the spec in CLHS conventions and prevents reinventing specification patterns.
@@ -228,13 +228,13 @@ Key review questions to surface:
 
 ### Step 7: Refine
 
-Based on user feedback, refine the draft. For targeted changes, delegate to a generic subagent with the `sub-lisp-implementor` skill if the spec file contains Lisp forms. Otherwise, edit directly.
+Based on user feedback, refine the draft in the response. Delegate file changes to a generic subagent with `sub-lisp-implementor` for Lisp files (.lisp, .el, .asd), or `sub-implementor` for prose spec files, using Dispatch routing.
 
 ### Step 8: Save
 
 Ask: "Save to `spec/chapter-N-title.md`? (y/n)"
 
-If yes, write the file. For full-spec mode, also update the cross-reference index at `spec/index.md`.
+If yes, delegate writing the file to `sub-implementor` using Dispatch routing. For full-spec mode, also delegate updating the cross-reference index at `spec/index.md`.
 
 ## Cross-Reference Index
 

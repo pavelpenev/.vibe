@@ -1,8 +1,8 @@
 agent_type = "subagent"
-display_name = "Generic Subagent (Astra)"
-description = "Advisor, planner, designer, and deep reviewer on GPT-6-Astra for architecture, design, and planning analysis"
+display_name = "Generic Subagent (Sol High)"
+description = "Advisor, planner, designer, and deep reviewer on GPT-6.1-Sol at high thinking for architecture, design, and planning analysis. Not for implementation."
 safety = "neutral"
-active_model = "gpt-6-astra"
+active_model = "sol-high"
 bypass_tool_permissions = false
 system_prompt_id = "generic-subagent"
 enabled_tools = ["read_file", "write_file", "edit", "grep", "bash", "skill", "web_search", "web_fetch"]

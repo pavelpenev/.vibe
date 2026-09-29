@@ -1,8 +1,8 @@
 agent_type = "subagent"
-display_name = "Generic Subagent (Luna)"
-description = "Default implementor and reviewer on GPT-6-Luna; also handles search, exploration, and verification delegated roles"
+display_name = "Generic Subagent (Sol Medium)"
+description = "Default implementor and reviewer on GPT-6.1-Sol at medium thinking; handles all implementation including novel algorithmic reasoning, difficult refactoring, and broad-impact work"
 safety = "neutral"
-active_model = "gpt-6-luna"
+active_model = "sol-medium"
 bypass_tool_permissions = false
 system_prompt_id = "generic-subagent"
 enabled_tools = ["read_file", "write_file", "edit", "grep", "bash", "skill", "web_search", "web_fetch"]

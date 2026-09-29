@@ -99,37 +99,37 @@ api_style = "openai-responses"
 backend = "generic"
 
 [[models]]
-name = "gpt-6-astra"
-provider = "codex"
-input_price = 10.0
-output_price = 50.0
-cached_input_price = 1.0
-thinking = "low"
-supports_images = true
-auto_compact_threshold = 500000
-alias = "gpt-6-astra"
-
-[[models]]
-name = "gpt-6-luna"
-provider = "codex"
-input_price = 0.1
-output_price = 0.50
-cached_input_price = 0.01
-thinking = "max"
-supports_images = true
-auto_compact_threshold = 200000
-alias = "gpt-6-luna"
-
-[[models]]
-name = "gpt-6-sol"
+name = "gpt-6.1-sol"
 provider = "codex"
 input_price = 2.0
 output_price = 10.0
-cached_input_price = 0.2
+cached_input_price = 0.1
+thinking = "low"
+supports_images = true
+auto_compact_threshold = 500000
+alias = "sol-low"
+
+[[models]]
+name = "gpt-6.1-sol"
+provider = "codex"
+input_price = 2.0
+output_price = 10.0
+cached_input_price = 0.1
 thinking = "medium"
 supports_images = true
 auto_compact_threshold = 500000
-alias = "gpt-6-sol"
+alias = "sol-medium"
+
+[[models]]
+name = "gpt-6.1-sol"
+provider = "codex"
+input_price = 2.0
+output_price = 10.0
+cached_input_price = 0.1
+thinking = "high"
+supports_images = true
+auto_compact_threshold = 500000
+alias = "sol-high"
 
 [[models]]
 name = "zai-glm-5-3"
@@ -225,10 +225,10 @@ max_todos = 100
 [tools.task]
 permission = "always"
 allowlist = [
-    "generic-luna",
+    "generic-sol-low",
+    "generic-sol-medium",
+    "generic-sol-high",
     "generic-glm",
-    "generic-astra",
-    "generic-sol",
 ]
 denylist = []
 sensitive_patterns = []

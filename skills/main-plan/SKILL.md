@@ -1,6 +1,6 @@
 ---
 name: main-plan
-description: "Turn an approved design into an executable, bounded plan with work packages, dependencies, safe parallelism, acceptance checks, and verification. Delegates deep planning analysis to astra subagents."
+description: "Turn an approved design into an executable, bounded plan with work packages, dependencies, safe parallelism, acceptance checks, and verification. Delegates deep planning analysis to sol-high subagents."
 user-invocable: true
 allowed-tools:
   - read_file
@@ -12,21 +12,21 @@ allowed-tools:
 
 # Main Plan
 
-Plan how to deliver an approved design without expanding scope. The orchestrator reads the design and frames the planning question; astra subagents do the deep planning analysis. The orchestrator synthesizes and owns the final plan.
+Plan how to deliver an approved design without expanding scope. The orchestrator reads the design and frames the planning question; sol-high subagents do the deep planning analysis. The orchestrator synthesizes and owns the final plan.
 
 ## Process
 
-1. **Read the design.** Read the approved design artifact (inline or workspace `state.md`), applicable AGENTS.md files, and relevant code or configuration.
+1. **Read the design.** Read the approved design artifact (inline, user-named document, or workspace `state.md`) and applicable AGENTS.md files. Delegate investigation of relevant code or configuration to `sub-finder` or `sub-explorer`.
 2. **Frame the planning question.** Define: the design goal, the files and subsystems involved, any cross-cutting concerns, and what the plan must address (dependencies, parallelism, verification, rollback).
-3. **Dispatch astra for planning analysis.** Send a self-contained task to `generic-astra` with the `sub-advisor` skill:
+3. **Dispatch sol-high for planning analysis.** Send a self-contained task to `generic-sol-high` with the `sub-advisor` skill:
 
 ```text
-task(task="Load the sub-advisor skill. Planning analysis for: <design goal>. Design: <approved approach>. Files and subsystems: <list>. Constraints: <dependencies, shared interfaces, preserved behavior>. Return: bounded work packages, dependency order, safe parallelism, acceptance checks per package, verification commands, and rollback approach.", agent="generic-astra")
+task(task="Load the sub-advisor skill. Planning analysis for: <design goal>. Design: <approved approach>. Files and subsystems: <list>. Constraints: <dependencies, shared interfaces, preserved behavior>. Return: bounded work packages, dependency order, safe parallelism, acceptance checks per package, verification commands, and rollback approach.", agent="generic-sol-high")
 ```
 
-For cross-cutting changes that span multiple subsystems, dispatch astra with `sub-architecture-mapper` first to map interfaces and dependencies, then use that output to frame the planning question.
+For cross-cutting changes that span multiple subsystems, dispatch sol-high with `sub-architecture-mapper` first to map interfaces and dependencies, then use that output to frame the planning question.
 
-4. **Synthesize.** Review astra's plan. The orchestrator owns the final plan — adjust work package boundaries, fix missing dependencies, and ensure the plan matches the approved design. If astra's plan contradicts the design, trust the design.
+4. **Synthesize.** Review sol-high's plan. The orchestrator owns the final plan — adjust work package boundaries, fix missing dependencies, and ensure the plan matches the approved design. If sol-high's plan contradicts the design, trust the design.
 5. **Present to the user.** Share the plan inline in the conversation. Wait for the user to react before proceeding to implementation.
 
 ## Plan content
@@ -54,5 +54,5 @@ When the change spans multiple subsystems or touches shared interfaces, addition
 ## Constraints
 
 - Do not implement the plan — planning only.
-- The orchestrator owns the plan — astra advises, the orchestrator decides.
+- The orchestrator owns the plan — sol-high advises, the orchestrator decides.
 - Do not use `ask_user_question` — discuss planning topics inline in the conversation.

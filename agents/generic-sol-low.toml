@@ -1,8 +1,8 @@
 agent_type = "subagent"
-display_name = "Generic Subagent (Sol)"
-description = "Escalation implementor for complex tasks, including novel algorithmic implementations and difficult refactorings, on GPT-6-Sol"
+display_name = "Generic Subagent (Sol Low)"
+description = "Small tier on GPT-6.1-Sol at low thinking: search, grep, exploration, verification, and mechanical single-file edits"
 safety = "neutral"
-active_model = "gpt-6-sol"
+active_model = "sol-low"
 bypass_tool_permissions = false
 system_prompt_id = "generic-subagent"
 enabled_tools = ["read_file", "write_file", "edit", "grep", "bash", "skill", "web_search", "web_fetch"]
