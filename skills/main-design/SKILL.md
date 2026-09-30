@@ -4,7 +4,6 @@ description: "Shape an approved problem into a concise design with goals, constr
 user-invocable: true
 allowed-tools:
   - read_file
-  - grep
   - write_file
   - edit
   - task

@@ -164,7 +164,7 @@ From design.org analysis, the spec maps to these chapters:
 Extract from user input:
 - **Mode**: chapter, full-spec, or refinement
 - **Domain**: which spec domain (e.g., "equality", "reader-syntax", "iterator-protocol")
-- **Source**: which design document to read from (default: look for `design.org` in project)
+- **Source**: which design document to read from (default source name: `design.org`; delegate locating it to `sub-finder`)
 
 ### Step 2: Read Source Material
 

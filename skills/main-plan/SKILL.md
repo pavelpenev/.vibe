@@ -4,7 +4,6 @@ description: "Turn an approved design into an executable, bounded plan with work
 user-invocable: true
 allowed-tools:
   - read_file
-  - grep
   - write_file
   - edit
   - task

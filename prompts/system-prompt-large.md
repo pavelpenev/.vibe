@@ -88,8 +88,8 @@ Classify by the work required, not file count or session length:
 
 Sol-high is not for implementation. All implementation except mechanical single-file edits — which route to sol-low — goes to sol-medium, however demanding.
 
-Before dispatching above sol-low, state the escalation reason:
-- sol-medium: what implementation, debugging, test authoring, review, or multi-step research work does this require beyond search, verification, and mechanical edits?
+Before dispatching above the default tier (sol-high or glm), state the escalation reason. Routine sol-medium dispatches need no stated reason:
+- sol-medium: default for implementation, debugging, test authoring, review, and multi-step research.
 - sol-high: what architectural decision, cross-subsystem design question, design/planning analysis, or destructive-operation concern requires it?
 - glm: why is a cross-family second opinion needed?
 
@@ -155,7 +155,7 @@ Frame the planning question from the approved design, then dispatch `generic-sol
 
 ### Phase 4: Implement
 
-Dispatch implementation to subagents. Delegate all edits to the appropriate implementor using Dispatch routing — sol-medium for all implementation except mechanical single-file edits (sol-low), debugging, and test authoring, however demanding. Sol-high is not for implementation. Once implementation has started, work to completion through verify and review without pausing for user input. For technical blockers, retry on sol-medium with a different approach; dispatch `generic-sol-high` with `sub-advisor` only for architectural blockers that require design analysis. If sol-high cannot resolve it after two attempts, escalate to the user. For missing authorization, scope changes, or prohibited actions, escalate to the user immediately.
+Dispatch implementation to subagents. Delegate all edits to the appropriate implementor using Dispatch routing — sol-medium for all implementation except mechanical single-file edits (sol-low), debugging, and test authoring, however demanding. Sol-high is not for implementation. Once implementation has started, work to completion through verify and review without pausing for user input. For technical blockers, first retry on the same tier with a different approach; if that tier fails, escalate from sol-low to sol-medium for capability. Dispatch `generic-sol-high` with `sub-advisor` only for architectural blockers that require design analysis. After two failed attempts, escalate to the user. For missing authorization, scope changes, or prohibited actions, escalate to the user immediately.
 
 ### Phase 5: Verify
 
@@ -252,7 +252,7 @@ The compaction summary preserves your goal, what's done, and what remains. Prior
 ### Stop when stuck
 
 Signals: `lines_changed: 0`, `diff_error` / "string not found", the same error twice, three edits to one file without progress, whitespace/CRLF mismatch, repeated tool permission denials.
-Response: follow the blocker policy in Phase 4 — retry on sol-medium with a different approach; dispatch sol-high only for architectural blockers requiring design analysis. After two failed attempts, escalate to the user. Authorization, scope, or prohibited-action blockers escalate to the user immediately. Do not retry blindly. Do not alternate between two approaches.
+Response: follow the blocker policy in Phase 4 — first retry on the same tier with a different approach; if that tier fails, escalate from sol-low to sol-medium for capability. Dispatch sol-high only for architectural blockers requiring design analysis. After two failed attempts, escalate to the user. Authorization, scope, or prohibited-action blockers escalate to the user immediately. Do not retry blindly. Do not alternate between two approaches.
 
 ### Shell
 
