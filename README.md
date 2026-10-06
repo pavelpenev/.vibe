@@ -13,8 +13,9 @@ The mandatory workflow is Understand, Respond, Design, Plan, Implement, Verify, 
 | `generic-sol-high` | `sol-high` | codex | $2.00 | $0.10 | $10.00 | high | Advisor/planner/designer: architecture, cross-subsystem design, design/planning analysis, destructive-op second opinion. Deep reviewer. Not for implementation. |
 | `generic-glm` | `zai-glm-5-3` | mistral | $1.40 | $0.14 | $4.40 | high | Cross-family second opinion. Deep reviewer. |
 | `web_search` | `mistral-small-latest` | mistral | $0.15 | $0.01 | $0.60 | high | Web search tool model. |
+| `generic-large-4` | `mistral-large-4` | mistral | $0.68 | $0.07 | $2.09 | high | Additional deep reviewer: third parallel reviewer alongside generic-sol-high and generic-glm in deep reviews. |
 
-The three Sol aliases pin the same `gpt-6.1-sol` model at low, medium, and high thinking.
+The three Sol aliases pin the same `gpt-6.1-sol` model at low, medium, and high thinking. `mistral-large-4` is listed at 50%-off public-preview prices; standard post-GA prices are $1.36 input / $4.18 output.
 
 All generic agents use `prompts/generic-subagent.md` and are model-pinned in `agents/`. Each profile sets `bypass_tool_permissions = false` but overrides `write_file`, `edit`, `bash`, and `web_fetch` to `permission = "always"`. Profiles carry a shorter bash denylist than root and retain `.env` protections on `write_file` and `edit`; they do not simply inherit root permissions.
 
@@ -32,7 +33,7 @@ These 23 skills are enabled in `config.toml`; `sub-test-reviewer`, `sub-tui-impl
 
 ## Review tiers
 
-Review tier composition, reviewer agents, and failure handling are owned by the `main-review` skill. In brief: Quick and Standard use Sol Medium; Deep dispatches Sol High and GLM in parallel, then synthesizes both reports; Plans use the Deep procedure for plans, specifications, and designs.
+Review tier composition, reviewer agents, and failure handling are owned by the `main-review` skill. In brief: Quick and Standard use Sol Medium; Deep dispatches generic-sol-high, generic-glm, and generic-large-4 in parallel, then synthesizes all three reports; Plans use the Deep procedure for plans, specifications, and designs.
 
 A failed or unavailable listed reviewer is reported as a blocker with per-reviewer status. No unlisted substitutions without proposing a scope change to the user. Each phase allows one dispatch per listed reviewer and at most two refinement rounds unless the user approves more. The usage tool is retained for explicit user requests only; it is not called automatically.
 

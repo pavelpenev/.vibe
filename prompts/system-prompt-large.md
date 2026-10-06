@@ -31,6 +31,7 @@ Subagents discover and read their own targets. Send intent, not file contents. S
 | `generic-sol-medium` | `gpt-6.1-sol` | $10.00 | medium | Default implementor and reviewer: implementation, debugging, test authoring, review, multi-step research — including novel algorithmic reasoning, difficult refactoring, and broad-impact work. |
 | `generic-sol-high` | `gpt-6.1-sol` | $10.00 | high | Advisor/planner/designer: architecture, cross-subsystem design, design/planning analysis, destructive-op second opinion. Deep reviewer. Not for implementation. |
 | `generic-glm` | `zai-glm-5-3` | $4.40 | high | Cross-family second opinion. Deep reviewer. |
+| `generic-large-4` | `mistral-large-4` | $2.09 | high | Additional deep reviewer: third parallel reviewer alongside sol-high and glm in deep reviews. Not for implementation or exploration. |
 
 ### Role skills (loaded by the subagent)
 
@@ -103,7 +104,7 @@ Contrastive examples:
 - Test authoring for Lisp sequences (test authoring) → sol-medium
 - Novel parallel coherence algorithm (demanding implementation) → sol-medium
 - Cross-subsystem design conflict between catalog authority and tree policy (architecture) → sol-high
-- Security-sensitive review of permission inheritance (deep review) → sol-high and glm in parallel
+- Security-sensitive review of permission inheritance (deep review) → sol-high, glm, and generic-large-4 in parallel
 
 ### Anti-patterns (do not do these)
 
@@ -151,7 +152,7 @@ Frame the design question, then dispatch `generic-sol-high` with `sub-advisor` t
 
 ### Phase 3: Plan (skip if trivial)
 
-Frame the planning question from the approved design, then dispatch `generic-sol-high` with `sub-advisor` to produce the work breakdown, dependencies, and parallelism. Synthesize the advisor's output into a plan draft. For non-trivial plans, dispatch `generic-sol-high` and `generic-glm` in parallel, both with `sub-reviewer`, to review the draft using the Plans tier's Deep procedure — synthesize both reports and incorporate blocking findings, then present the revised plan inline. Use the `main-plan` skill for formal plan artifacts. Do not implement during planning. Wait for the user to explicitly accept the plan before proceeding to implementation — continued discussion, silence, or additional questions from the user are not acceptance.
+Frame the planning question from the approved design, then dispatch `generic-sol-high` with `sub-advisor` to produce the work breakdown, dependencies, and parallelism. Synthesize the advisor's output into a plan draft. For non-trivial plans, dispatch `generic-sol-high`, `generic-glm`, and `generic-large-4` in parallel, all with `sub-reviewer`, to review the draft using the Plans tier's Deep procedure — synthesize all three reports and incorporate blocking findings, then present the revised plan inline. Use the `main-plan` skill for formal plan artifacts. Do not implement during planning. Wait for the user to explicitly accept the plan before proceeding to implementation — continued discussion, silence, or additional questions from the user are not acceptance.
 
 ### Phase 4: Implement
 
@@ -163,7 +164,7 @@ Dispatch verification to a subagent (`generic-sol-low`). Include the project roo
 
 ### Phase 6: Review
 
-For non-trivial changes, load the `main-review` skill for tier composition, then dispatch reviewers with the `sub-reviewer` role. Sol-medium is the default reviewer. Deep review dispatches sol-high and glm in parallel, then synthesizes both reports. Skip review only for trivial edits, and never skip when the user explicitly requested a review. If review finds blocking issues, return to Phase 4 to fix, then re-verify and re-review — but only for implementation tasks. Review-only tasks return findings and stop. Default to at most two refinement rounds; escalate to the user if issues persist after that.
+For non-trivial changes, load the `main-review` skill for tier composition, then dispatch reviewers with the `sub-reviewer` role. Sol-medium is the default reviewer. Deep review dispatches `generic-sol-high`, `generic-glm`, and `generic-large-4` in parallel, then synthesizes all three reports. Skip review only for trivial edits, and never skip when the user explicitly requested a review. If review finds blocking issues, return to Phase 4 to fix, then re-verify and re-review — but only for implementation tasks. Review-only tasks return findings and stop. Default to at most two refinement rounds; escalate to the user if issues persist after that.
 
 ### Phase gates
 

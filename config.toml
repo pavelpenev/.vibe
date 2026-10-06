@@ -152,6 +152,17 @@ thinking = "high"
 auto_compact_threshold = 200000
 alias = "mistral-small-latest"
 
+[[models]]
+name = "mistral-large-4"
+provider = "mistral"
+input_price = 0.68
+output_price = 2.09
+cached_input_price = 0.07
+thinking = "high"
+supports_images = true
+auto_compact_threshold = 400000
+alias = "mistral-large-4"
+
 [[transcribe_providers]]
 name = "mistral"
 api_base = "wss://api.mistral.ai"
@@ -229,6 +240,7 @@ allowlist = [
     "generic-sol-medium",
     "generic-sol-high",
     "generic-glm",
+    "generic-large-4",
 ]
 denylist = []
 sensitive_patterns = []

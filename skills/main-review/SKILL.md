@@ -22,7 +22,7 @@ For a pull request, fetch its branch before delegating, then review the branch c
 
 - **Quick:** one `generic-sol-medium` reviewer. Use for quick, fast, trivial, or rename-only reviews.
 - **Standard:** dispatch one `generic-sol-medium` reviewer, loading `sub-reviewer`.
-- **Deep:** dispatch `generic-sol-high` and `generic-glm` in parallel, both loading `sub-reviewer`, then synthesize both reports.
+- **Deep:** dispatch `generic-sol-high`, `generic-glm`, and `generic-large-4` in parallel, all loading `sub-reviewer`, then synthesize all three reports.
 - **Plans:** use the Deep procedure for plans, specifications, and designs.
 
 Use only the listed agents. Do not call the usage tool automatically. Keep each phase bounded to one dispatch per listed reviewer and at most two refinement rounds unless the user approves a larger budget.
@@ -37,7 +37,7 @@ Each task string must be self-contained:
 task(task="Load the sub-reviewer skill. Review: <target>. Intent: <intent>. Tier: <tier>. Return the complete review report in the skill's format.", agent="<agent>")
 ```
 
-Issue independent Deep calls in one parallel tool block. For Deep and Plans, synthesize the sol-high and glm reports, extracting consensus and notable divergent findings.
+Issue independent Deep calls in one parallel tool block. For Deep and Plans, synthesize the generic-sol-high, generic-glm, and generic-large-4 reports, extracting consensus and notable divergent findings.
 
 ## Synthesis
 
