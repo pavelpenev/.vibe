@@ -10,6 +10,7 @@ Include:
 - Task classification: trivial, implementation, review-only, design-only, or plan-only
 - Current workflow phase: which phase (0-6) the task is at, and whether design/plan have been accepted by the user
 - What's done: file paths + one-line status each (do not redo these)
+- Authorship: the author set for the actual review scope (agents that authored or materially contributed to in-scope changes); preserve earlier contributors after retries and fixes, and report unknown provenance rather than assuming. Record the scope and selected review composition so authorship exceptions survive compaction.
 - What's in progress: the current task and where it stopped
 - What remains: the concrete next step
 - Key decisions made and why

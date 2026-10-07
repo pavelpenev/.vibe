@@ -163,6 +163,17 @@ supports_images = true
 auto_compact_threshold = 400000
 alias = "mistral-large-4"
 
+[[models]]
+name = "gpt-6-luna"
+provider = "codex"
+input_price = 0.10
+output_price = 0.50
+cached_input_price = 0.01
+thinking = "medium"
+supports_images = true
+auto_compact_threshold = 500000
+alias = "luna-medium"
+
 [[transcribe_providers]]
 name = "mistral"
 api_base = "wss://api.mistral.ai"
@@ -241,6 +252,7 @@ allowlist = [
     "generic-sol-high",
     "generic-glm",
     "generic-large-4",
+    "generic-luna",
 ]
 denylist = []
 sensitive_patterns = []

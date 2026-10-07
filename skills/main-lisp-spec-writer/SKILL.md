@@ -171,7 +171,7 @@ Extract from user input:
 Read the user-named design document (typically `design.org`). If the source is not named, delegate locating it to `sub-finder`. For a specific domain, delegate section searches to `sub-finder`:
 
 ```
-task(task="Load the sub-finder skill and locate sections about Equality, equals, hash-code, CDR 8, and compare in design.org. Report relevant sections and line references.", agent="generic-sol-low")
+task(task="Load the sub-finder skill and locate sections about Equality, equals, hash-code, CDR 8, and compare in design.org. Report relevant sections and line references.", agent="generic-luna")
 ```
 
 Extract: feature description, protocol contracts, lambda lists, invariants, edge cases, dependencies on other features.
@@ -181,7 +181,7 @@ Extract: feature description, protocol contracts, lambda lists, invariants, edge
 Delegate to the `sub-researcher` subagent to find how CLHS specifies analogous features:
 
 ```
-task(task="Load the sub-researcher skill and research how CLHS specifies [analogous feature]. Fetch the relevant CLHS pages for [specific entries]. Return: (1) which CLHS chapters cover this domain, (2) the dictionary entry structure for the closest analogous functions/macros, (3) how CLHS handles [specific concern like protocol contracts, reader macros, etc.].", agent="generic-sol-medium")
+task(task="Load the sub-researcher skill and research how CLHS specifies [analogous feature]. Fetch the relevant CLHS pages for [specific entries]. Return: (1) which CLHS chapters cover this domain, (2) the dictionary entry structure for the closest analogous functions/macros, (3) how CLHS handles [specific concern like protocol contracts, reader macros, etc.].", agent="generic-luna")
 ```
 
 This step grounds the spec in CLHS conventions and prevents reinventing specification patterns.

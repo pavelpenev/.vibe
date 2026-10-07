@@ -1,10 +1,10 @@
 agent_type = "subagent"
 display_name = "Generic Subagent (Large 4)"
-description = "Additional deep reviewer on Mistral Large 4 at high thinking: third parallel reviewer alongside generic-sol-high and generic-glm in deep reviews"
+description = "Escalation implementor on Mistral Large 4 at high thinking for demanding execution with a settled approach; deep reviewer alongside generic-sol-high and generic-glm, with generic-sol-medium substituting for Mistral-authored work"
 safety = "neutral"
 active_model = "mistral-large-4"
 bypass_tool_permissions = false
-system_prompt_id = "generic-subagent"
+system_prompt_id = "generic-large-4"
 enabled_tools = ["read_file", "write_file", "edit", "grep", "bash", "skill", "web_search", "web_fetch"]
 
 [tools.read_file]

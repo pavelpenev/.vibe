@@ -1,6 +1,6 @@
 agent_type = "subagent"
 display_name = "Generic Subagent (Sol Medium)"
-description = "Default implementor and reviewer on GPT-6.1-Sol at medium thinking; handles all implementation including novel algorithmic reasoning, difficult refactoring, and broad-impact work"
+description = "Reliability fallback on GPT-6.1-Sol at medium thinking for shell/tool failures; single-reviewer substitute for Luna-authored work and for the Mistral slot in deep reviews of Mistral-authored work"
 safety = "neutral"
 active_model = "sol-medium"
 bypass_tool_permissions = false
