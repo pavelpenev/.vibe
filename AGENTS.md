@@ -30,4 +30,4 @@ The MAIN agent records concrete validation commands and results, distinguishes s
 
 ## Local AGENTS file
 
-When the applicable task directory (or an ancestor of it) contains an `AGENTS.local.md`, both the MAIN agent and subagents read it before acting on files in that directory. It is a local, untracked convention — never commit it and never reference its contents in tracked files.
+When the applicable task directory, or an ancestor of it up to the workspace root, contains an `AGENTS.local.md`, both the MAIN agent and subagents read it before acting on files in that directory. Never probe for `AGENTS.local.md` above the workspace root. It is a local, untracked convention — never commit it and never reference its contents in tracked files.
