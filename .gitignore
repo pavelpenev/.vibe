@@ -1,0 +1,41 @@
+# Secrets
+.env
+.env.*
+
+# Logs
+logs/
+
+# Runtime cache and lock directories
+cache/
+locks/
+
+# Shell tool artifacts
+shell-tool/
+plans/
+
+# Config backups and runtime caches
+cache.toml
+config.toml.bak
+connector_bootstrap_cache.json
+.connector_bootstrap_cache.json.lock
+experiment_eval_cache.json
+experiment_held_eval_cache.json
+managed_config_cache.json
+scratchpad-*.json
+ui_startup_config.json
+utility_model_cache.json
+whoami_cache.json
+
+# History and trust store
+vibehistory
+trusted_folders.toml
+
+# Python artifacts
+*.pyc
+__pycache__/
+
+# Git worktrees
+.worktrees/
+
+# Lock files
+*.lock

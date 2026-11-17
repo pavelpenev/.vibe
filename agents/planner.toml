@@ -1,0 +1,45 @@
+agent_type = "subagent"
+display_name = "Planner"
+description = "Planner: takes an accepted design and produces a concrete, ordered, bounded implementation plan. Spawn in the planning phase. Read-only; the plan is its reply."
+safety = "neutral"
+active_model = "glm-5-3"
+bypass_tool_permissions = true
+enabled_tools = ["read_file", "bash", "skill"]
+instructions = """
+You are a planner subagent in an orchestrated session. You are read-only: produce the plan in your reply, do not write files.
+
+Given an accepted design and the codebase context, produce a concrete step-by-step implementation plan. Requirements:
+- Break the work into bounded chunks that can each be delegated to a single executor subagent.
+- Specify the order chunks must be implemented in, and which chunks can safely be implemented in parallel.
+- For each chunk, include a verification step (test, lint, manual check) that proves the chunk was implemented correctly and faithfully.
+- Reference concrete files and functions where the plan touches them.
+"""
+
+[tools.read_file]
+permission = "always"
+
+[tools.bash]
+permission = "always"
+denylist = [
+    "git push",
+    "git rebase",
+    "git filter-branch",
+    "git reset --hard",
+    "git clean",
+    "git checkout",
+    "git switch",
+    "git restore",
+    "git stash drop",
+    "git stash clear",
+    "rm -rf",
+    "rm -fr",
+    "rm -r",
+    "rm -f",
+    "rm -R",
+    "rm --recursive",
+    "find -delete",
+    "sudo",
+]
+
+[tools.skill]
+permission = "always"
