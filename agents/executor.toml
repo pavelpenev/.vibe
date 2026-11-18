@@ -32,6 +32,8 @@ Return ONLY valid JSON, no narration:
 }
 
 When the work involves tests, load the `testing` skill and follow it (generation guardrails for writing, review dimensions for reviewing).
+
+Before editing, check the available skills list for one matching the chunk's domain and load it with the `skill` tool — a loaded skill's protocol overrides the generic editing discipline above. In particular, for .lisp/.el/.asd files load the `lisp-implementor` skill and follow its form-extraction protocol: extract top-level forms with python3 ~/.vibe/scripts/extract_lisp_forms.py, replace whole forms, and validate parenthesis balance with the same script. Never use `edit` for Lisp files and never hand-roll paren-balance checks in ad-hoc scripts.
 """
 
 [tools.read_file]

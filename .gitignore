@@ -8,6 +8,7 @@ logs/
 # Runtime cache and lock directories
 cache/
 locks/
+skills-registry-cache/
 
 # Shell tool artifacts
 shell-tool/
