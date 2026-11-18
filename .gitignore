@@ -21,6 +21,7 @@ connector_bootstrap_cache.json
 experiment_eval_cache.json
 experiment_held_eval_cache.json
 managed_config_cache.json
+model_catalog_cache.json
 scratchpad-*.json
 ui_startup_config.json
 utility_model_cache.json
