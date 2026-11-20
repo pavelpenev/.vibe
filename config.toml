@@ -1,5 +1,4 @@
 theme = "solarized-dark"
-# Allowlist by canonical API name; hides server-routed/injected models not listed here (e.g. mistral-vibe-cli-latest = Mistral Medium 3.5)
 allowed_models = [
     "mistral-large-4-0",
     "deepseek-v4-1-flash-1017",
@@ -7,14 +6,13 @@ allowed_models = [
     "zai-glm-5-3-flash",
     "mistral-small-latest",
 ]
-default_agent = "smart-approve"
+active_model = "mistral-large-4-0-3"
+default_agent = "auto-approve"
 system_prompt_id = "orchestrator"
 compaction_prompt_id = "custom_compact"
 disable_welcome_banner_animation = true
 show_greeting = false
 include_commit_signature = false
-# Default permissions: err on the side of permissiveness.
-# outside_workdir stays "ask" — the most permissive option it offers ("deny" is stricter).
 outside_workdir = "ask"
 
 [utility_models]
@@ -37,9 +35,6 @@ region = ""
 
 [providers.extra_headers]
 
-# Every core tool is auto-approved (permission = "always" below); the smart-approve
-# agent stays as default_agent. .env files remain sensitive so secrets never get
-# written silently.
 [tools.read_file]
 permission = "always"
 
