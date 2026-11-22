@@ -1,0 +1,3 @@
+display_name = "Orchestrator"
+description = "Default orchestrator agent: runs the custom system prompt from ~/.vibe/prompts/orchestrator.md and delegates work to subagents."
+system_prompt_id = "orchestrator"

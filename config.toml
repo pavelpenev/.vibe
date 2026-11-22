@@ -7,13 +7,13 @@ allowed_models = [
     "mistral-small-latest",
 ]
 active_model = "mistral-large-4-0-3"
-default_agent = "auto-approve"
-system_prompt_id = "orchestrator"
-compaction_prompt_id = "custom_compact"
+default_agent = "orchestrator"
+default_approval_policy = "auto-approve"
 disable_welcome_banner_animation = true
-show_greeting = false
 include_commit_signature = false
 outside_workdir = "ask"
+collapse_turn_details = true
+keep_awake = true
 
 [utility_models]
 smart_approve = "classifier"
