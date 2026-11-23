@@ -38,9 +38,11 @@ __pycache__/
 
 # Git worktrees
 .worktrees/
+worktrees/
 
 # Lock files
 *.lock
 
 # Local per-project workspace files
 workspaces/
+local_projects.toml
