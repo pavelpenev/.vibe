@@ -41,3 +41,6 @@ __pycache__/
 
 # Lock files
 *.lock
+
+# Local per-project workspace files
+workspaces/
